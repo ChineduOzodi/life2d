@@ -1,0 +1,32 @@
+{
+  "name": "life2d",
+  "version": "1.0.0",
+  "description": "life server",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ChineduOzodi/life2d.git"
+  },
+  "keywords": [
+    "life",
+    "server",
+    "simulation"
+  ],
+  "author": "Chinedu Ozodi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ChineduOzodi/life2d/issues"
+  },
+  "homepage": "https://github.com/ChineduOzodi/life2d#readme",
+  "dependencies": {
+    "express": "^4.16.4",
+    "socket.io": "^2.2.0"
+  },
+  "devDependencies": {
+    "nodemon": "^1.18.10"
+  }
+}
