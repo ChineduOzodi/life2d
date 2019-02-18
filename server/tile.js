@@ -89,3 +89,5 @@ Tile.prototype.render = function() {
     rect(this.position.x * this.size - this.size * 0.5, this.position.y * this.size - this.size * 0.5, this.size, this.size);
   }
 }
+
+module.exports = Tile;

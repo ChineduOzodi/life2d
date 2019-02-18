@@ -1,3 +1,8 @@
+var Tile = require('./tile');
+var City = require('./city');
+var Node = require('./node');
+var math = require('mathjs');
+
 function Map(mapWidth, mapHeight, tileSize) {
   this.width = mapWidth;
   this.height = mapHeight;
@@ -9,11 +14,11 @@ function Map(mapWidth, mapHeight, tileSize) {
 
 Map.prototype.run = function() {
   for (var i = 0; i < this.cities.length; i++) {
-    this.cities[i].run();
+    this.cities[i].run(this);
   }
   for (var x = 0; x < this.width; x++) {
     for (var y = 0; y < this.height; y++) {
-      this.map[x][y].run();
+      this.map[x][y].run(this);
     }
   }
 }
@@ -35,8 +40,9 @@ Map.prototype.generateMap = function(mapWidth, mapHeight, tileSize) {
     map.push([]);
     for (let y = 0; y < mapHeight; y++) {
       //var index = (x + y * width) * 4;      
-      var r = noise((xOff + x) * scale, (yOff + y) * scale) - 0.5;
-      r = pow(r + 0.5, redist);
+      var simplex = new SimplexNoise();
+      var r = simplex.noise2D((xOff + x) * scale, (yOff + y) * scale) - 0.5;
+      r = math.pow(r + 0.5, redist);
       var b = biome(r);
       var tile = new Tile(x, y, tileSize, b[0], b[1]);
       tile.height = r;
@@ -82,3 +88,18 @@ function biome(e) {
   if (e < waterlevel) return ["OCEAN", WATER];
   else return ["LAND", LAND];
 }
+
+function color(r,g,b,a) {
+  return [r,g,b,a];
+}
+
+function distanceCost(pos1,pos2) {
+  xDist = math.abs(pos1.x - pos2.x);
+  yDist = math.abs(pos1.y - pos2.y);
+  sDist = math.abs(xDist - yDist);
+  oDist = math.max(xDist,yDist) - sDist;
+  
+  return sDist * 10 + oDist * 14;
+}
+
+module.exports = Map;

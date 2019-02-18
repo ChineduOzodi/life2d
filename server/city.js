@@ -1,3 +1,6 @@
+var math = require('mathjs');
+var Person = require('./person');
+
 function City(x, y, population, cityIndex) {
   this.position = createVector(x,y);
   this.population = population;
@@ -13,20 +16,20 @@ function City(x, y, population, cityIndex) {
   this.targetCity = 0;
 }
 
-City.prototype.run = function() {
+City.prototype.run = function(map) {
   //this.tick++;
   if (this.nearCities.length > 0) {
     for (let i = 0; i < 10; i++){
-    	this.aStar();
+    	this.aStar(map);
   	} 
   }
    
   for (var i = 0; i < this.people.length; i++){
-    this.people[i].run();
+    this.people[i].run(map);
   }
 }
 
-City.prototype.aStar = function() {
+City.prototype.aStar = function(map) {
   var debugIndex = 20;
   
   //reached the top of list, restart from beginning
@@ -170,10 +173,16 @@ City.prototype.aStar = function() {
 }
 
 function distanceCost(pos1,pos2) {
-  xDist = abs(pos1.x - pos2.x);
-  yDist = abs(pos1.y - pos2.y);
-  sDist = abs(xDist - yDist);
-  oDist = max(xDist,yDist) - sDist;
+  xDist = math.abs(pos1.x - pos2.x);
+  yDist = math.abs(pos1.y - pos2.y);
+  sDist = math.abs(xDist - yDist);
+  oDist = math.max(xDist,yDist) - sDist;
   
   return sDist * 10 + oDist * 14;
 }
+
+function createVector(x,y) {
+  return {x:x,y:y};
+}
+
+module.exports = City;

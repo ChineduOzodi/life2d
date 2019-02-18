@@ -117,3 +117,5 @@ Person.prototype.run = function() {
   
   
 }
+
+module.exports = Person;

@@ -6,6 +6,7 @@ var socketIO = require('socket.io');
 var app = express();
 var server = http.Server(app);
 var io = socketIO(server);
+
 app.set('port', 5000);
 app.use('/static', express.static(__dirname + '/static'));
 // Routing
@@ -21,7 +22,13 @@ server.listen(5000, function () {
 io.on('connection', function (socket) {
 });
 
+//=========================================================
+var mWidth = 200;
+var mHeight = 150;
+var Map = require('./server/map-gen');
 var players = {};
+var map = Map(mWidth,mHeight,4);
+
 io.on('connection', function (socket) {
   socket.on('new player', function () {
     players[socket.id] = {
@@ -45,6 +52,9 @@ io.on('connection', function (socket) {
     }
   });
 });
+
 setInterval(function () {
   io.sockets.emit('state', players);
 }, 1000 / 60);
+
+//generate map

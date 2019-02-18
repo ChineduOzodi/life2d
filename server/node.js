@@ -14,3 +14,5 @@ Node.prototype.fCost = function(targetCityIndex) {
   var tNode = tile.navigation[targetCityIndex];
   return tNode.hCost + this.hCost;
 }
+
+module.exports = Node;
