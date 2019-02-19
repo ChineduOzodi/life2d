@@ -9,10 +9,14 @@ function Node(cityIndex, x, y) {
   this.connects = false;
 }
 
-Node.prototype.fCost = function(targetCityIndex) {
+Node.prototype.fCost = function(map, targetCityIndex) {
   var tile = map.map[this.position.x][this.position.y];
   var tNode = tile.navigation[targetCityIndex];
   return tNode.hCost + this.hCost;
+}
+
+function createVector(x,y) {
+  return {x:x,y:y};
 }
 
 module.exports = Node;

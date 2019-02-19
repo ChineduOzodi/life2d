@@ -23,11 +23,18 @@ io.on('connection', function (socket) {
 });
 
 //=========================================================
-var mWidth = 200;
-var mHeight = 150;
+var mWidth = 1000;
+var mHeight = 400;
+// var mWidth = 100;
+// var mHeight = 100;
 var Map = require('./server/map-gen');
 var players = {};
-var map = Map(mWidth,mHeight,4);
+var map = new Map(mWidth,mHeight,4);
+map.generateMap().then( () => {
+  io.sockets.emit('map');
+});
+//map.generateMap(mWidth, mHeight, 4);
+//console.log(map.render());
 
 io.on('connection', function (socket) {
   socket.on('new player', function () {
@@ -35,6 +42,7 @@ io.on('connection', function (socket) {
       x: 300,
       y: 300
     };
+    //io.sockets.emit('map',map.renderAll(),map.width, map.height);
   });
   socket.on('movement', function (data) {
     var player = players[socket.id] || {};
@@ -51,9 +59,15 @@ io.on('connection', function (socket) {
       player.y += 5;
     }
   });
+
 });
 
 setInterval(function () {
+  map.run();
+  let render = map.render();
+  //console.log(render);
+  //console.log(map.width * map.height);
+  //io.sockets.emit('map',render,map.width, map.height);
   io.sockets.emit('state', players);
 }, 1000 / 60);
 

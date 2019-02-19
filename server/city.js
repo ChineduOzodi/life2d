@@ -51,7 +51,7 @@ City.prototype.aStar = function(map) {
     }
     this.nearCities.splice(this.targetCity,1);
     if(this.index == debugIndex) {
-    	print("Splice: " + this.nearCities.length);
+    	console.log("Splice: " + this.nearCities.length);
     }
     this.closedNodes = [];
     return;
@@ -76,7 +76,7 @@ City.prototype.aStar = function(map) {
     let pTile = map.map[pNodePosition.x][pNodePosition.y];
   	let pNode = pTile.navigation[this.index.toString()];
     
-    if(pNode.fCost(tCity.index) < currentNode.fCost(tCity.index)) {
+    if(pNode.fCost(map, tCity.index) < currentNode.fCost(map, tCity.index)) {
       cNodeIndex = i;
       currentNodePosition = this.openNodes[cNodeIndex];
   		this.closedNodes.push(currentNodePosition);
@@ -141,7 +141,7 @@ City.prototype.aStar = function(map) {
       let nHCost = currentNode.hCost + nGCost;
       var tNode = nTile.navigation[this.targetCity];
       nFCost = tNode.hCost + nHCost;
-      if(nNode.fCost(tCity.index) > nFCost || !this.openNodes.includes(nNode.position)) {
+      if(nNode.fCost(map, tCity.index) > nFCost || !this.openNodes.includes(nNode.position)) {
         nNode.hCost = nHCost;
         nNode.direction = createVector(currentNodePosition.x - nNode.position.x,currentNodePosition.y - nNode.position.y);
         
@@ -159,15 +159,15 @@ City.prototype.aStar = function(map) {
   if (this.closedNodes.length > 15000) {
     this.openNodes = [];
     if(this.index == debugIndex) {
-      print("reached limit, should splice: " + this.nearCities.length.toString());
+      console.log("reached limit, should splice: " + this.nearCities.length.toString());
     }
   }
   
   //info
   //if(this.index == 0) {
-  //  //print("Tick: " + this.tick);
-  //  print("Open: " + this.openNodes.length)
-  //	print("Closed: " + this.closedNodes.length);
+  //  //console.log("Tick: " + this.tick);
+  //  console.log("Open: " + this.openNodes.length)
+  //	console.log("Closed: " + this.closedNodes.length);
   //}
   
 }
