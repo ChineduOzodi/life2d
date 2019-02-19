@@ -40,9 +40,9 @@ document.addEventListener('keyup', function (event) {
 });
 
 socket.emit('new player');
-setInterval(function () {
-  socket.emit('movement', movement);
-}, 1000 / 60);
+// setInterval(function () {
+//   socket.emit('movement', movement);
+// }, 1000 / 60);
 
 // var canvas = document.getElementById('canvas');
 // canvas.width = 800;
