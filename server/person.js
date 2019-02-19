@@ -1,3 +1,5 @@
+var math = require('mathjs');
+
 function Person(x, y) {
   this.position = createVector(x,y);
   this.moveCount = 0;
@@ -6,7 +8,7 @@ function Person(x, y) {
   this.pCities = {};
 }
 
-Person.prototype.run = function() {
+Person.prototype.run = function(map) {
 	if (this.targetCity == null) {
     if(this.wait > 0) {
       this.wait--;
@@ -22,42 +24,42 @@ Person.prototype.run = function() {
         //console.log(key, dictionary[key]);
       	let node = nav[key];
         if (node.direction.x != 0 && node.direction.y != 0) {
-          //print("key: " + key);
-          //print("direction (" + node.direction.x + "," + node.direction.y + ")");
+          //console.log("key: " + key);
+          //console.log("direction (" + node.direction.x + "," + node.direction.y + ")");
           possibleCities.push(key);
           //let dista = 1000.0 / nav[key].hCost;
-          this.pCities[key] = 1000.0 / nav[key].hCost * random();
+          this.pCities[key] = 1000.0 / nav[key].hCost * math.random(0,1);
         }
     	}
 		}
     if (possibleCities.length > 0) {
       this.targetCity = possibleCities[0];
-      //print("cities: " + possibleCities);
+      //console.log("cities: " + possibleCities);
     	//this.targetCity =  possibleCities[floor(random(0,possibleCities.length))];
       let rNum = this.pCities[possibleCities[0]];
-      //print("totalDist: " + totalDist);
-      //print("rNum: " + rNum);
+      //console.log("totalDist: " + totalDist);
+      //console.log("rNum: " + rNum);
       for(let i = 0; i < possibleCities.length; i++) {
         let key = possibleCities[i];
         if (rNum < this.pCities[key]) {
-          //print("cityDist: " + nav[key].dista);
-          //print("rNum: " + rNum);
+          //console.log("cityDist: " + nav[key].dista);
+          //console.log("rNum: " + rNum);
           this.targetCity = key;
           rNum = this.pCities[key];
         }
       }
-      //print("Found city: " + this.targetCity);
+      //console.log("Found city: " + this.targetCity);
     }
   }
   if (this.targetCity != null) {
     //move
     if (this.moveCount > 0) {
       this.moveCount--;
-      //print(this.moveCount);
+      //console.log(this.moveCount);
     }
     
     else {
-      //print("moving");
+      //console.log("moving");
 			let currentTile = map.map[this.position.x][this.position.y];
       currentTile.peopleCount--;
       if (currentTile.peopleCount <= 0) {
@@ -117,3 +119,9 @@ Person.prototype.run = function() {
   
   
 }
+
+function createVector(x,y) {
+  return {x:x,y:y};
+}
+
+module.exports = Person;
