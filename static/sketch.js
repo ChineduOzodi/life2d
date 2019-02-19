@@ -6,13 +6,22 @@ var s;
 var loadImg;
 var map;
 
+var cameraSpeed = 1;
+var cameraZoomZEffect = 0.5;
+var cameraZoomSpeed = 1.0;
+
+var cameraX = 0;
+var cameraY = 0;
+var cameraZ;
+
 function setup() {
-  mWidth = 1000;
-  s = 2;
-  mHeight = 400;
+  mWidth = 200;
+  s = 1;
+  mHeight = 200;
   createCanvas(mWidth * s, mHeight * s);
   background('black');
   noStroke();
+  cameraZ = (height/2.0) / tan(PI*30.0 / 180.0);
 }
 
 function preload() {
@@ -28,6 +37,9 @@ function draw() {
     map = loadImage('./static/map.png');
     console.log('image loaded');
   }
+  moveCamera();
+  translate(cameraX,cameraY);
+  scale(cameraZ);
   //draw map
   // if (canDraw){
   //   //console.log(maptiles);
@@ -43,6 +55,28 @@ function draw() {
   //     //console.log(`x: ${tile.x * s - s * 0.5}, y: ${tile.y * s - s * 0.5, s}, s: ${s}`);
   //   });
   // }
+}
+
+function mouseWheel(event) {
+  //move the square according to the vertical scroll amount
+  cameraZ += cameraZoomSpeed * event.delta * Math.pow(cameraZ,cameraZoomZEffect);
+  //uncomment to block page scrolling
+  //return false;
+}
+
+function moveCamera() {
+  if (movement.up) {
+    cameraY -= Math.pow(cameraSpeed, cameraZ);
+  }
+  if (movement.down) {
+    cameraY += Math.pow(cameraSpeed, cameraZ);
+  }
+  if (movement.left) {
+    cameraX -= Math.pow(cameraSpeed, cameraZ);
+  }
+  if (movement.right) {
+    cameraX += Math.pow(cameraSpeed, cameraZ);
+  }
 }
 
 socket.on('map', function () {
