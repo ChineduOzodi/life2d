@@ -1,14 +1,14 @@
 var maptiles;
 var mWidth;
 var mHeight;
-var canDraw =false;
+var canDraw = false;
 var s;
 var loadImg;
 var map;
 
 var cameraSpeed = 1;
 var cameraZoomZEffect = 0.5;
-var cameraZoomSpeed = 1.0;
+var cameraZoomSpeed = .001;
 
 var cameraX = 0;
 var cameraY = 0;
@@ -21,7 +21,7 @@ function setup() {
   createCanvas(mWidth * s, mHeight * s);
   background('black');
   noStroke();
-  cameraZ = (height/2.0) / tan(PI*30.0 / 180.0);
+  cameraZ = 1;
 }
 
 function preload() {
@@ -29,17 +29,20 @@ function preload() {
 }
 
 function draw() {
+  background('black');
+  translate(width/2,mHeight/2);
+  translate(-cameraX * cameraZ, -cameraY * cameraZ);
+  scale(cameraZ);
   if (map) {
-    image(map, 0, 0, width, height);
+    image(map, 0, 0);
   }
   if (loadImg) {
-    loadImg =false;
+    loadImg = false;
     map = loadImage('./static/map.png');
     console.log('image loaded');
   }
+  // print(`x: ${cameraX}, y: ${cameraY}, zoom: ${cameraZ}`);
   moveCamera();
-  translate(cameraX,cameraY);
-  scale(cameraZ);
   //draw map
   // if (canDraw){
   //   //console.log(maptiles);
@@ -59,7 +62,17 @@ function draw() {
 
 function mouseWheel(event) {
   //move the square according to the vertical scroll amount
-  cameraZ += cameraZoomSpeed * event.delta * Math.pow(cameraZ,cameraZoomZEffect);
+  // print(`x: ${cameraX}, y: ${cameraY}, zoom: ${cameraZ}`);
+  var newZoom =cameraZ + cameraZoomSpeed * event.delta * cameraZ;
+  var dx = mouseX - width / 2;
+  var dy = mouseY - height / 2;
+  // print(`new zoom: ${newZoom}, dx: ${dx}, dy: ${dy}, mouseX: ${mouseX}, mouseY: ${mouseY}`);
+  cameraX += dx/cameraZ - dx/newZoom;
+  cameraY +=dy/cameraZ - dy/newZoom;
+  cameraZ = newZoom;
+  // print(`new x: ${cameraX}, y: ${cameraY}, zoom: ${cameraZ}`);
+  cameraZ = Math.max(.1, cameraZ);
+  cameraZ = Math.min(10, cameraZ);
   //uncomment to block page scrolling
   //return false;
 }
@@ -77,6 +90,10 @@ function moveCamera() {
   if (movement.right) {
     cameraX += Math.pow(cameraSpeed, cameraZ);
   }
+  cameraY = Math.max(cameraY,0);
+  cameraY = Math.min(cameraY, 400);
+  cameraX = Math.max(cameraX,0);
+  cameraX = Math.min(cameraX, 1000);
 }
 
 socket.on('map', function () {
