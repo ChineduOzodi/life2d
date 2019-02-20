@@ -5,7 +5,7 @@ function Map(settings, simObjects) {
     this.tileSize = settings.scale;
     this.settings = settings;
     this.simObjects = simObjects;
-    this.map = null;
+    this.map = {};
     this.simplex = new SimplexNoise();
 }
 
@@ -16,44 +16,49 @@ Map.prototype.render = function () {
     }
 }
 
-Map.prototype.generateMap = function (startX,startY,gWidth,gHeight,scale) {
+Map.prototype.generateMap = function (startX, startY, gWidth, gHeight, scale) {
 
     let tileMap = [];
     let iX = 0;
-    for (let x = startX; x < startX + gWidth/scale; x += 1/scale) {
+    for (let x = startX; x < startX + gWidth / scale; x += 1 / scale) {
         tileMap.push([]);
-        for (let y = startY; y < startY + gHeight / scale; y+= 1/scale) {
-            let amplitude = 1;
-            let frequency = 1;
-            let noiseHeight = 0;
-            for (let i = 0; i < this.settings.noise.octaves; i++) {
-                let xOff = this.settings.noise.offsets[i][0];
-                let yOff = this.settings.noise.offsets[i][1];
-                let sampleX = xOff + x * this.settings.noise.scale * frequency;
-                let sampleY = yOff + y * this.settings.noise.scale * frequency;
-                let h = this.simplex.noise2D(sampleX, sampleY);
-                noiseHeight += h * amplitude;
-                amplitude *= this.settings.noise.persistence;
-                frequency *= this.settings.noise.lacunarity;
+        let iY = 0;
+        for (let y = startY; y < startY + gHeight / scale; y += 1 / scale) {
+
+            //check if already exists
+            x = Math.abs(x);
+            y = Math.abs(y);
+            if(this.map[`${x},${y}`]) {
+                tileMap[iX].push(this.map[`${x},${y}`]);
+            } else{
+                let amplitude = 1;
+                let frequency = 1;
+                let noiseHeight = 0;
+                for (let i = 0; i < this.settings.noise.octaves; i++) {
+                    let xOff = this.settings.noise.offsets[i][0];
+                    let yOff = this.settings.noise.offsets[i][1];
+                    let sampleX = xOff + x * this.settings.noise.scale * frequency;
+                    let sampleY = yOff + y * this.settings.noise.scale * frequency;
+                    let h = this.simplex.noise2D(sampleX, sampleY);
+                    noiseHeight += h * amplitude;
+                    amplitude *= this.settings.noise.persistence;
+                    frequency *= this.settings.noise.lacunarity;
+                }
+    
+                tileMap[iX].push({ height: noiseHeight });
+                tileMap[iX][iY].height = lerps(this.settings.noise.minNoiseHeight, this.settings.noise.maxNoiseHeight, tileMap[iX][iY].height);
+                //add biomes
+                var b = biome(tileMap[iX][iY].height);
+                tileMap[iX][iY].biome = b[0];
+                tileMap[iX][iY].biomeColor = b[1];
+
+                //save to map
+                this.map[`${x},${y}`] = tileMap[iX][iY];
             }
             
-
-            tileMap[iX].push({height: noiseHeight});
+            iY++;
         }
         iX++;
-    }
-
-    //add biomes
-
-    for (let x = 0; x < tileMap.length; x++) {
-        for (let y = 0; y < tileMap[0].length; y++) {
-            tileMap[x][y].height = lerps(this.settings.noise.minNoiseHeight, this.settings.noise.maxNoiseHeight, tileMap[x][y].height);
-
-            //console.log(`x: ${x}, y: ${y}, height: ${tileMap[x][y].height}`);
-            var b = biome(tileMap[x][y].height);
-            tileMap[x][y].biome = b[0];
-            tileMap[x][y].biomeColor = b[1];
-        }
     }
 
     return tileMap;
@@ -143,7 +148,7 @@ function lerps(min, max, num) {
 
 function colors(r, g, b) {
     return [r, g, b];
-  }
+}
 
 // cam x-coord to canvas x-coord
 function camX(x) {
