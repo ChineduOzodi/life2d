@@ -1,0 +1,39 @@
+{
+    "name": "tree",
+    "spawnSettings": {
+        "biomes": [
+            {
+                "name": "land",
+                "chance": 0.01
+            }
+        ]
+    },
+    "baseSprites": [
+        {
+            "url": "https://cdn4.iconfinder.com/data/icons/free-game-icons/64/Tree.png",
+            "offsets": {
+                "x": 32,
+                "y": 64
+            },
+            "width": 64,
+            "height": 64,
+            "scale": 0.046875,
+            "minZoom": 0.1,
+            "maxZoom": 1000,
+            "otherSpritesIndex": [0]
+        }
+    ],
+    "otherSprites":[{
+        "url": "https://www.southbayinnandsuites.com/wp-content/uploads/2017/08/SouthBayLogo.png",
+            "offsets": {
+                "x": 8,
+                "y": 16
+            },
+            "width": 16,
+            "height": 16,
+            "scale": 0.1875,
+            "minZoom": 0.01,
+            "maxZoom": 0.1
+    }
+    ]
+}

@@ -6,7 +6,7 @@ var SimplexNoise = require('simplex-noise');
 var PNGImage = require('pngjs-image');
 var fs = require("fs");
 
-function Map(settings) {
+function Map(settings, saveData) {
   this.name = settings.name;
   this.width = settings.width;
   this.height = settings.height;
@@ -14,6 +14,24 @@ function Map(settings) {
   this.settings = settings;
   this.cities = [];
   this.map = null;
+  this.vegitation = saveData.vegitation;
+  this.vegitationSettings = [];
+}
+
+Map.prototype.saveData = function(location) {
+  new Promise( (resolve,reject) =>{
+    let data = {
+      vegitation: this.vegitation
+    }
+    fs.writeFile(location, JSON.stringify(dat),(err) => {
+      if (err) {
+        console.log(`could not save map data`);
+        reject(err);
+      }else{
+        resolve();
+      }
+    });
+  })
 }
 
 Map.prototype.run = function () {
@@ -49,45 +67,66 @@ Map.prototype.renderAll = function () {
   return render;
 }
 
-Map.prototype.randomMap = function (chunkManifest) {
+Map.prototype.setMap = function (chunkManifest) {
+  if (this.settings.regenerate == true) {
+    if (this.settings.randomSeed == true) {
+      this.settings.seed = math.random(0, 100);
+      console.log(`created new random seed for map`);
+    }
 
-  //console.log(`OFFSETS: ${this.settings.noise.offsets}`);
-  //create offsets
-  if (this.settings.noise.randomSeed) {
-    console.log('deleting old chunk data');
-    for (let i = 0; i < chunkManifest.chunkNames.length; i++) {
-      const chunkName = chunkManifest.chunkNames[i];
-      fs.unlink(`./server/simulation/map/${chunkName}.json`,(err) => {
-        if(err){
-          console.log('error removing chunk json');
-          console.log(err);
-        }
-      });
-      fs.unlink(`./static/map/${chunkName}.png`,(err) => {
-        if(err){
-          console.log('error removing chunk png');
-          console.log(err);
-        } 
-      });
-    }
-    chunkManifest.chunkNames = [];
-    fs.writeFileSync(`./server/simulation/map/manifest.json`, JSON.stringify(chunkManifest));
-    console.log("Generating new map...");
-    this.settings.noise.seed = math.random(0, 100);
-    this.settings.noise.offsets = [];
-    for (let i = 0; i < this.settings.noise.octaves; i++) {
-      this.settings.noise.offsets.push([math.random(-100000, 100000), math.random(-100000, 100000)]);
-    }
-    console.log(`OFFSETS: ${this.settings.noise.offsets}`);
-    this.generateMap().then(() => {
-      //save settings
+    this.randomMap(chunkManifest).then(() => {
       console.log('saving to file');
-      fs.writeFileSync('./server/settings/mapgen.json', JSON.stringify(this.settings));
+      fs.writeFileSync('./server/settings/mapgen.json', JSON.stringify(thisMap.settings));
       console.log('finished saving settings to file');
     });
-  } else {
-    console.log('no new map generation, settings.noise.randomSeed not set to true');
+  }else{
+
   }
+}
+
+Map.prototype.randomMap = function (chunkManifest) {
+
+  thisMap = this;
+  return new Promise((resolve, reject) => {
+    //console.log(`OFFSETS: ${thisMap.settings.noise.offsets}`);
+    //create offsets
+    if (thisMap.settings.noise.randomSeed) {
+      console.log('deleting old chunk data');
+      for (let i = 0; i < chunkManifest.chunkNames.length; i++) {
+        const chunkName = chunkManifest.chunkNames[i];
+        fs.unlink(`./server/simulation/map/${chunkName}.json`, (err) => {
+          if (err) {
+            console.log('error removing chunk json');
+            console.log(err);
+          }
+        });
+        fs.unlink(`./static/map/${chunkName}.png`, (err) => {
+          if (err) {
+            console.log('error removing chunk png');
+            console.log(err);
+          }
+        });
+      }
+      chunkManifest.chunkNames = [];
+      fs.writeFileSync(`./server/simulation/map/manifest.json`, JSON.stringify(chunkManifest));
+      console.log("Generating new map...");
+      thisMap.settings.noise.seed = math.random(0, 100);
+      thisMap.settings.noise.offsets = [];
+      for (let i = 0; i < thisMap.settings.noise.octaves; i++) {
+        thisMap.settings.noise.offsets.push([math.random(-100000, 100000), math.random(-100000, 100000)]);
+      }
+      //console.log(`OFFSETS: ${thisMap.settings.noise.offsets}`);
+      thisMap.generateMap().then(() => {
+        //save settings
+
+        resolve();
+      });
+    } else {
+      console.log('no new map generation, settings.noise.randomSeed not set to true');
+      resolve();
+    }
+  })
+
 }
 
 Map.prototype.generateMap = function () {
@@ -195,7 +234,7 @@ Map.prototype.generateMap = function () {
 
 }
 
-Map.prototype.generateMapChunk = function (name,topX, topY, width, height, scale) {
+Map.prototype.generateMapChunk = function (name, topX, topY, width, height, scale) {
 
   map = [];
   var simplex = new SimplexNoise(this.settings.noise.seed);
@@ -223,8 +262,8 @@ Map.prototype.generateMapChunk = function (name,topX, topY, width, height, scale
 
       map[iX].push({
         height: lerp(this.settings.noise.minNoiseHeight, this.settings.noise.maxNoiseHeight, noiseHeight),
-        x:x,
-        y:y
+        x: x,
+        y: y
       });
 
       //add biomes
@@ -243,15 +282,15 @@ Map.prototype.generateMapChunk = function (name,topX, topY, width, height, scale
     console.log('saving map chunk to file');
     //save json data of chunk
     let chunkData = {
-      name:name,
-      topX:topX,
-      topY:topY,
-      width:width,
-      height:height,
-      scale:scale,
-      url:`./static/map/${name}.png`
+      name: name,
+      topX: topX,
+      topY: topY,
+      width: width,
+      height: height,
+      scale: scale,
+      url: `./static/map/${name}.png`
     }
-    mapgen.saveMapChunk(name,width,height,map).then(() => {
+    mapgen.saveMapChunk(name, width, height, map).then(() => {
       fs.writeFileSync(`./server/simulation/map/${name}.json`, JSON.stringify(chunkData));
       console.log("Done writing json");
       resolve(chunkData);
@@ -324,14 +363,14 @@ Map.prototype.saveMap = function () {
 
 }
 
-Map.prototype.saveMapChunk = function (name,width, height, map) {
+Map.prototype.saveMapChunk = function (name, width, height, map) {
   return new Promise(function (resolve, reject) {
     var image = PNGImage.createImage(width, height);
     let iX = 0;
     for (let x = 0; x < map.length; x++) {
       for (let y = 0; y < map[0].length; y++) {
         // console.log(`x: ${x}, y: ${y}, color: ${color}`);
-        image.setAt(x, y, { red:map[x][y].biomeColor[0], green:map[x][y].biomeColor[1], blue:map[x][y].biomeColor[2], alpha: 255 });
+        image.setAt(x, y, { red: map[x][y].biomeColor[0], green: map[x][y].biomeColor[1], blue: map[x][y].biomeColor[2], alpha: 255 });
       }
     }
 
