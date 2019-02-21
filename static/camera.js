@@ -1,94 +1,48 @@
+function Camera(x, y, z) {
+  this.x = x;
+  this.y = y;
+  this.z = z;
+  this.cameraSpeed = 10;
+  this.cameraZoomZEffect = 1.2;
+  this.cameraZoomSpeed = .001;
+}
 
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-//      P 5 . J S       C A N V A S C A M                                     //
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
+Camera.prototype.zoom = function (delta, locationX, locationY, screenWidth, screenHeight) {
+  //move the square according to the vertical scroll amount
+  // print(`x: ${this.x}, y: ${this.y}, zoom: ${this.z}`);
+  var newZoom = this.z - this.cameraZoomSpeed * delta * this.z;
+  var dx = locationX - screenWidth / 2;
+  var dy = locationY - screenHeight / 2;
+  // print(`new zoom: ${newZoom}, dx: ${dx}, dy: ${dy}, mouseX: ${locationX}, mouseY: ${locationY}`);
+  this.x += dx / this.z - dx / newZoom;
+  this.y += dy / this.z - dy / newZoom;
+  this.z = newZoom;
+  // print(`new x: ${this.x}, y: ${this.y}, zoom: ${this.z}`);
+  this.z = Math.max(.00001, this.z);
+  this.z = Math.min(20, this.z);
+}
 
-// @bitcraftlab 2013 - 2016
-
-// This library provides a 2D camera for the canvas.
-// Use this if you want to make your sketch zoomable and draggable
-// Original java version here: https://github.com/bitcraftlab/canvascam/
-
-p5.prototype.Camera = function(zoom, tx, ty) {
-
-    // variables for storing defaults
-    var zoom0, tx0, ty0;
-  
-    // self reference
-    var cam = this;
-  
-    // reset to defaults
-    reset(zoom, tx, ty);
-  
-    // reset(zoon, tx, ty) will reset to new defaults
-    // reset() will reset to previous defaults
-    function reset(_zoom, _tx, _ty) {
-      zoom = zoom0 = _zoom || zoom0 || 1.0;
-      tx = tx0 = _tx || tx0 || 0;
-      ty = ty0 = _ty || ty0 || 0;
-    }
-  
-    // update mouse coordinates of the camera
-    var _updateNextMouseCoords = p5.prototype._updateNextMouseCoords;
-    p5.prototype._updateNextMouseCoords = function(e) {
-      _updateNextMouseCoords.bind(this)(e);
-      cam.mouseX = camX(this.mouseX);
-      cam.mouseY = camY(this.mouseY);
-      // this._setProperty('camMouseX', cam.mouseX);
-      // this._setProperty('camMouseY', cam.mouseY);
-    };
-  
-    // update previous mouse coordinates of the camera
-    var _updateMouseCoords = p5.prototype._updateMouseCoords;
-    p5.prototype._updateMouseCoords = function(e) {
-      _updateMouseCoords.bind(this)(e);
-      cam.pmouseX = camX(this.pmouseX);
-      cam.pmouseY = camY(this.pmouseY);
-      // this._setProperty('pcamMouseX', cam.pmouseX);
-      // this._setProperty('pcamMouseY', cam.pmouseY);
-    };
-  
-    // reset the matrix to camera defaults (called at the beginning of every redraw function)
-    p5.prototype.resetMatrix = function() {
-      this._renderer.resetMatrix();
-      translate(width/2, height/2);
-      scale(zoom);
-      translate(-tx, -ty);
-      return this;
-    };
-  
-    // cam x-coord to canvas x-coord
-    function camX(x) {
-      return tx + (x - width/2) / zoom;
-    }
-  
-    // cam y-coord to canvas y-coord
-    function camY(y) {
-      return ty + (y - height/2) / zoom;
-    }
-  
-    // expose reset function
-    this.reset = reset;
-  
-    // rescale the camera relative to the center
-    this.scale = function(factor, centerX, centerY) {
-      var newZoom = zoom * factor;
-      var dx = centerX - width/2;
-      var dy = centerY - height/2;
-      tx += dx/zoom - dx/newZoom;
-      ty += dy/zoom - dy/newZoom;
-      zoom = newZoom;
-      print(`cam zoom: ${cam.zoom}`);
-    };
-  
-    // translate the origin of the camera's coordinate system
-    this.translate = function(dx, dy) {
-      tx += dx;
-      ty += dy;
-      print(`cam pos: ${cam.mouseX}, ${cam.mouseY}`);
-    };
-  
-  };
-  
+Camera.prototype.translate = function(movement) {
+  let moved = false;
+  if (movement.up) {
+    this.y -= this.cameraSpeed * Math.pow(1 / this.z, this.cameraZoomZEffect);
+    moved = true;
+  }
+  if (movement.down) {
+    this.y += this.cameraSpeed * Math.pow(1 / this.z, this.cameraZoomZEffect);
+    moved = true;
+  }
+  if (movement.left) {
+    this.x -= this.cameraSpeed * Math.pow(1 / this.z, this.cameraZoomZEffect);
+    moved = true;
+  }
+  if (movement.right) {
+    this.x += this.cameraSpeed * Math.pow(1 / this.z, this.cameraZoomZEffect);
+    moved = true;
+  }
+  // this.y = Math.max(this.y, 0);
+  // this.y = Math.min(this.y, 400);
+  // this.x = Math.max(this.x, 0);
+  // this.x = Math.min(this.x, 1000);
+  return moved;
+}

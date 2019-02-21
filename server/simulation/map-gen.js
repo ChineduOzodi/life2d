@@ -61,7 +61,7 @@ Map.prototype.randomMap = function () {
       this.settings.noise.offsets.push([math.random(-100000, 100000), math.random(-100000, 100000)]);
     }
     //console.log(`OFFSETS: ${this.settings.noise.offsets}`);
-    this.generateMap().then( () => {
+    this.generateMap().then(() => {
       //save settings
       console.log('saving to file');
       fs.writeFileSync('./server/settings/mapgen.json', JSON.stringify(this.settings));
@@ -77,7 +77,7 @@ Map.prototype.generateMap = function () {
   this.cities = [];
   map = [];
   var cityIndex = 0;
-  var simplex = new SimplexNoise();
+  var simplex = new SimplexNoise(this.settings.noise.seed);
   console.log("Generating map...");
 
   let iX = 0;
@@ -177,6 +177,74 @@ Map.prototype.generateMap = function () {
 
 }
 
+Map.prototype.generateMapChunk = function (name,topX, topY, width, height, scale) {
+
+  map = [];
+  var simplex = new SimplexNoise(this.settings.noise.seed);
+  console.log(`Generating map chunk ${name}`);
+
+  let iX = 0;
+  for (let x = topX; x < topX + width * scale; x += scale) {
+    map.push([]);
+    let iY = 0;
+    for (let y = topY; y < topY + height * scale; y += scale) {
+      let amplitude = 1;
+      let frequency = 1;
+      let noiseHeight = 0;
+      for (let i = 0; i < this.settings.noise.octaves; i++) {
+        //console.log(`offsets: ${this.settings.noise.offsets}`);
+        let xOff = this.settings.noise.offsets[i][0];
+        let yOff = this.settings.noise.offsets[i][1];
+        let sampleX = xOff + x * this.settings.noise.scale * frequency;
+        let sampleY = yOff + y * this.settings.noise.scale * frequency;
+        let h = simplex.noise2D(sampleX, sampleY);
+        noiseHeight += h * amplitude;
+        amplitude *= this.settings.noise.persistence;
+        frequency *= this.settings.noise.lacunarity;
+      }
+
+      map[iX].push({
+        height: lerp(this.settings.noise.minNoiseHeight, this.settings.noise.maxNoiseHeight, noiseHeight),
+        x:x,
+        y:y
+      });
+
+      //add biomes
+      // console.log(map[iX][iY].height);
+      var b = biome(map[iX][iY].height);
+      map[iX][iY].biome = b[0];
+      map[iX][iY].biomeColor = b[1];
+
+      iY++;
+    }
+    iX++;
+  }
+
+  mapgen = this;
+  return new Promise(function (resolve, reject) {
+    console.log('saving map chunk to file');
+    //save json data of chunk
+    let chunkData = {
+      name:name,
+      topX:topX,
+      topY:topY,
+      width:width,
+      height:height,
+      scale:scale,
+      url:`./static/map/${name}.png`
+    }
+    mapgen.saveMapChunk(name,width,height,map).then(() => {
+      fs.writeFileSync(`./server/simulation/map/${name}.json`, JSON.stringify(chunkData));
+      console.log("Done writing json");
+      resolve(chunkData);
+    }
+    ).catch((err) => {
+      reject(err);
+    });
+  })
+
+}
+
 Map.prototype.getHeight = function (x, y) {
   var simplex = new SimplexNoise(this.settings.noise.seed);
 
@@ -232,6 +300,33 @@ Map.prototype.saveMap = function () {
       } else {
         console.log('Written to the file');
         resolve()
+      }
+    });
+  });
+
+}
+
+Map.prototype.saveMapChunk = function (name,width, height, map) {
+  return new Promise(function (resolve, reject) {
+    var image = PNGImage.createImage(width, height);
+    let iX = 0;
+    for (let x = 0; x < map.length; x++) {
+      for (let y = 0; y < map[0].length; y++) {
+        // console.log(`x: ${x}, y: ${y}, color: ${color}`);
+        image.setAt(x, y, { red:map[x][y].biomeColor[0], green:map[x][y].biomeColor[1], blue:map[x][y].biomeColor[2], alpha: 255 });
+      }
+    }
+
+    // // Get low level image object with buffer from the 'pngjs' package
+    // var pngjs = image.getImage();
+
+    image.writeImage(`./static/map/${name}.png`, function (err) {
+      if (err) {
+        console.log('something went wrong with the map chunkss saving');
+        reject(err);
+      } else {
+        console.log('Written to the file');
+        resolve();
       }
     });
   });
