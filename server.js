@@ -25,18 +25,36 @@ io.on('connection', function (socket) {
 //=========================================================
 var Map = require('./server/simulation/map-gen');
 var fs = require("fs");
+var vegLocation = `./server/simulation/entities/vegitation`;
+var savePath = `./server/simulation/save/save.json`;
 
 console.log('reading map settings json file');
 var mapSettingsData = fs.readFileSync('./server/settings/mapgen.json');
 var chunkManifestJson = fs.readFileSync('./server/simulation/map/manifest.json');
+var saveJson = fs.readFileSync(savePath);
+var saveData = JSON.parse(saveJson);
 var mapSettings = JSON.parse(mapSettingsData);
 var chunkManifest = JSON.parse(chunkManifestJson);
 var players = {};
 console.log('done reading map settings');
-console.log(mapSettings);
-
-var map = new Map(mapSettings);
-map.randomMap(chunkManifest);
+// console.log(mapSettings);
+var map = new Map(mapSettings, saveData);
+fs.readdir(vegLocation, (err, files) => {
+  if (err) {
+    console.log(err);
+  }
+  else {
+    console.log(`loading vegetation`);
+    files.forEach(x => {
+      let vegJson = fs.readFileSync(`${vegLocation}/${x}`);
+      let vegData = JSON.parse(vegJson);
+      map.vegitationSettings.push(vegData);
+      // console.log(vegData);
+    });
+    console.log(`done loading vegitation`);
+  }
+})
+map.setMap(chunkManifest);
 // map.generateMapChunk('topLeft', - map.settings.width / 2 * map.settings.scale, - map.settings.height / 2 * map.settings.scale, map.settings.width, map.settings.height, map.settings.scale / 2);
 // map.generateMap().then( () => {
 //   io.sockets.emit('map');
@@ -112,6 +130,43 @@ function checkMapChunking(id) {
             console.log('pushing chunk data to player ' + id);
             console.log(chunkData);
             io.sockets.connected[id].emit('mapChunkAdd', chunkData);
+            if (chunkData.generate) {
+              let iX = 0;
+              for (let x = topX; x < topX + width * scale; x += scale) {
+                let iY = 0;
+                for (let y = topY; y < topY + height * scale; y += scale) {
+                  let amplitude = 1;
+                  let frequency = 1;
+                  let noiseHeight = 0;
+                  for (let i = 0; i < this.settings.noise.octaves; i++) {
+                    //console.log(`offsets: ${this.settings.noise.offsets}`);
+                    let xOff = this.settings.noise.offsets[i][0];
+                    let yOff = this.settings.noise.offsets[i][1];
+                    let sampleX = xOff + x * this.settings.noise.scale * frequency;
+                    let sampleY = yOff + y * this.settings.noise.scale * frequency;
+                    let h = simplex.noise2D(sampleX, sampleY);
+                    noiseHeight += h * amplitude;
+                    amplitude *= this.settings.noise.persistence;
+                    frequency *= this.settings.noise.lacunarity;
+                  }
+
+                  map[iX].push({
+                    height: lerp(this.settings.noise.minNoiseHeight, this.settings.noise.maxNoiseHeight, noiseHeight),
+                    x: x,
+                    y: y
+                  });
+
+                  //add biomes
+                  // console.log(map[iX][iY].height);
+                  var b = biome(map[iX][iY].height);
+                  map[iX][iY].biome = b[0];
+                  map[iX][iY].biomeColor = b[1];
+
+                  iY++;
+                }
+                iX++;
+              }
+            }
           }).catch(err => {
             console.log(err);
           })
