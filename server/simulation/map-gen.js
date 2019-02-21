@@ -49,18 +49,36 @@ Map.prototype.renderAll = function () {
   return render;
 }
 
-Map.prototype.randomMap = function () {
+Map.prototype.randomMap = function (chunkManifest) {
 
   //console.log(`OFFSETS: ${this.settings.noise.offsets}`);
   //create offsets
   if (this.settings.noise.randomSeed) {
+    console.log('deleting old chunk data');
+    for (let i = 0; i < chunkManifest.chunkNames.length; i++) {
+      const chunkName = chunkManifest.chunkNames[i];
+      fs.unlink(`./server/simulation/map/${chunkName}.json`,(err) => {
+        if(err){
+          console.log('error removing chunk json');
+          console.log(err);
+        }
+      });
+      fs.unlink(`./static/map/${chunkName}.png`,(err) => {
+        if(err){
+          console.log('error removing chunk png');
+          console.log(err);
+        } 
+      });
+    }
+    chunkManifest.chunkNames = [];
+    fs.writeFileSync(`./server/simulation/map/manifest.json`, JSON.stringify(chunkManifest));
     console.log("Generating new map...");
     this.settings.noise.seed = math.random(0, 100);
     this.settings.noise.offsets = [];
     for (let i = 0; i < this.settings.noise.octaves; i++) {
       this.settings.noise.offsets.push([math.random(-100000, 100000), math.random(-100000, 100000)]);
     }
-    //console.log(`OFFSETS: ${this.settings.noise.offsets}`);
+    console.log(`OFFSETS: ${this.settings.noise.offsets}`);
     this.generateMap().then(() => {
       //save settings
       console.log('saving to file');
@@ -294,7 +312,7 @@ Map.prototype.saveMap = function () {
     // // Get low level image object with buffer from the 'pngjs' package
     // var pngjs = image.getImage();
 
-    image.writeImage('./static/map.png', function (err) {
+    image.writeImage(`./static/map.png`, function (err) {
       if (err) {
         reject(err);
       } else {

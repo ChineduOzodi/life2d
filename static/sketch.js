@@ -2,6 +2,8 @@ var maptiles;
 var canDraw = false;
 var loadImg;
 var sMap;
+var chunksJson = [];
+var chunkImages = [];
 var imageMap;
 var camera;
 
@@ -28,6 +30,12 @@ function draw() {
   if (imageMap) {
     image(imageMap, - sMap.settings.width / 2 * sMap.settings.scale, - sMap.settings.height / 2 * sMap.settings.scale,sMap.settings.width * sMap.settings.scale,sMap.settings.height * sMap.settings.scale);
   }
+  for (let i = 0; i < chunksJson.length; i++) {
+    const chunkData = chunksJson[i];
+    image(chunkImages[i],chunkData.topX,chunkData.topY,chunkData.scale * chunkData.width, chunkData.height * chunkData.scale);
+  }
+  fill(color(255,100,100,100));
+  ellipse(camera.x,camera.y,10/camera.z);
   if (loadImg) {
     loadImg = false;
     imageMap = loadImage('./static/map.png');
@@ -61,4 +69,10 @@ socket.on('map', function (mapData) {
   // console.log(map);
   // console.log(width);
   // console.log(height);
+});
+
+socket.on('mapChunkAdd', function (chunkData) {
+  chunksJson.push(chunkData);
+  print(chunkData);
+  chunkImages.push(loadImage(chunkData.url));
 });

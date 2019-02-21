@@ -23,22 +23,21 @@ io.on('connection', function (socket) {
 });
 
 //=========================================================
-var mWidth = 1000;
-var mHeight = 600;
-// var mWidth = 100;
-// var mHeight = 100;
 var Map = require('./server/simulation/map-gen');
 var fs = require("fs");
 
 console.log('reading map settings json file');
 var mapSettingsData = fs.readFileSync('./server/settings/mapgen.json');
+var chunkManifestJson = fs.readFileSync('./server/simulation/map/manifest.json');
 var mapSettings = JSON.parse(mapSettingsData);
+var chunkManifest = JSON.parse(chunkManifestJson);
 var players = {};
 console.log('done reading map settings');
 console.log(mapSettings);
 
 var map = new Map(mapSettings);
-map.randomMap();
+map.randomMap(chunkManifest);
+// map.generateMapChunk('topLeft', - map.settings.width / 2 * map.settings.scale, - map.settings.height / 2 * map.settings.scale, map.settings.width, map.settings.height, map.settings.scale / 2);
 // map.generateMap().then( () => {
 //   io.sockets.emit('map');
 // });
@@ -90,13 +89,13 @@ function checkMapChunking(id) {
       //determine chunk name
 
       let topX = Math.floor(player.x / (chunkSettings.width * chunkSettings.scale)) * chunkSettings.width * chunkSettings.scale - (chunkSettings.width * chunkSettings.scale) / 2;
-      let topY = Math.floor(player.x / (chunkSettings.height * chunkSettings.scale)) * chunkSettings.height * chunkSettings.scale - (chunkSettings.height * chunkSettings.scale) / 2;
+      let topY = Math.floor(player.y / (chunkSettings.height * chunkSettings.scale)) * chunkSettings.height * chunkSettings.scale - (chunkSettings.height * chunkSettings.scale) / 2;
 
       let chunkName = `x${topX}y${topY}w${chunkSettings.width}h${chunkSettings.height}s${chunkSettings.scale}`;
 
       if (player.chunkNames.indexOf(chunkName) < 0) {
         //check if file already exists
-        if (fs.existsSync(`./server/simulation/map/${chunkName}.json`)) {
+        if (chunkManifest.chunkNames.indexOf(chunkName) >= 0) {
           //file exists
           console.log('file exists');
           var chunkSaveData = fs.readFileSync(`./server/simulation/map/${chunkName}.json`);
@@ -108,6 +107,8 @@ function checkMapChunking(id) {
           //create map chunk
           map.generateMapChunk(chunkName, topX, topY, chunkSettings.width, chunkSettings.height, chunkSettings.scale).then((chunkData) => {
             player.chunkNames.push(chunkData.name);
+            chunkManifest.chunkNames.push(chunkData.name);
+            fs.writeFileSync(`./server/simulation/map/manifest.json`, JSON.stringify(chunkManifest));
             console.log('pushing chunk data to player ' + id);
             console.log(chunkData);
             io.sockets.connected[id].emit('mapChunkAdd', chunkData);
