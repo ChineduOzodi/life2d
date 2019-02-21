@@ -55,7 +55,7 @@ function mouseWheel(event) {
 function moveCamera() {
  if (camera.translate(movement)) {
    socket.emit('camera', camera);
- };
+ }
 }
 
 socket.on('map', function (mapData) {
