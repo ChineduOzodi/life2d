@@ -25,7 +25,7 @@ io.on('connection', function (socket) {
 //=========================================================
 var Map = require('./server/simulation/map-gen');
 var fs = require("fs");
-var vegLocation = `./server/simulation/entities/vegitation`;
+var vegLocation = `./server/simulation/entities/vegetation`;
 var savePath = `./server/simulation/save/save.json`;
 
 console.log('reading map settings json file');
@@ -35,7 +35,9 @@ var saveJson = fs.readFileSync(savePath);
 var saveData = JSON.parse(saveJson);
 var mapSettings = JSON.parse(mapSettingsData);
 var chunkManifest = JSON.parse(chunkManifestJson);
+var pendingChunks = [];
 var players = {};
+
 console.log('done reading map settings');
 // console.log(mapSettings);
 var map = new Map(mapSettings, saveData);
@@ -48,13 +50,14 @@ fs.readdir(vegLocation, (err, files) => {
     files.forEach(x => {
       let vegJson = fs.readFileSync(`${vegLocation}/${x}`);
       let vegData = JSON.parse(vegJson);
-      map.vegitationSettings.push(vegData);
+      map.vegetationSettings.push(vegData);
       // console.log(vegData);
     });
-    console.log(`done loading vegitation`);
+    io.sockets.emit('vegetationSettings', map.vegetationSettings);
+    console.log(`done loading vegetation`);
   }
 })
-map.setMap(chunkManifest);
+map.setMap(chunkManifest, savePath);
 // map.generateMapChunk('topLeft', - map.settings.width / 2 * map.settings.scale, - map.settings.height / 2 * map.settings.scale, map.settings.width, map.settings.height, map.settings.scale / 2);
 // map.generateMap().then( () => {
 //   io.sockets.emit('map');
@@ -71,6 +74,7 @@ io.on('connection', function (socket) {
       chunkNames: []
     };
     io.sockets.emit('map', JSON.stringify(map));
+    io.sockets.emit('vegetationSettings', map.vegetationSettings);
   });
   socket.on('camera', function (data) {
     let player = players[socket.id] || {};
@@ -106,72 +110,53 @@ function checkMapChunking(id) {
 
       //determine chunk name
 
-      let topX = Math.floor(player.x / (chunkSettings.width * chunkSettings.scale)) * chunkSettings.width * chunkSettings.scale - (chunkSettings.width * chunkSettings.scale) / 2;
-      let topY = Math.floor(player.y / (chunkSettings.height * chunkSettings.scale)) * chunkSettings.height * chunkSettings.scale - (chunkSettings.height * chunkSettings.scale) / 2;
+      let topX = Math.floor(player.x / (chunkSettings.width * chunkSettings.scale)) * chunkSettings.width * chunkSettings.scale;
+      let topY = Math.floor(player.y / (chunkSettings.height * chunkSettings.scale)) * chunkSettings.height * chunkSettings.scale;
 
       let chunkName = `x${topX}y${topY}w${chunkSettings.width}h${chunkSettings.height}s${chunkSettings.scale}`;
 
       if (player.chunkNames.indexOf(chunkName) < 0) {
         //check if file already exists
-        if (chunkManifest.chunkNames.indexOf(chunkName) >= 0) {
+        if (pendingChunks.indexOf(chunkName) >= 0) {
+          console.log(`already generating ${chunkName}`);
+        } else if (chunkManifest.chunkNames.indexOf(chunkName) >= 0) {
           //file exists
           console.log('file exists');
           var chunkSaveData = fs.readFileSync(`./server/simulation/map/${chunkName}.json`);
           var chunkData = JSON.parse(chunkSaveData);
           player.chunkNames.push(chunkData.name);
-          console.log('pushing chunk data to player ' + id);
+          console.log(`pushing chunk ${chunkData.name} to player ${id}`);
           io.sockets.connected[id].emit('mapChunkAdd', chunkData);
         } else {
+          pendingChunks.push(chunkName);
           //create map chunk
-          map.generateMapChunk(chunkName, topX, topY, chunkSettings.width, chunkSettings.height, chunkSettings.scale).then((chunkData) => {
-            player.chunkNames.push(chunkData.name);
-            chunkManifest.chunkNames.push(chunkData.name);
-            fs.writeFileSync(`./server/simulation/map/manifest.json`, JSON.stringify(chunkManifest));
-            console.log('pushing chunk data to player ' + id);
-            console.log(chunkData);
-            io.sockets.connected[id].emit('mapChunkAdd', chunkData);
-            if (chunkData.generate) {
-              let iX = 0;
-              for (let x = topX; x < topX + width * scale; x += scale) {
-                let iY = 0;
-                for (let y = topY; y < topY + height * scale; y += scale) {
-                  let amplitude = 1;
-                  let frequency = 1;
-                  let noiseHeight = 0;
-                  for (let i = 0; i < this.settings.noise.octaves; i++) {
-                    //console.log(`offsets: ${this.settings.noise.offsets}`);
-                    let xOff = this.settings.noise.offsets[i][0];
-                    let yOff = this.settings.noise.offsets[i][1];
-                    let sampleX = xOff + x * this.settings.noise.scale * frequency;
-                    let sampleY = yOff + y * this.settings.noise.scale * frequency;
-                    let h = simplex.noise2D(sampleX, sampleY);
-                    noiseHeight += h * amplitude;
-                    amplitude *= this.settings.noise.persistence;
-                    frequency *= this.settings.noise.lacunarity;
-                  }
-
-                  map[iX].push({
-                    height: lerp(this.settings.noise.minNoiseHeight, this.settings.noise.maxNoiseHeight, noiseHeight),
-                    x: x,
-                    y: y
-                  });
-
-                  //add biomes
-                  // console.log(map[iX][iY].height);
-                  var b = biome(map[iX][iY].height);
-                  map[iX][iY].biome = b[0];
-                  map[iX][iY].biomeColor = b[1];
-
-                  iY++;
-                }
-                iX++;
+          map.generateMapChunk(chunkName, topX, topY, chunkSettings.width, chunkSettings.height, chunkSettings.scale, chunkSettings.generate).then((chunkData) => {
+            chunkManifest.chunkNames.push(chunkName);
+            for (let b = 0; b < pendingChunks.length; b++) {
+              if (pendingChunks[b] === chunkName) {
+                pendingChunks.splice(b, 1);
               }
             }
+            player.chunkNames.push(chunkData.name);
+            console.log(`pushing chunk ${chunkData.name} to player ${id}`);
+            // console.log(chunkData);
+            io.sockets.connected[id].emit('mapChunkAdd', chunkData);
+            io.sockets.emit('vegetation', map.vegetation);
           }).catch(err => {
             console.log(err);
+            for (let b = 0; b < pendingChunks.length; b++) {
+              if (pendingChunks[b] === chunkName) {
+                pendingChunks.splice(b, 1);
+              }
+            }
           })
         }
       }
     }
   }
 }
+
+setInterval(() => {
+  map.saveData(savePath);
+  fs.writeFileSync(`./server/simulation/map/manifest.json`, JSON.stringify(chunkManifest));
+}, 60 * 1000);
