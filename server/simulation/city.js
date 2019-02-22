@@ -1,5 +1,5 @@
 var math = require('mathjs');
-var Person = require('./person');
+var Person = require('./classes/person');
 
 function City(x, y, population, cityIndex) {
   this.position = createVector(x,y);
