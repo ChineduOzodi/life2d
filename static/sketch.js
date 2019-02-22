@@ -45,13 +45,11 @@ function draw() {
         camera.y + height * 0.5/ camera.z > veg.y &&
         camera.y - height * 0.5/ camera.z < veg.y
       ) {
-        let imageSelected = false;
         let vegSettings = sMap.vegetationSettings[veg.vegSettingsIndex];
         let baseSprite = vegSettings.baseSprites[veg.baseSpriteIndex];
         if (!spriteImages[`${baseSprite.url}`]) {
           spriteImages[`${baseSprite.url}`] = loadImage(baseSprite.url);
-        };
-
+        }
         if (camera.z >= baseSprite.minZoom && camera.z < baseSprite.maxZoom) {
           image(spriteImages[`${baseSprite.url}`],
             veg.x - baseSprite.offsets.x * baseSprite.scale,
@@ -59,7 +57,6 @@ function draw() {
             baseSprite.width * baseSprite.scale,
             baseSprite.height * baseSprite.scale
           );
-          imageSelected = true;
         } else {
           //check for conditional sprites
           if (baseSprite.otherSpritesIndex && baseSprite.otherSpritesIndex.length > 0) {
@@ -68,7 +65,7 @@ function draw() {
               let otherSprite = vegSettings.otherSprites[otherSpriteIndex];
               if (!spriteImages[`${otherSprite.url}`]) {
                 spriteImages[`${otherSprite.url}`] = loadImage(otherSprite.url);
-              };
+              }
 
               if (camera.z >= otherSprite.minZoom && camera.z < otherSprite.maxZoom) {
                 image(spriteImages[`${otherSprite.url}`],
@@ -77,19 +74,11 @@ function draw() {
                   otherSprite.width * otherSprite.scale,
                   otherSprite.height * otherSprite.scale
                 );
-                imageSelected = true;
                 break;
               }
             }
           }
         }
-
-
-
-        // if (!imageSelected) {
-        //   fill(color(255, 100, 100, 255));
-        //   rect(veg.x - 0.5, veg.y - 0.5, 1,1);
-        // }
       }
     }
   }

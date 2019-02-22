@@ -83,7 +83,7 @@ Map.prototype.setMap = function (chunkManifest,savePath) {
       this.saveData(savePath);
     });
   }else{
-
+    console.log(`no regeneration of map specified`);
   }
 }
 
