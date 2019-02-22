@@ -149,8 +149,8 @@ Map.prototype.newPlayer = function (id) {
   let count = 0;
   while (true) {
     count++;
-    let randomX = Math.floor(Math.random() * this.width * this.scale);
-    let randomY = Math.floor(Math.random() * this.height * this.scale);
+    let randomX = Math.floor(Math.random() * this.width * this.scale - this.width * 0.5 * this.scale);
+    let randomY = Math.floor(Math.random() * this.height * this.scale - this.height * 0.5 * this.scale);
     // console.log(`info: w: ${this.width}, s: ${this.scale}`)
     // console.log(`random x: ${randomX}, y: ${randomY}`);
 

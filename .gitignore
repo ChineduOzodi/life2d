@@ -62,3 +62,4 @@ typings/
 static/map.png
 static/map
 server/simulation/map
+/save/

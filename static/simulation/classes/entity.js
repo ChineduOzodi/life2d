@@ -4,14 +4,14 @@ function Entity(x, y, settingsIndex, baseSpriteIndex) {
     this.baseSpriteIndex = baseSpriteIndex;
 }
 
-Entity.prototype.render = function(camera, spriteImages) {
+Entity.prototype.render = function(camera, spriteImages, settingsList) {
     if (camera.z > .15 &&
         camera.x + width * 0.5 / camera.z > this.position.x &&
         camera.x - width * 0.5 / camera.z < this.position.x &&
         camera.y + height * 0.5 / camera.z > this.position.y &&
         camera.y - height * 0.5 / camera.z < this.position.y
       ) {
-        let entitySettings = sMap.peopleSettings[this.settingsIndex];
+        let entitySettings = settingsList[this.settingsIndex];
         let baseSprite = entitySettings.baseSprites[this.baseSpriteIndex];
         if (!spriteImages[`${baseSprite.url}`]) {
           spriteImages[`${baseSprite.url}`] = loadImage(baseSprite.url);

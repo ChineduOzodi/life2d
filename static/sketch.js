@@ -38,13 +38,13 @@ function draw() {
   if (sMap && sMap.vegetation) {
     for (let i = 0; i < sMap.vegetation.length; i++) {
       const entity = Object.assign(new Vegetation, sMap.vegetation[i]);
-      entity.render(camera, spriteImages);
+      entity.render(camera, spriteImages,sMap.vegetationSettings);
     }
   }
   if (sMap && sMap.people) {
     for (let i = 0; i < sMap.people.length; i++) {
       const entity = Object.assign(new Person, sMap.people[i]);
-      entity.render(camera, spriteImages)
+      entity.render(camera, spriteImages, sMap.peopleSettings)
     }
   }
   fill(color(255, 100, 100, 100));

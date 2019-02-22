@@ -32,7 +32,7 @@
             "width": 16,
             "height": 16,
             "scale": 0.1875,
-            "minZoom": 1.9,
+            "minZoom": 0.1,
             "maxZoom": 8
     }
     ]
