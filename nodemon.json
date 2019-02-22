@@ -1,6 +1,6 @@
 {
     "verbose": false,
-    "ignore": ["*/server/settings/*", "*/map.png","*/static/*","*/map/*"],
+    "ignore": ["*/server/settings/*", "*/map.png","*/static/*","*/map/*","*/save/*"],
     "execMap": {
       "rb": "ruby",
       "pde": "processing --sketch={{pwd}} --run"

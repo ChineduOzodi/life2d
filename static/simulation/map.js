@@ -6,7 +6,6 @@ function Map(settings, simObjects) {
     this.settings = settings;
     this.simObjects = simObjects;
     this.map = {};
-    this.simplex = new SimplexNoise();
 }
 
 Map.prototype.render = function () {
@@ -17,7 +16,7 @@ Map.prototype.render = function () {
 }
 
 Map.prototype.generateMap = function (startX, startY, gWidth, gHeight, scale) {
-
+    simplex = new SimplexNoise();
     let tileMap = [];
     let iX = 0;
     for (let x = startX; x < startX + gWidth / scale; x += 1 / scale) {
@@ -39,7 +38,7 @@ Map.prototype.generateMap = function (startX, startY, gWidth, gHeight, scale) {
                     let yOff = this.settings.noise.offsets[i][1];
                     let sampleX = xOff + x * this.settings.noise.scale * frequency;
                     let sampleY = yOff + y * this.settings.noise.scale * frequency;
-                    let h = this.simplex.noise2D(sampleX, sampleY);
+                    let h = simplex.noise2D(sampleX, sampleY);
                     noiseHeight += h * amplitude;
                     amplitude *= this.settings.noise.persistence;
                     frequency *= this.settings.noise.lacunarity;
@@ -74,7 +73,7 @@ Map.prototype.getHeight = function (x, y) {
         let yOff = this.settings.noise.offsets[i][1];
         let sampleX = xOff + x * this.settings.noise.scale * frequency;
         let sampleY = yOff + y * this.settings.noise.scale * frequency;
-        let h = this.simplex.noise2D(sampleX, sampleY);
+        let h = simplex.noise2D(sampleX, sampleY);
         noiseHeight += h * amplitude;
         amplitude *= this.settings.noise.persistence;
         frequency *= this.settings.noise.lacunarity;
@@ -148,14 +147,4 @@ function lerps(min, max, num) {
 
 function colors(r, g, b) {
     return [r, g, b];
-}
-
-// cam x-coord to canvas x-coord
-function camX(x) {
-    return tx + (x - width / 2) / zoom;
-}
-
-// cam y-coord to canvas y-coord
-function camY(y) {
-    return ty + (y - height / 2) / zoom;
 }
