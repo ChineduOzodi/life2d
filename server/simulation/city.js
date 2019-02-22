@@ -1,3 +1,6 @@
+var math = require('mathjs');
+var Person = require('./person');
+
 function City(x, y, population, cityIndex) {
   this.position = createVector(x,y);
   this.population = population;
@@ -13,20 +16,20 @@ function City(x, y, population, cityIndex) {
   this.targetCity = 0;
 }
 
-City.prototype.run = function() {
+City.prototype.run = function(map) {
   //this.tick++;
   if (this.nearCities.length > 0) {
     for (let i = 0; i < 10; i++){
-    	this.aStar();
+    	this.aStar(map);
   	} 
   }
    
   for (var i = 0; i < this.people.length; i++){
-    this.people[i].run();
+    this.people[i].run(map);
   }
 }
 
-City.prototype.aStar = function() {
+City.prototype.aStar = function(map) {
   var debugIndex = 20;
   
   //reached the top of list, restart from beginning
@@ -48,7 +51,7 @@ City.prototype.aStar = function() {
     }
     this.nearCities.splice(this.targetCity,1);
     if(this.index == debugIndex) {
-    	print("Splice: " + this.nearCities.length);
+    	console.log("Splice: " + this.nearCities.length);
     }
     this.closedNodes = [];
     return;
@@ -73,7 +76,7 @@ City.prototype.aStar = function() {
     let pTile = map.map[pNodePosition.x][pNodePosition.y];
   	let pNode = pTile.navigation[this.index.toString()];
     
-    if(pNode.fCost(tCity.index) < currentNode.fCost(tCity.index)) {
+    if(pNode.fCost(map, tCity.index) < currentNode.fCost(map, tCity.index)) {
       cNodeIndex = i;
       currentNodePosition = this.openNodes[cNodeIndex];
   		this.closedNodes.push(currentNodePosition);
@@ -138,7 +141,7 @@ City.prototype.aStar = function() {
       let nHCost = currentNode.hCost + nGCost;
       var tNode = nTile.navigation[this.targetCity];
       nFCost = tNode.hCost + nHCost;
-      if(nNode.fCost(tCity.index) > nFCost || !this.openNodes.includes(nNode.position)) {
+      if(nNode.fCost(map, tCity.index) > nFCost || !this.openNodes.includes(nNode.position)) {
         nNode.hCost = nHCost;
         nNode.direction = createVector(currentNodePosition.x - nNode.position.x,currentNodePosition.y - nNode.position.y);
         
@@ -156,24 +159,30 @@ City.prototype.aStar = function() {
   if (this.closedNodes.length > 15000) {
     this.openNodes = [];
     if(this.index == debugIndex) {
-      print("reached limit, should splice: " + this.nearCities.length.toString());
+      console.log("reached limit, should splice: " + this.nearCities.length.toString());
     }
   }
   
   //info
   //if(this.index == 0) {
-  //  //print("Tick: " + this.tick);
-  //  print("Open: " + this.openNodes.length)
-  //	print("Closed: " + this.closedNodes.length);
+  //  //console.log("Tick: " + this.tick);
+  //  console.log("Open: " + this.openNodes.length)
+  //	console.log("Closed: " + this.closedNodes.length);
   //}
   
 }
 
 function distanceCost(pos1,pos2) {
-  xDist = abs(pos1.x - pos2.x);
-  yDist = abs(pos1.y - pos2.y);
-  sDist = abs(xDist - yDist);
-  oDist = max(xDist,yDist) - sDist;
+  xDist = math.abs(pos1.x - pos2.x);
+  yDist = math.abs(pos1.y - pos2.y);
+  sDist = math.abs(xDist - yDist);
+  oDist = math.max(xDist,yDist) - sDist;
   
   return sDist * 10 + oDist * 14;
 }
+
+function createVector(x,y) {
+  return {x:x,y:y};
+}
+
+module.exports = City;
