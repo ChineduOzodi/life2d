@@ -147,7 +147,7 @@ Map.prototype.randomMap = function () {
 
 Map.prototype.newPlayer = function (id) {
   let count = 0;
-  while (true) {
+  while (count < 1002) {
     count++;
     let randomX = Math.floor(Math.random() * this.width * this.scale - this.width * 0.5 * this.scale);
     let randomY = Math.floor(Math.random() * this.height * this.scale - this.height * 0.5 * this.scale);
@@ -180,7 +180,6 @@ Map.prototype.generateMap = function () {
 
   this.cities = [];
   map = [];
-  var cityIndex = 0;
   var simplex = new SimplexNoise(this.settings.noise.seed);
   console.log("Generating map...");
 
@@ -438,7 +437,6 @@ Map.prototype.saveMap = function () {
 Map.prototype.saveMapChunk = function (name, width, height, map) {
   return new Promise(function (resolve, reject) {
     var image = PNGImage.createImage(width, height);
-    let iX = 0;
     for (let x = 0; x < map.length; x++) {
       for (let y = 0; y < map[0].length; y++) {
         // console.log(`x: ${x}, y: ${y}, color: ${color}`);

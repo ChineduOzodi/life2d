@@ -15,7 +15,7 @@ Person.prototype.run = function(map) {
     }
     var possibleCities = [];
     var nav = map.map[this.position.x][this.position.y].navigation;
-    var totalDist = 0;
+    // var totalDist = 0;
     //select target city
     for (let key in nav) {
     	// check if the property/key is defined in the object itself, not in parent
