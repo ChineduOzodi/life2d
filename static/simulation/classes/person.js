@@ -1,12 +1,8 @@
-var math = require('mathjs');
-
-function Person(x, y) {
-  this.position = createVector(x,y);
-  this.moveCount = 0;
-  this.targetCity = null;
-  this.wait = 0;
-  this.pCities = {};
+function Person(x, y, settingsIndex, baseSpriteIndex) {
+  Entity.call(this,x,y,settingsIndex,baseSpriteIndex)
 }
+
+Person.prototype = Object.create(Entity.prototype);
 
 Person.prototype.run = function(map) {
 	if (this.targetCity == null) {
@@ -16,7 +12,7 @@ Person.prototype.run = function(map) {
     }
     var possibleCities = [];
     var nav = map.map[this.position.x][this.position.y].navigation;
-    var totalDist = 0;
+    // var totalDist = 0;
     //select target city
     for (let key in nav) {
     	// check if the property/key is defined in the object itself, not in parent
@@ -28,7 +24,7 @@ Person.prototype.run = function(map) {
           //console.log("direction (" + node.direction.x + "," + node.direction.y + ")");
           possibleCities.push(key);
           //let dista = 1000.0 / nav[key].hCost;
-          this.pCities[key] = 1000.0 / nav[key].hCost * math.random(0,1);
+          this.pCities[key] = 1000.0 / nav[key].hCost * Math.random();
         }
     	}
 		}
@@ -123,5 +119,3 @@ Person.prototype.run = function(map) {
 function createVector(x,y) {
   return {x:x,y:y};
 }
-
-module.exports = Person;

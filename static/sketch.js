@@ -16,12 +16,12 @@ function setup() {
 }
 
 // function preload() {
-//   map = loadImage('./static/map.png');
+//   imageMap = loadImage('./static/map.png');
 // }
 
-// function windowResized() {
-//   //resizeCanvas(windowWidth, windowHeight);
-// }
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+}
 
 function draw() {
   background('black');
@@ -37,49 +37,14 @@ function draw() {
   }
   if (sMap && sMap.vegetation) {
     for (let i = 0; i < sMap.vegetation.length; i++) {
-      const veg = sMap.vegetation[i];
-      // sMap.vegetationSettings[veg.vegSettingsIndex].
-      if (camera.z > .15 &&
-        camera.x + width * 0.5 / camera.z > veg.x &&
-        camera.x - width * 0.5/ camera.z < veg.x &&
-        camera.y + height * 0.5/ camera.z > veg.y &&
-        camera.y - height * 0.5/ camera.z < veg.y
-      ) {
-        let vegSettings = sMap.vegetationSettings[veg.vegSettingsIndex];
-        let baseSprite = vegSettings.baseSprites[veg.baseSpriteIndex];
-        if (!spriteImages[`${baseSprite.url}`]) {
-          spriteImages[`${baseSprite.url}`] = loadImage(baseSprite.url);
-        }
-        if (camera.z >= baseSprite.minZoom && camera.z < baseSprite.maxZoom) {
-          image(spriteImages[`${baseSprite.url}`],
-            veg.x - baseSprite.offsets.x * baseSprite.scale,
-            veg.y - baseSprite.offsets.y * baseSprite.scale,
-            baseSprite.width * baseSprite.scale,
-            baseSprite.height * baseSprite.scale
-          );
-        } else {
-          //check for conditional sprites
-          if (baseSprite.otherSpritesIndex && baseSprite.otherSpritesIndex.length > 0) {
-            for (let s = 0; s < baseSprite.otherSpritesIndex.length; s++) {
-              const otherSpriteIndex = baseSprite.otherSpritesIndex[s];
-              let otherSprite = vegSettings.otherSprites[otherSpriteIndex];
-              if (!spriteImages[`${otherSprite.url}`]) {
-                spriteImages[`${otherSprite.url}`] = loadImage(otherSprite.url);
-              }
-
-              if (camera.z >= otherSprite.minZoom && camera.z < otherSprite.maxZoom) {
-                image(spriteImages[`${otherSprite.url}`],
-                  veg.x - otherSprite.offsets.x * otherSprite.scale,
-                  veg.y - otherSprite.offsets.y * otherSprite.scale,
-                  otherSprite.width * otherSprite.scale,
-                  otherSprite.height * otherSprite.scale
-                );
-                break;
-              }
-            }
-          }
-        }
-      }
+      const entity = Object.assign(new Vegetation, sMap.vegetation[i]);
+      entity.render(camera, spriteImages,sMap.vegetationSettings);
+    }
+  }
+  if (sMap && sMap.people) {
+    for (let i = 0; i < sMap.people.length; i++) {
+      const entity = Object.assign(new Person, sMap.people[i]);
+      entity.render(camera, spriteImages, sMap.peopleSettings)
     }
   }
   fill(color(255, 100, 100, 100));
@@ -108,9 +73,14 @@ function moveCamera() {
 }
 
 socket.on('map', function (mapData) {
-  sMap = JSON.parse(mapData);
+  mapData = JSON.parse(mapData);
   console.log(mapData);
-  sMap = new Map(sMap.settings);
+  sMap = new Map(mapData.settings);
+  sMap.vegetationSettings = mapData.vegetationSettings;
+  // console.log(`vegSettings: ${mapData.vegetationSettings}`);
+  sMap.peopleSettings = mapData.peopleSettings;
+  sMap.people = mapData.people;
+  sMap.vegetation = mapData.vegetation;
   loadImg = true;
   // width = w;
   // height = h;
@@ -128,6 +98,17 @@ socket.on('mapChunkAdd', function (chunkData) {
 
 socket.on('vegetation', (vegetationData) => {
   sMap.vegetation = vegetationData;
+});
+
+socket.on('people', (data) => {
+  sMap.people = data;
+});
+
+socket.on('camera', (cameraData) => {
+  camera.x = cameraData.x;
+  camera.y = cameraData.y;
+  camera.z = cameraData.z;
+  console.log(camera);
 });
 
 socket.on('vegetationSettings', (vegetationSettings) => {

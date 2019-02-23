@@ -23,18 +23,19 @@ io.on('connection', function (socket) {
 });
 
 //=========================================================
-var Map = require('./server/simulation/map-gen');
+var Map = require('./server/simulation/classes/map-gen');
 var fs = require("fs");
 var vegLocation = `./server/simulation/entities/vegetation`;
+var peopleLocation = `./server/simulation/entities/people`;
 var savePath = `./server/simulation/save/save.json`;
 
 console.log('reading map settings json file');
 var mapSettingsData = fs.readFileSync('./server/settings/mapgen.json');
-var chunkManifestJson = fs.readFileSync('./server/simulation/map/manifest.json');
+
 var saveJson = fs.readFileSync(savePath);
 var saveData = JSON.parse(saveJson);
 var mapSettings = JSON.parse(mapSettingsData);
-var chunkManifest = JSON.parse(chunkManifestJson);
+
 var pendingChunks = [];
 var players = {};
 
@@ -53,11 +54,26 @@ fs.readdir(vegLocation, (err, files) => {
       map.vegetationSettings.push(vegData);
       // console.log(vegData);
     });
-    io.sockets.emit('vegetationSettings', map.vegetationSettings);
     console.log(`done loading vegetation`);
   }
+});
+
+fs.readdir(peopleLocation, (err, files) => {
+  if (err) {
+    console.log(err);
+  }
+  else {
+    console.log(`loading people settings`);
+    files.forEach(x => {
+      let json = fs.readFileSync(`${peopleLocation}/${x}`);
+      let data = JSON.parse(json);
+      map.peopleSettings.push(data);
+      // console.log(data);
+    });
+    console.log(`done loading people settings`);
+  }
 })
-map.setMap(chunkManifest, savePath);
+map.setMap(savePath);
 // map.generateMapChunk('topLeft', - map.settings.width / 2 * map.settings.scale, - map.settings.height / 2 * map.settings.scale, map.settings.width, map.settings.height, map.settings.scale / 2);
 // map.generateMap().then( () => {
 //   io.sockets.emit('map');
@@ -67,14 +83,20 @@ map.setMap(chunkManifest, savePath);
 
 io.on('connection', function (socket) {
   socket.on('new player', function () {
+    console.log(`player ${socket.id} joined`);
+    //create player
+    let person = map.newPlayer(socket.id);
+    console.log(`person x: ${person.position.x}, y: ${person.position.y}`);
     players[socket.id] = {
-      x: 0,
-      y: 0,
-      z: 1,
+      x: person.position.x,
+      y: person.position.y,
+      z: 2,
       chunkNames: []
     };
+    checkMapChunking(socket.id);
+    // console.log('has veg settings: ' + JSON.stringify(map.vegetationSettings));
     io.sockets.emit('map', JSON.stringify(map));
-    io.sockets.emit('vegetationSettings', map.vegetationSettings);
+    io.sockets.emit('camera', players[socket.id]);
   });
   socket.on('camera', function (data) {
     let player = players[socket.id] || {};
@@ -119,7 +141,7 @@ function checkMapChunking(id) {
         //check if file already exists
         if (pendingChunks.indexOf(chunkName) >= 0) {
           console.log(`already generating ${chunkName}`);
-        } else if (chunkManifest.chunkNames.indexOf(chunkName) >= 0) {
+        } else if (map.chunkNames.indexOf(chunkName) >= 0) {
           //file exists
           console.log('file exists');
           var chunkSaveData = fs.readFileSync(`./server/simulation/map/${chunkName}.json`);
@@ -131,7 +153,7 @@ function checkMapChunking(id) {
           pendingChunks.push(chunkName);
           //create map chunk
           map.generateMapChunk(chunkName, topX, topY, chunkSettings.width, chunkSettings.height, chunkSettings.scale, chunkSettings.generate).then((chunkData) => {
-            chunkManifest.chunkNames.push(chunkName);
+            map.chunkNames.push(chunkName);
             for (let b = 0; b < pendingChunks.length; b++) {
               if (pendingChunks[b] === chunkName) {
                 pendingChunks.splice(b, 1);
@@ -158,5 +180,4 @@ function checkMapChunking(id) {
 
 setInterval(() => {
   map.saveData(savePath);
-  fs.writeFileSync(`./server/simulation/map/manifest.json`, JSON.stringify(chunkManifest));
 }, 60 * 1000);

@@ -1,6 +1,8 @@
-var Tile = require('./tile');
-var City = require('./city');
-var Node = require('./node');
+var Tile = require('../tile');
+var City = require('../city');
+var Node = require('../node');
+var Person = require('./person');
+var Vegetation = require('./vegetation');
 var math = require('mathjs');
 var SimplexNoise = require('simplex-noise');
 var PNGImage = require('pngjs-image');
@@ -10,24 +12,29 @@ function Map(settings, saveData) {
   this.name = settings.name;
   this.width = settings.width;
   this.height = settings.height;
-  this.tileSize = settings.scale;
+  this.scale = settings.scale;
   this.settings = settings;
   this.cities = [];
   this.map = null;
   this.vegetation = saveData.vegetation;
   this.vegetationSettings = [];
+  this.people = saveData.people;
+  this.peopleSettings = [];
+  this.chunkNames = saveData.chunkNames;
 }
 
-Map.prototype.saveData = function(location) {
-  new Promise( (resolve,reject) =>{
+Map.prototype.saveData = function (location) {
+  new Promise((resolve, reject) => {
     let data = {
-      vegetation: this.vegetation
+      vegetation: this.vegetation,
+      chunkNames: this.chunkNames,
+      people: this.people
     }
-    fs.writeFile(location, JSON.stringify(data),(err) => {
+    fs.writeFile(location, JSON.stringify(data), (err) => {
       if (err) {
         console.log(`could not save map data`);
         reject(err);
-      }else{
+      } else {
         console.log('sim saved');
         resolve();
       }
@@ -68,7 +75,14 @@ Map.prototype.renderAll = function () {
   return render;
 }
 
-Map.prototype.setMap = function (chunkManifest,savePath) {
+Map.prototype.setMap = function (savePath) {
+  //set chunkData
+  if (!this.chunkNames) {
+    this.chunkNames = []
+  }
+  if (!this.people) {
+    this.people = []
+  }
   if (this.settings.regenerate == true) {
     this.vegetation = [];
     if (this.settings.randomSeed == true) {
@@ -76,18 +90,18 @@ Map.prototype.setMap = function (chunkManifest,savePath) {
       console.log(`created new random seed for map`);
     }
 
-    this.randomMap(chunkManifest).then(() => {
+    this.randomMap().then(() => {
       console.log('saving to file');
       fs.writeFileSync('./server/settings/mapgen.json', JSON.stringify(thisMap.settings));
       console.log('finished saving settings to file');
       this.saveData(savePath);
     });
-  }else{
+  } else {
     console.log(`no regeneration of map specified`);
   }
 }
 
-Map.prototype.randomMap = function (chunkManifest) {
+Map.prototype.randomMap = function () {
 
   thisMap = this;
   return new Promise((resolve, reject) => {
@@ -95,8 +109,8 @@ Map.prototype.randomMap = function (chunkManifest) {
     //create offsets
     if (thisMap.settings.noise.randomSeed) {
       console.log('deleting old chunk data');
-      for (let i = 0; i < chunkManifest.chunkNames.length; i++) {
-        const chunkName = chunkManifest.chunkNames[i];
+      for (let i = 0; i < this.chunkNames.length; i++) {
+        const chunkName = this.chunkNames[i];
         fs.unlink(`./server/simulation/map/${chunkName}.json`, (err) => {
           if (err) {
             console.log('error removing chunk json');
@@ -110,8 +124,7 @@ Map.prototype.randomMap = function (chunkManifest) {
           }
         });
       }
-      chunkManifest.chunkNames = [];
-      fs.writeFileSync(`./server/simulation/map/manifest.json`, JSON.stringify(chunkManifest));
+      this.chunkNames = [];
       console.log("Generating new map...");
       thisMap.settings.noise.seed = math.random(0, 100);
       thisMap.settings.noise.offsets = [];
@@ -132,11 +145,41 @@ Map.prototype.randomMap = function (chunkManifest) {
 
 }
 
+Map.prototype.newPlayer = function (id) {
+  let count = 0;
+  while (count < 1002) {
+    count++;
+    let randomX = Math.floor(Math.random() * this.width * this.scale - this.width * 0.5 * this.scale);
+    let randomY = Math.floor(Math.random() * this.height * this.scale - this.height * 0.5 * this.scale);
+    // console.log(`info: w: ${this.width}, s: ${this.scale}`)
+    // console.log(`random x: ${randomX}, y: ${randomY}`);
+
+    for (let i = 0; i < this.peopleSettings.length; i++) {
+      const entitySettings = this.peopleSettings[i];
+      for (let b = 0; b < entitySettings.spawnSettings.biomes.length; b++) {
+        const biome = entitySettings.spawnSettings.biomes[b];
+        if (this.getBiome(randomX, randomY)[0] === biome.name) {
+          let v = Math.floor(Math.random() * entitySettings.baseSprites.length);
+          let person = new Person(randomX, randomY, i, v);
+          person.id = id;
+          this.people.push(person);
+          return person;
+        } else if (count > 1000) {
+          console.log('people creation reached count limit, breaking');
+          break;
+        }
+
+      }
+    }
+
+  }
+
+}
+
 Map.prototype.generateMap = function () {
 
   this.cities = [];
   map = [];
-  var cityIndex = 0;
   var simplex = new SimplexNoise(this.settings.noise.seed);
   console.log("Generating map...");
 
@@ -271,7 +314,7 @@ Map.prototype.generateMapChunk = function (name, topX, topY, width, height, scal
 
       //add biomes
       // console.log(map[iX][iY].height);
-      var b = biome(map[iX][iY].height,this.settings.biomes);
+      var b = biome(map[iX][iY].height, this.settings.biomes);
       map[iX][iY].biome = b[0];
       map[iX][iY].biomeColor = b[1];
 
@@ -286,22 +329,17 @@ Map.prototype.generateMapChunk = function (name, topX, topY, width, height, scal
               //console.log("biome name match");
               let num = Math.random();
               //awconsole.log(`chance ${num}/${biome.chance}`)
-              if ( num < biome.chance) {
+              if (num < biome.chance) {
                 //console.log(`spawn ${vegSettings.name}`);
                 //pick sprite
                 let v = Math.floor(Math.random() * vegSettings.baseSprites.length);
                 // const sprite = vegSettings.baseSprites[v];
                 //spawn watever vegetation is needed
-                this.vegetation.push({
-                  name:vegSettings.name,
-                  x:x,
-                  y:y,
-                  vegSettingsIndex:i,
-                  baseSpriteIndex:v
-                })
+                let entity = new Vegetation(x,y,i,v);
+                this.vegetation.push(entity);
               }
             }
-            
+
           }
         }
       }
@@ -354,8 +392,8 @@ Map.prototype.getHeight = function (x, y) {
   return lerp(this.settings.noise.minNoiseHeight, this.settings.noise.maxNoiseHeight, noiseHeight);
 }
 
-Map.prototype.getBiomeColor = function (x, y) {
-  return biome(this.getHeight(x, y),this.settings.biomes)[1];
+Map.prototype.getBiome = function (x, y) {
+  return biome(this.getHeight(x, y), this.settings.biomes);
 }
 
 Map.prototype.saveMap = function () {
@@ -366,7 +404,7 @@ Map.prototype.saveMap = function () {
     for (let x = - map.settings.width / 2 * map.settings.scale; x < map.settings.width / 2 * map.settings.scale; x += map.settings.scale) {
       let iY = 0;
       for (let y = - map.settings.height / 2 * map.settings.scale; y < map.settings.height / 2 * map.settings.scale; y += map.settings.scale) {
-        let color = map.getBiomeColor(x, y);
+        let color = map.getBiome(x, y)[1];
         // console.log(`x: ${x}, y: ${y}, color: ${color}`);
         // Set a pixel at (20, 30) with red, having an alpha value of 100 (half-transparent)
         image.setAt(iX, iY, { red: color[0], green: color[1], blue: color[2], alpha: 255 });
@@ -399,7 +437,6 @@ Map.prototype.saveMap = function () {
 Map.prototype.saveMapChunk = function (name, width, height, map) {
   return new Promise(function (resolve, reject) {
     var image = PNGImage.createImage(width, height);
-    let iX = 0;
     for (let x = 0; x < map.length; x++) {
       for (let y = 0; y < map[0].length; y++) {
         // console.log(`x: ${x}, y: ${y}, color: ${color}`);
@@ -423,21 +460,21 @@ Map.prototype.saveMapChunk = function (name, width, height, map) {
 
 }
 
-function biome(e,biomes) {
+function biome(e, biomes) {
   var WATER = color(e * 100, e * 100, 255 * e + 100);
   var LAND = color(0, 255 * e, 0);
   let biomeName = 'null';
   for (let i = 0; i < biomes.length; i++) {
     const biome = biomes[i];
     //console.log(`biome info: ${JSON.stringify(biome)}`);
-    if (e >= biome.minHeight && e < biome.maxHeight ){
+    if (e >= biome.minHeight && e < biome.maxHeight) {
       biomeName = biome.name;
       //console.log(`found biome match: ${biomeName}`);
     }
   }
   if (biomeName == 'water') return [biomeName, WATER];
   else if (biomeName == 'land') return [biomeName, LAND];
-  else return ['unkown',[255,192,203]]
+  else return ['unkown', [255, 192, 203]]
 }
 
 function color(r, g, b) {
