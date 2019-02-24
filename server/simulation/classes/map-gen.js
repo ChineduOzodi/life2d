@@ -7,7 +7,7 @@ var PNGImage = require('pngjs-image');
 var fs = require("fs");
 
 function Map(settings) {
-  if (settings){
+  if (settings) {
     this.name = settings.name;
     this.width = settings.width;
     this.height = settings.height;
@@ -22,6 +22,16 @@ function Map(settings) {
   this.people = [];
   this.chunkData = {};
   this.id = 1;
+}
+
+Map.prototype.run = function () {
+  if (this.people.length > 0) {
+    // console.log(JSON.stringify(this.people));
+    for (i in this.people) {
+      let person = this.people[i];
+      person.run(this);
+    }
+  }
 }
 
 Map.prototype.saveData = function (dir) {
@@ -41,6 +51,22 @@ Map.prototype.saveData = function (dir) {
     });
   })
 }
+
+Map.prototype.correctClasses = function() {
+  this.people = assignClasses(this.people, Person);
+  this.vegetation = assignClasses(this.vegetation, Vegetation);
+  console.log('classes corrected');
+}
+
+assignClasses = function(location, Class) {
+  let assignedList = [];
+  for (let k of Object.keys(location)) {
+    let object = location[k];
+    assignedList.push(Object.assign(new Class, object));
+  }
+  return assignedList;
+}
+
 
 Map.prototype.generate = function (saveDir) {
   map = this;
@@ -98,7 +124,7 @@ Map.prototype.setClassSettings = function (location, dir) {
   })
 }
 
-Map.prototype.deleteSaveData = function() {
+Map.prototype.deleteSaveData = function () {
   let dir = `./static/map`;
   fs.readdir(dir, (err, files) => {
     if (err) {
@@ -195,7 +221,7 @@ Map.prototype.newPlayer = function (id) {
         break;
       }
     }
-    if (!found){
+    if (!found) {
       reject('people creation reached count limit, did not find person');
     }
   })

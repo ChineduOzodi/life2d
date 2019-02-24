@@ -39,7 +39,7 @@
     "otherSprites": [],
     "goap": [
         {
-            "action": "collect rock",
+            "name": "collect rock",
             "preconditions": [
                 {
                     "type": "reserve",
@@ -48,7 +48,7 @@
                     "amount": 1
                 }
             ],
-            "time": 60,
+            "cost": 60,
             "effects": [
                 {
                     "type": "item",

@@ -105,7 +105,9 @@ socket.on('vegetation', (vegetationData) => {
 });
 
 socket.on('people', (data) => {
-  sMap.people = data;
+  if (sMap){
+    sMap.people = data;
+  }
 });
 
 socket.on('camera', (cameraData) => {

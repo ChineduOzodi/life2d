@@ -41,10 +41,10 @@
     ],
     "goap": [
         {
-            "action": "chop wood",
+            "name": "chop wood",
             "preconditions": [
                 {
-                    "type": "item",
+                    "type": "equip",
                     "name": [
                         "stone axe",
                         "stone axes"
@@ -58,7 +58,7 @@
                     "amount": 1
                 }
             ],
-            "time": 60,
+            "cost": 60,
             "effects": [
                 {
                     "type": "item",
@@ -75,7 +75,7 @@
             ]
         },
         {
-            "action": "strip tree",
+            "name": "strip tree",
             "preconditions": [
                 {
                     "type": "reserve",
@@ -84,7 +84,7 @@
                     "amount": 1
                 }
             ],
-            "time": 10,
+            "cost": 10,
             "effects": [
                 {
                     "type": "item",

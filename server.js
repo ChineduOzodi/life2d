@@ -6,7 +6,22 @@ var socketIO = require('socket.io');
 var app = express();
 var server = http.Server(app);
 var io = socketIO(server);
+var fs = require("fs");
+//simulation classes
+var Map = require('./server/simulation/classes/map-gen');
+var Goap = require('./server/simulation/classes/goap');
 
+//global variables
+var saveDir = `./server/simulation/save`;
+var settingsPath = `./server/settings/mapgen.json`;
+var goapActionsPath = `./server/simulation/entities`;
+var regenerate = false;
+var players = {};
+var map;
+
+//=========================================
+
+//server setup
 app.set('port', 5000);
 app.use('/static', express.static(__dirname + '/static'));
 // Routing
@@ -18,16 +33,8 @@ server.listen(5000, function () {
   console.log('Starting server on port 5000');
 });
 
-//=========================================================
-var Map = require('./server/simulation/classes/map-gen');
-var fs = require("fs");
-var saveDir = `./server/simulation/save`;
-var settingsPath = `./server/settings/mapgen.json`;
-var regenerate = true;
-var players = {};
+// simulation setup
 
-// console.log(mapSettings);
-var map;
 if (regenerate) {
   console.log('reading map settings json file');
   let mapSettingsData = fs.readFileSync(settingsPath);
@@ -41,10 +48,20 @@ else{
     var saveJson = fs.readFileSync(saveDir + `/save.save`);
     var saveData = JSON.parse(saveJson);
     map = Object.assign(new Map, saveData);
+    map.correctClasses();
   } catch (e) {
     console.error(e);
   }
 }
+
+//GOAP setup
+var goap = new Goap();
+console.log('laoding goap actions');
+goap.loadActions(goapActionsPath).then(() =>{
+  // console.log(JSON.stringify(goap.actions));
+  console.log(`goap action loading complete`);
+});
+
 // Add the WebSocket handlers
 io.on('connection', function (socket) {
   socket.on('new player', function () {
@@ -60,6 +77,7 @@ io.on('connection', function (socket) {
       // console.log('has veg settings: ' + JSON.stringify(map.vegetationSettings));
       io.sockets.emit('map', JSON.stringify(map));
       io.sockets.emit('camera', players[socket.id]);
+      person.setGoal('bundle sticks',goap,map);
     }).catch(err => {
       console.log(err);
       io.sockets.emit('error', JSON.stringify(err));
@@ -84,19 +102,15 @@ io.on('connection', function (socket) {
           io.sockets.emit('mapChunkAdd', chunkData);
         }
         io.sockets.emit('vegetation', thisMap.vegetation);
-      }
-
+      }      
     });
     //console.log(`x: ${player.x}, y: ${player.y}, zoom: ${player.z}`)
   });
 });
 
 setInterval(function () {
-  //map.run();
-  //let render = map.render();
-  //console.log(render);
-  //console.log(map.width * map.height);
-  //io.sockets.emit('map',render,map.width, map.height);
+  map.run();
+  io.sockets.emit('people',map.people);
   io.sockets.emit('state', players);
 }, 1000 / 60);
 
