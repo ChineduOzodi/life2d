@@ -12,28 +12,89 @@
         {
             "url": "https://cdn4.iconfinder.com/data/icons/free-game-icons/64/Tree.png",
             "offsets": {
-                "x": 32,
-                "y": 64
+                "x": 0.5,
+                "y": 1
             },
             "width": 64,
             "height": 64,
             "scale": 0.046875,
             "minZoom": 8,
             "maxZoom": 1000,
-            "otherSpritesIndex": [0]
+            "otherSpritesIndex": [
+                0
+            ]
         }
     ],
-    "otherSprites":[{
-        "url": "https://www.southbayinnandsuites.com/wp-content/uploads/2017/08/SouthBayLogo.png",
+    "otherSprites": [
+        {
+            "url": "https://www.southbayinnandsuites.com/wp-content/uploads/2017/08/SouthBayLogo.png",
             "offsets": {
-                "x": 8,
-                "y": 16
+                "x": 0.5,
+                "y": 1
             },
             "width": 16,
             "height": 16,
             "scale": 0.1875,
             "minZoom": 1.9,
             "maxZoom": 8
-    }
+        }
+    ],
+    "goap": [
+        {
+            "action": "chop wood",
+            "preconditions": [
+                {
+                    "type": "item",
+                    "name": [
+                        "stone axe",
+                        "stone axes"
+                    ],
+                    "amount": 1
+                },
+                {
+                    "type": "reserve",
+                    "reserve": "entity",
+                    "name": "tree",
+                    "amount": 1
+                }
+            ],
+            "time": 60,
+            "effects": [
+                {
+                    "type": "item",
+                    "name": [
+                        "log",
+                        "logs"
+                    ],
+                    "amount": 30
+                },
+                {
+                    "type": "destroy",
+                    "target": "self"
+                }
+            ]
+        },
+        {
+            "action": "strip tree",
+            "preconditions": [
+                {
+                    "type": "reserve",
+                    "reserve": "entity",
+                    "name": "tree",
+                    "amount": 1
+                }
+            ],
+            "time": 10,
+            "effects": [
+                {
+                    "type": "item",
+                    "name": [
+                        "stick",
+                        "sticks"
+                    ],
+                    "amount": 5
+                }
+            ]
+        }
     ]
 }

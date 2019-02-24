@@ -1,0 +1,50 @@
+{
+    "name":"wooden shelter",
+    "type":"building",
+    "goap": [
+        {
+            "action": "build wooden shelter",
+            "preconditions": [
+                {
+                    "type": "item",
+                    "name": ["log","logs"],
+                    "amount": 30
+                },
+                {
+                    "type": "reserve",
+                    "dimensions": {"x":4,"y":4}
+                }
+            ],
+            "time": 180,
+            "effects": [
+                {
+                    "type": "own",
+                    "name": "wooden shelter",
+                    "amount": 1
+                }
+            ]
+        },
+        {
+            "action": "build wooden shelter",
+            "preconditions": [
+                {
+                    "type": "item",
+                    "name": ["bundled sticks","bundled sticks"],
+                    "amount": 30
+                },
+                {
+                    "type": "reserve",
+                    "dimensions": {"x":4,"y":4}
+                }
+            ],
+            "time": 200,
+            "effects": [
+                {
+                    "type": "own",
+                    "name": "wooden shelter",
+                    "amount": 1
+                }
+            ]
+        }
+    ]
+}

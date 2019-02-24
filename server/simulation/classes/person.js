@@ -1,8 +1,8 @@
 var math = require('mathjs');
 var Entity = require('./entity');
 
-function Person(x, y, settingsIndex, baseSpriteIndex) {
-  Entity.call(this,x,y,settingsIndex,baseSpriteIndex)
+function Person(id, x, y, settingsIndex, baseSpriteIndex) {
+  Entity.call(this,id, x,y,settingsIndex,baseSpriteIndex)
 }
 
 Person.prototype = Object.create(Entity.prototype);

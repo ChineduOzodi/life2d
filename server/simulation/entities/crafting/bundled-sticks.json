@@ -1,0 +1,24 @@
+{
+    "name": ["bundled sticks","bundled sticks"],
+    "type":"item",
+    "goap": [
+        {
+            "action": "bundle sticks",
+            "preconditions": [
+                {
+                    "type": "item",
+                    "name": ["stick","sticks"],
+                    "amount": 5
+                }
+            ],
+            "time": 10,
+            "effects": [
+                {
+                    "type": "item",
+                    "name": ["bundled sticks","bundled sticks"],
+                    "amount": 1
+                }
+            ]
+        }
+    ]
+}
