@@ -18,10 +18,6 @@ server.listen(5000, function () {
   console.log('Starting server on port 5000');
 });
 
-// Add the WebSocket handlers
-io.on('connection', function (socket) {
-});
-
 //=========================================================
 var Map = require('./server/simulation/classes/map-gen');
 var fs = require("fs");
@@ -49,6 +45,7 @@ else{
     console.error(e);
   }
 }
+// Add the WebSocket handlers
 io.on('connection', function (socket) {
   socket.on('new player', function () {
     console.log(`player ${socket.id} joined`);

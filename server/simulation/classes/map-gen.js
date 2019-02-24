@@ -414,8 +414,6 @@ Map.prototype.generateMapChunk = function (name, topX, topY, width, height, scal
                 //spawn watever vegetation is needed
                 let entity = new Vegetation(this.id++, x, y, i, v);
                 this.vegetation.push(entity);
-                if (scale == 1) {
-                }
               }
             }
 

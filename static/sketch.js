@@ -1,8 +1,5 @@
-var maptiles;
-var canDraw = false;
 var loadImg;
 var sMap;
-var chunksJson = [];
 var chunkImages = {};
 var spriteImages = {};
 var imageMap;
