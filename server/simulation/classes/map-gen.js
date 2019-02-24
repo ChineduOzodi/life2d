@@ -1,6 +1,4 @@
 var Tile = require('../tile');
-var City = require('../city');
-var Node = require('../node');
 var Person = require('./person');
 var Vegetation = require('./vegetation');
 var math = require('mathjs');
@@ -23,7 +21,6 @@ function Map(settings) {
   this.vegetation = [];
   this.people = [];
   this.chunkData = {};
-  this.map = {};
   this.id = 1;
 }
 
@@ -43,39 +40,6 @@ Map.prototype.saveData = function (dir) {
       }
     });
   })
-}
-
-Map.prototype.run = function () {
-  for (var i = 0; i < this.cities.length; i++) {
-    this.cities[i].run(this);
-  }
-  for (var x = 0; x < this.width; x++) {
-    for (var y = 0; y < this.height; y++) {
-      this.map[x][y].run(this);
-    }
-  }
-}
-
-Map.prototype.render = function () {
-  render = [];
-  for (var x = 0; x < this.width; x++) {
-    for (var y = 0; y < this.height; y++) {
-      if (this.map[x][y].stateChanged) {
-        render.push(this.map[x][y].render());
-      }
-    }
-  }
-  return render;
-}
-
-Map.prototype.renderAll = function () {
-  render = [];
-  for (var x = 0; x < this.width; x++) {
-    for (var y = 0; y < this.height; y++) {
-      render.push(this.map[x][y].render(true));
-    }
-  }
-  return render;
 }
 
 Map.prototype.generate = function (saveDir) {
@@ -211,7 +175,6 @@ Map.prototype.newPlayer = function (id) {
             let person = new Person(id, randomX, randomY, i, v);
             thisMap.people.push(person);
             thisMap.checkMapChunking(randomX, randomY, 1).then(() => {
-              thisMap.map[`x:${Math.floor(randomX)},y:${Math.floor(randomY)}`].peopleIds.push[person.id];
               resolve(person);
             }).catch((err) => {
               reject(err);
@@ -381,7 +344,6 @@ Map.prototype.generateMap = function () {
   //   this.cities[i].nearCities.splice(0, 1);
   // }
   console.log("Done!")
-  //this.map = map;
   mapgen = this;
   return new Promise(function (resolve, reject) {
     //
@@ -433,13 +395,6 @@ Map.prototype.generateMapChunk = function (name, topX, topY, width, height, scal
       var b = biome(map[iX][iY].height, this.settings.biomes);
       map[iX][iY].biome = b[0];
       map[iX][iY].biomeColor = b[1];
-
-      if (scale == 1) {
-        this.map[`x:${Math.floor(x)},y:${Math.floor(y)}`] = map[iX][iY];
-        this.map[`x:${Math.floor(x)},y:${Math.floor(y)}`].vegetationIds = [];
-        this.map[`x:${Math.floor(x)},y:${Math.floor(y)}`].peopleIds = [];
-        this.map[`x:${Math.floor(x)},y:${Math.floor(y)}`].reserved = false;
-      }
       //generate entities
       if (generate) {
         // console.log(`should start generating`);
@@ -460,7 +415,6 @@ Map.prototype.generateMapChunk = function (name, topX, topY, width, height, scal
                 let entity = new Vegetation(this.id++, x, y, i, v);
                 this.vegetation.push(entity);
                 if (scale == 1) {
-                  this.map[`x:${Math.floor(x)},y:${Math.floor(y)}`].vegetationIds.push(entity.id);
                 }
               }
             }
