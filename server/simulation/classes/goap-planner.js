@@ -1,3 +1,5 @@
+AStar = require('./a-star');
+
 function GoapPlanner() {
 }
 
@@ -19,20 +21,47 @@ GoapPlanner.prototype.createPlan = function (map, agent, worldState, actions, go
         if (!success) {
             reject('could not find a plan');
         } else {
-            console.log(`FOUND PLAN(S): ${JSON.stringify(leaves)}`)
+            // console.log(`FOUND PLAN(S): ${JSON.stringify(leaves)}`);
+            let lowestCost = leaves[0].runningCost + leaves[0].actionCost;
+            let selectedAction = leaves[0];
+            for( let i in leaves){
+                let leave = leaves[i];
+                let totalCost = leave.runningCost + leave.actionCost;
+                // console.log(`pAction ${(i + 1)} (${totalCost}): ${actionList(leave)}`);
+                if (lowestCost > totalCost){
+                    lowestCost = totalCost;
+                    selectedAction = leave;
+                }
+            }
+            // console.log(`selected action: ${JSON.stringify(selectedAction)}`);
+            console.log(`selected steps (${(leave.runningCost + leave.actionCost)}): ${actionList(leave)}`);
         }
     })
 }
 
 GoapPlanner.prototype.isActionUsable = function (map, agent, action) {
+    for (let i in action.preconditions){
+        let precondition = action.preconditions[i];
+        if (precondition.type == 'reserve' && precondition.reserve == 'entity') {
+            let closestEntity = map.findNearestEntity(precondition.name, map.vegetation, agent.position);
+            if(closestEntity){
+                console.log(`found closest entity for ${action.name} - ${precondition.name}: ${JSON.stringify(closestEntity)}`);
+                let aStar = new AStar();
+                aStar.findPath(agent.position,closestEntity.position,map);
+            }else{
+                console.log(`could not find closest entity for ${action.name} - ${precondition.name}`);
+            }
+        }
+    }
+    
     return true;
 }
 
 GoapPlanner.prototype.buildGraph = function (length, parent, leaves, usableActions, goal) {
     length++;
     let foundOne = false;
-    console.log(`graph - usable actions length: ${usableActions.length}`);
-    console.log(actionList(parent));
+    // console.log(`graph - usable actions length: ${usableActions.length}`);
+    // console.log(actionList(parent));
     if (length > 20) {
         console.log(`max plan length reached`);
         return false;

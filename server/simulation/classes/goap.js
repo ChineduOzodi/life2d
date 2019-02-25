@@ -19,6 +19,7 @@ Goap.prototype.loadActions = function (dir) {
                 for (i in data.goap){
                     let action = data.goap[i];
                     thisGoap.actions.push(action);
+                    console.log(`action: ${JSON.stringify(action.name)}`);
                 }
             }
         }

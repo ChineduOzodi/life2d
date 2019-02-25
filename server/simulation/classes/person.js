@@ -1,9 +1,8 @@
-var math = require('mathjs');
 var Entity = require('./entity');
 var GoapPlanner = require('./goap-planner');
 
 function Person(id, x, y, settingsIndex, baseSpriteIndex) {
-  Entity.call(this, id, x, y, settingsIndex, baseSpriteIndex);
+  Entity.call(this, 'person', id, x, y, settingsIndex, baseSpriteIndex);
   this.state = 'idle';
   this.goal = '';
   this.worldState = [
@@ -17,7 +16,7 @@ function Person(id, x, y, settingsIndex, baseSpriteIndex) {
       "type": "item",
       "name": "bundled sticks",
       "amount": 5
-  }
+    }
   ]
   this.actionPlan = [];
   this.currentAction = idleState;

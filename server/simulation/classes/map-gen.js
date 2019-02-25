@@ -1,4 +1,3 @@
-var Tile = require('../tile');
 var Person = require('./person');
 var Vegetation = require('./vegetation');
 var math = require('mathjs');
@@ -315,7 +314,7 @@ Map.prototype.generateMap = function () {
         this.settings.noise.minNoiseHeight = noiseHeight;
       }
       //console.log(b);
-      var tile = new Tile(x, y, this.settings.noise.tileSize, noiseHeight);
+      let tile = {height:noiseHeight};
 
       map[iX].push(tile);
     }
@@ -438,7 +437,7 @@ Map.prototype.generateMapChunk = function (name, topX, topY, width, height, scal
                 let v = Math.floor(Math.random() * vegSettings.baseSprites.length);
                 // const sprite = vegSettings.baseSprites[v];
                 //spawn watever vegetation is needed
-                let entity = new Vegetation(this.id++, x, y, i, v);
+                let entity = new Vegetation(vegSettings.name, this.id++, x, y, i, v);
                 this.vegetation.push(entity);
               }
             }
@@ -496,6 +495,21 @@ Map.prototype.getHeight = function (x, y) {
 
 Map.prototype.getBiome = function (x, y) {
   return biome(this.getHeight(x, y), this.settings.biomes);
+}
+
+Map.prototype.findNearestEntity = function(entityName, location, position) {
+  let closestEntity;
+  let closestDistance = 100000000000000000000000000000000000;
+
+  for (let i in location) {
+    let entity = location[i];
+    let entityDistance = distanceCost(entity.position, position);
+    if (entityDistance < closestDistance && entityName === entity.name){
+      closestEntity = entity;
+      closestDistance = entityDistance;
+    }
+  }
+  return closestEntity;
 }
 
 Map.prototype.saveMap = function () {

@@ -35,6 +35,7 @@
                 },
                 {
                     "type": "reserve",
+                    "reserve": "location",
                     "dimensions": {"width":4,"height":4}
                 }
             ],
