@@ -7,7 +7,7 @@
             "preconditions": [
                 {
                     "type": "item",
-                    "name": ["log","logs"],
+                    "name": "log",
                     "amount": 30
                 },
                 {
@@ -30,7 +30,7 @@
             "preconditions": [
                 {
                     "type": "item",
-                    "name": ["bundled sticks","bundled sticks"],
+                    "name": "bundled sticks",
                     "amount": 30
                 },
                 {

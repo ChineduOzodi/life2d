@@ -52,10 +52,7 @@
             "effects": [
                 {
                     "type": "item",
-                    "name": [
-                        "rock",
-                        "rocks"
-                    ],
+                    "name": "rock",
                     "amount": 1
                 },
                 {

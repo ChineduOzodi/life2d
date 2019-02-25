@@ -3,17 +3,29 @@ var Entity = require('./entity');
 var GoapPlanner = require('./goap-planner');
 
 function Person(id, x, y, settingsIndex, baseSpriteIndex) {
-  Entity.call(this,id, x,y,settingsIndex,baseSpriteIndex);
+  Entity.call(this, id, x, y, settingsIndex, baseSpriteIndex);
   this.state = 'idle';
   this.goal = '';
-  this.worldState = []
+  this.worldState = [
+    {
+      "type": "item",
+      "name": "stick",
+      "plural": "sticks",
+      "amount": 6
+    },
+    {
+      "type": "item",
+      "name": "bundled sticks",
+      "amount": 5
+  }
+  ]
   this.actionPlan = [];
   this.currentAction = idleState;
 }
 
 Person.prototype = Object.create(Entity.prototype);
 
-Person.prototype.run = function() {
+Person.prototype.run = function () {
   this.currentAction(this);
 }
 
@@ -68,7 +80,7 @@ Person.prototype.run = function() {
 //       this.moveCount--;
 //       //console.log(this.moveCount);
 //     }
-    
+
 //     else {
 //       //console.log("moving");
 // 			let currentTile = map.map[this.position.x][this.position.y];
@@ -106,21 +118,21 @@ Person.prototype.run = function() {
 //             if (nx < 0 || ny < 0 || nx >= map.width || ny >= map.height) {
 //               continue; 
 //             }
-            
+
 //             let nTile = map.map[nx][ny];
 //             nTile.nRoadCount++;
 //           }
 //         }
 //       }
-      
+
 //       if (newTile.road <= 900 && createRoad) {
 //         newTile.road += 50;
 //       }
-      
+
 //       if (newTile.peopleCount == 1) {
 //         newTile.stateChanged = true;
 //       }
-      
+
 //       //check if arrived
 //       if (map.cities[this.targetCity].position.x == this.position.x && map.cities[this.targetCity].position.y == this.position.y){
 //         this.targetCity = null;
@@ -133,18 +145,18 @@ function idleState(entity) {
   // console.log('waiting');
 }
 
-Person.prototype.setGoal = function(goal,goap,map) {
+Person.prototype.setGoal = function (goal, goap, map) {
   let goalAction = goap.findAction(goal);
   if (goalAction) {
     let goapPlanner = new GoapPlanner();
-    goapPlanner.createPlan(map,this,this.worldState,goap.actions,goalAction.effects);
-  }else{
+    goapPlanner.createPlan(map, this, this.worldState, goap.actions, goalAction.effects);
+  } else {
     console.log(`could not find a goal action for: ${goal}`);
   }
 }
 
-function createVector(x,y) {
-  return {x:x,y:y};
+function createVector(x, y) {
+  return { x: x, y: y };
 }
 
 module.exports = Person;

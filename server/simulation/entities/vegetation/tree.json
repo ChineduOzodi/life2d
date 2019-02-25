@@ -45,10 +45,7 @@
             "preconditions": [
                 {
                     "type": "equip",
-                    "name": [
-                        "stone axe",
-                        "stone axes"
-                    ],
+                    "name": "stone axe",
                     "amount": 1
                 },
                 {
@@ -62,10 +59,7 @@
             "effects": [
                 {
                     "type": "item",
-                    "name": [
-                        "log",
-                        "logs"
-                    ],
+                    "name": "log",
                     "amount": 30
                 },
                 {
@@ -88,10 +82,7 @@
             "effects": [
                 {
                     "type": "item",
-                    "name": [
-                        "stick",
-                        "sticks"
-                    ],
+                    "name": "stick",
                     "amount": 5
                 }
             ]

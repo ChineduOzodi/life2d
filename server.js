@@ -15,7 +15,7 @@ var Goap = require('./server/simulation/classes/goap');
 var saveDir = `./server/simulation/save`;
 var settingsPath = `./server/settings/mapgen.json`;
 var goapActionsPath = `./server/simulation/entities`;
-var regenerate = false;
+var regenerate = true;
 var players = {};
 var map;
 
@@ -77,7 +77,7 @@ io.on('connection', function (socket) {
       // console.log('has veg settings: ' + JSON.stringify(map.vegetationSettings));
       io.sockets.emit('map', JSON.stringify(map));
       io.sockets.emit('camera', players[socket.id]);
-      person.setGoal('bundle sticks',goap,map);
+      person.setGoal('build wooden shelter',goap,map);
     }).catch(err => {
       console.log(err);
       io.sockets.emit('error', JSON.stringify(err));
