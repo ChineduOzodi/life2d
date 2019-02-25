@@ -32,6 +32,7 @@ GoapPlanner.prototype.buildGraph = function (length, parent, leaves, usableActio
     length++;
     let foundOne = false;
     console.log(`graph - usable actions length: ${usableActions.length}`);
+    console.log(actionList(parent));
     if (length > 20) {
         console.log(`max plan length reached`);
         return false;
@@ -60,6 +61,17 @@ GoapPlanner.prototype.buildGraph = function (length, parent, leaves, usableActio
         }
     }
     return foundOne;
+}
+
+function actionList (goapNode) {
+    let action = "";
+    if (goapNode.action) {
+        action += goapNode.action.name;
+    }
+    if (goapNode.parent){
+        action += ` <- ${actionList(goapNode.parent)}`;
+    }
+    return action;
 }
 
 GoapPlanner.prototype.applyAction = function (state, action, actionRepeat) {
@@ -136,8 +148,7 @@ GoapPlanner.prototype.inState = function (preconditions, preconditionRepeat, goa
                             // let neededItem = Object.assign({},precondition);
                             // neededItem.type = 'item';
                             // let results = this.increaseItemAmount(neededItem, neededItem.amount, goapNode);
-                            // if (results[0]) {
-                            //     goapNode.state = results[1];
+                            // if (results) {
                             //     done = false;
                             //     break;
                             // }
@@ -167,8 +178,7 @@ GoapPlanner.prototype.inState = function (preconditions, preconditionRepeat, goa
                             let neededItem = Object.assign({},precondition);
                             neededItem.type = 'item';
                             let results = this.increaseItemAmount(neededItem, neededItem.amount, goapNode);
-                            if (results[0]) {
-                                goapNode.state = results[1];
+                            if (results) {
                                 done = false;
                                 break;
                             }
@@ -195,8 +205,7 @@ GoapPlanner.prototype.inState = function (preconditions, preconditionRepeat, goa
                             } else {
                                 //see if you can increase condition amount in the parent nodes
                                 let results = this.increaseItemAmount(precondition, preconditionRepeat, goapNode);
-                                if (results[0]) {
-                                    goapNode.state = results[1];
+                                if (results) {
                                     done = false;
                                     break;
                                 }
@@ -226,7 +235,6 @@ GoapPlanner.prototype.increaseItemAmount = function (precondition, preconditionR
         return itemCountIncreased;
     }
 
-    let newState = goapNode.state;
     if (goapNode.action) {
         for (let i in goapNode.action.effects) {
             let effect = goapNode.action.effects[i];
