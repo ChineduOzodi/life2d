@@ -1,13 +1,14 @@
 math = require('mathjs');
-Node = require('./node');
+AStarNode = require('./a-star-node');
+AStarPath = require('./a-star-path');
 function AStar() {
 }
 
 AStar.prototype.findPath = function (startPosition, endPosition, map) {
     let closedNodes = [];
     let openNodes = [];
-    let startNode = new Node(startPosition.x, startPosition.y, map, 0, distanceCost(startPosition, endPosition));
-    let targetNode = new Node(endPosition.x, endPosition.y, map);
+    let startNode = new AStarNode(startPosition.x, startPosition.y, map, 0, distanceCost(startPosition, endPosition));
+    let targetNode = new AStarNode(endPosition.x, endPosition.y, map);
     openNodes.push(startNode);
     thisAStar = this;
     let nodeMap = {};
@@ -15,11 +16,12 @@ AStar.prototype.findPath = function (startPosition, endPosition, map) {
     nodeMap[`x:${startNode.position.x},y:${startNode.position.y}`] = startNode;
     console.log(`finding path from: x:${startNode.position.x},y:${startNode.position.y} to x:${targetNode.position.x},y:${targetNode.position.y}`);
     return new Promise((resolve, reject) => {
+        let foundPath = false;
         while (openNodes.length > 0) {
             // pull current node
             let cNodeIndex = 0;
             let currentNode = openNodes[cNodeIndex];
-            console.log(`pathSearch: ${openNodes.length}`);
+            // console.log(`pathSearch: ${openNodes.length}`);
             for (let i = 0; i < openNodes.length; i++) {
                 let pNode = openNodes[i];
 
@@ -34,10 +36,11 @@ AStar.prototype.findPath = function (startPosition, endPosition, map) {
             //check if node == target
             if (currentNode.position.x == targetNode.position.x && currentNode.position.y == targetNode.position.y) {
                 //found node
-                let path = thisAStar.createPath(currentNode);
                 console.log('reached target node, retracing steps...');
-                resolve(path);
+                let path = thisAStar.createPath(currentNode);
                 console.log(`found path: ${JSON.stringify(path)}`);
+                resolve(path);
+                foundPath = true;
                 break;
             }
 
@@ -57,7 +60,8 @@ AStar.prototype.findPath = function (startPosition, endPosition, map) {
                         nNode = nodeMap[`x:${nx},y:${ny}`];
                     } else {
                         //create new nNode
-                        nNode = new Node(nx, ny, map,currentNode.gCost + distanceCost(currentNode.position, nPosition), distanceCost(nPosition, targetNode.position),currentNode);
+                        nNode = new AStarNode(nx, ny, map,currentNode.gCost + distanceCost(currentNode.position, nPosition), distanceCost(nPosition, targetNode.position),currentNode);
+                        nodeMap[`x:${nx},y:${ny}`] = nNode;
                     }
 
                     //continure if nNode in closedNodes or water biome
@@ -78,13 +82,36 @@ AStar.prototype.findPath = function (startPosition, endPosition, map) {
                 }
             }
         }
-        console.log(`did not find path`);
-        reject('did not find path');
+        if(!foundPath){
+            console.log(`did not find path`);
+            reject('did not find path');
+        }
     });
 }
 
 AStar.prototype.createPath = function (endNode) {
-    return endNode;
+    let path = extendPath([],endNode,{x:0,y:0});
+    return path;
+}
+
+function extendPath(path,node,direction) {
+    let nX = node.position.x - node.parent.position.x;
+    let nY = node.position.y - node.parent.position.y;
+    if (nY != 0 && nX != 0) {
+        nX *= 10 / 14;
+        nY *= 10 / 14;
+    }
+    if (nX == direction.x && nY == direction.y){
+        //increase distance
+        path[0].distance += Math.abs(nX + nY);
+    }else{
+        let newDirection = {x:nX,y:nY};
+        path.unshift(new AStarPath(node.position,newDirection,Math.abs(nX + nY)))
+    }
+    if (node.parent.parent){
+        path = extendPath(path,node.parent,path[0].direction);
+    }
+    return path;
 }
 
 

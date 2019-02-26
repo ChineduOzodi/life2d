@@ -1,9 +1,10 @@
 var Entity = require('./entity');
 var GoapPlanner = require('./goap-planner');
 
-function Person(id, x, y, settingsIndex, baseSpriteIndex) {
+function Person(id, x, y, speed, settingsIndex, baseSpriteIndex) {
   Entity.call(this, 'person', id, x, y, settingsIndex, baseSpriteIndex);
   this.state = 'idle';
+  this.speed = speed;
   this.goal = '';
   this.worldState = [
     {

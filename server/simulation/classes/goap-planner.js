@@ -34,7 +34,8 @@ GoapPlanner.prototype.createPlan = function (map, agent, worldState, actions, go
                 }
             }
             // console.log(`selected action: ${JSON.stringify(selectedAction)}`);
-            console.log(`selected steps (${(leave.runningCost + leave.actionCost)}): ${actionList(leave)}`);
+            console.log(`selected steps (${(selectedAction.runningCost + selectedAction.actionCost)}): ${actionList(selectedAction)}`);
+            resolve(selectedAction);
         }
     })
 }

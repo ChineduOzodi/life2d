@@ -197,7 +197,7 @@ Map.prototype.newPlayer = function (id) {
             shouldBreak = true;
             found = true;
             let v = Math.floor(Math.random() * entitySettings.baseSprites.length);
-            let person = new Person(id, randomX, randomY, i, v);
+            let person = new Person(id, randomX, randomY, entitySettings.baseSpeed, i, v);
             thisMap.people.push(person);
             thisMap.checkMapChunking(randomX, randomY, 1).then(() => {
               resolve(person);
