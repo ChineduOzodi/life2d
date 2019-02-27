@@ -3,7 +3,7 @@ AStar = require('./a-star');
 function GoapPlanner() {
 }
 
-GoapPlanner.prototype.createPlan = function (map, agent, worldState, actions, goal) {
+GoapPlanner.prototype.createPlan = function (map, agent, state, actions, goal) {
     thisPlanner = this;
     return new Promise((resolve, reject) => {
         let usableActions = [];
@@ -15,7 +15,7 @@ GoapPlanner.prototype.createPlan = function (map, agent, worldState, actions, go
         }
         console.log(`usable actions length: ${usableActions.length}`);
         // console.log(`usable actions: ${JSON.stringify(usableActions)}`);
-        let start = new GoapNode(null, 0,0, worldState, null);
+        let start = new GoapNode(null, 0,0, state, null);
         let leaves = [];
         let success = thisPlanner.buildGraph(0, start, leaves, usableActions, goal);
         if (!success) {
@@ -23,21 +23,34 @@ GoapPlanner.prototype.createPlan = function (map, agent, worldState, actions, go
         } else {
             // console.log(`FOUND PLAN(S): ${JSON.stringify(leaves)}`);
             let lowestCost = leaves[0].runningCost + leaves[0].actionCost + leaves[0].distanceCost;
-            let selectedAction = leaves[0];
+            let selectionNode = leaves[0];
             for (let i in leaves) {
                 let leave = leaves[i];
                 let totalCost = leave.runningCost + leave.actionCost + leave.distanceCost;
                 // console.log(`pAction ${(i + 1)} (${totalCost}): ${actionList(leave)}`);
                 if (lowestCost > totalCost) {
                     lowestCost = totalCost;
-                    selectedAction = leave;
+                    selectionNode = leave;
                 }
             }
             // console.log(`selected action: ${JSON.stringify(selectedAction)}`);
-            console.log(`selected steps (${(selectedAction.runningCost + selectedAction.actionCost + selectedAction.distanceCost)}): ${actionList(selectedAction)}`);
-            resolve(selectedAction);
+            console.log(`selected steps (${(selectionNode.runningCost + selectionNode.actionCost + selectionNode.distanceCost)}): ${actionList(selectionNode)}`);
+            let actionPlan = this.constructPlan([],selectionNode);
+            resolve(actionPlan);
         }
     })
+}
+
+GoapPlanner.prototype.constructPlan = function(path,node){
+    if (node.action){
+        for (let i = 0; i < node.actionRepeat; i++){
+            path.unshift(node.action);
+        }
+    }
+    if (node.parent){
+        path = this.constructPlan(path,node.parent);
+    }
+    return path;
 }
 
 GoapPlanner.prototype.isActionUsable = function (map, agent, action) {
@@ -48,6 +61,7 @@ GoapPlanner.prototype.isActionUsable = function (map, agent, action) {
             if (closestEntity) {
                 // console.log(`found closest entity for ${action.name} - ${precondition.name}: ${JSON.stringify(closestEntity)}`);
                 action.distanceCost = distanceCost(closestEntity.position, agent.position) / (agent.speed * 10);
+                action.target = closestEntity;
             } else {
                 console.log(`could not find closest entity for ${action.name} - ${precondition.name}`);
                 return false;

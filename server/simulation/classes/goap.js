@@ -14,13 +14,17 @@ Goap.prototype.loadActions = function (dir) {
             let path = pathList[i];
             console.log(`path: ${path}`);
             let json = fs.readFileSync(path);
-            let data = JSON.parse(json);
-            if (data.goap){
-                for (i in data.goap){
-                    let action = data.goap[i];
-                    thisGoap.actions.push(action);
-                    console.log(`action: ${JSON.stringify(action.name)}`);
+            try {
+                let data = JSON.parse(json);
+                if (data.goap){
+                    for (i in data.goap){
+                        let action = data.goap[i];
+                        thisGoap.actions.push(action);
+                        console.log(`action: ${JSON.stringify(action.name)}`);
+                    }
                 }
+            }catch(err){
+                console.error(`could not read from: ${path}, err: ${err}`);
             }
         }
         resolve();

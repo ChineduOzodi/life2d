@@ -78,12 +78,12 @@
                     "amount": 1
                 }
             ],
-            "cost": 10,
+            "cost": 15,
             "effects": [
                 {
                     "type": "item",
                     "name": "stick",
-                    "amount": 5
+                    "amount": 10
                 }
             ]
         }

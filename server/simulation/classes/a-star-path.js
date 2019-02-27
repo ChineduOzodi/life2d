@@ -11,14 +11,14 @@ AStarPath.prototype.moveAgent = function (agent, deltaTime) {
     agent.position.y += this.direction.y * moveAmount;
 
     //clamp
-    if (direction.x < 0) {
+    if (this.direction.x < 0) {
         agent.position.x = Math.max(this.position.x, agent.position.x);
-    } else if (direction.x > 0) {
+    } else if (this.direction.x > 0) {
         agent.position.x = Math.min(this.position.x, agent.position.x);
     }
-    if (direction.y < 0) {
+    if (this.direction.y < 0) {
         agent.position.y = Math.max(this.position.y, agent.position.y);
-    } else if (direction.y > 0) {
+    } else if (this.direction.y > 0) {
         agent.position.y = Math.min(this.position.y, agent.position.y);
     }
 

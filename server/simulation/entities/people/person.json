@@ -11,14 +11,14 @@
     },
     "baseSprites": [
         {
-            "url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAANlBMVEX////IqpoYIBAMDAyzlIghKj8hHh4AAAAQGAjEGBqjfHBeAAAnOUi2DxIVHjAhMzYBbRv38+8xJpfXAAABbklEQVRYhe2VzZKDMAyDIU4xDRDa93/ZlcJfZy87co+LmKbpQV+E46Rdd+vWX/KvAcPXgOErxDA4n7jf9yeY4vLHSgFbP9CMrwiB/lMRwhagz5njEKhkQoD3K0OvNyPogP4T0CfZTwDcTgQBKiHt5fOjjjLgF0FOcERwjwUAIJ9dAEbWARch6N8J7mH/lSHqt34j5BQoIZY3yzmxjTCY6btoD8vcfjZExg+RABdMPIv8cKq9RioNYFsN7EFAUQgboNJ3TlRAwbq1GlQrEhQJwHNQzObHrtkAUKrQAIgwNwRGKwEANvKUJRVQ4LfaVkcKlCKVonR0YskaoL1GNZZV2gWeAADmuRGqoZ3FTuIr26kkH8kGeC5PiEOSLzUeobTQu+wA/V6HH95lahD9Uu66aeLa00T/Mul+AD4VAKCQmaWXd/AQb2P3cXTHraD/OY/j1gHXt+ofbV1X+K6JGuDwn1MxwpZ7J3Cu+W/d+nf6AdvwDYzjPrS4AAAAAElFTkSuQmCC",
+            "url": "static/simulation/sprites/people/pixelman.png",
             "offsets": {
-                "x": 0.33,
-                "y": 1
+                "x": 0.5,
+                "y": 0.9
             },
-            "width": 64,
-            "height": 64,
-            "scale": 0.046875,
+            "width": 300,
+            "height": 570,
+            "scale": 0.006,
             "minZoom": 8,
             "maxZoom": 1000,
             "otherSpritesIndex": [0]
