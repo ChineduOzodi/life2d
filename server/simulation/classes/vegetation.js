@@ -1,7 +1,7 @@
 var Entity = require('./entity');
 
-function Vegetation(x, y, settingsIndex, baseSpriteIndex) {
-  Entity.call(this,x,y,settingsIndex,baseSpriteIndex)
+function Vegetation(entity, id, x, y, settingsIndex, baseSpriteIndex) {
+  Entity.call(this, entity, id, x, y, settingsIndex, baseSpriteIndex)
 }
 
 Vegetation.prototype = Object.create(Entity.prototype);

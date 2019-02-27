@@ -1,7 +1,10 @@
-function Entity(x, y, settingsIndex, baseSpriteIndex) {
+function Entity(name, id, x, y, settingsIndex, baseSpriteIndex) {
+    this.name = name;
     this.position = createVector(x, y);
     this.settingsIndex = settingsIndex;
     this.baseSpriteIndex = baseSpriteIndex;
+    this.id = id;
+    this.reserved = false;
 }
 
 function createVector(x,y) {

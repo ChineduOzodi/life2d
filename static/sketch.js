@@ -1,9 +1,6 @@
-var maptiles;
-var canDraw = false;
 var loadImg;
 var sMap;
-var chunksJson = [];
-var chunkImages = [];
+var chunkImages = {};
 var spriteImages = {};
 var imageMap;
 var camera;
@@ -31,21 +28,30 @@ function draw() {
   if (imageMap) {
     image(imageMap, - sMap.settings.width * 0.5 * sMap.settings.scale, - sMap.settings.height * 0.5 * sMap.settings.scale, sMap.settings.width * sMap.settings.scale, sMap.settings.height * sMap.settings.scale);
   }
-  for (let i = 0; i < chunksJson.length; i++) {
-    const chunkData = chunksJson[i];
-    image(chunkImages[i], chunkData.topX, chunkData.topY, chunkData.scale * chunkData.width, chunkData.height * chunkData.scale);
-  }
-  if (sMap && sMap.vegetation) {
-    for (let i = 0; i < sMap.vegetation.length; i++) {
-      const entity = Object.assign(new Vegetation, sMap.vegetation[i]);
-      entity.render(camera, spriteImages,sMap.vegetationSettings);
+  try{
+  if (sMap) {
+    for (property in sMap.chunkData) {
+      if (sMap.chunkData.hasOwnProperty(property)) {
+        let chunkData = sMap.chunkData[property];
+        // console.log(chunkData.imageIndex);
+        image(chunkImages[chunkData.name], chunkData.topX, chunkData.topY, chunkData.scale * chunkData.width, chunkData.height * chunkData.scale);
+      }
     }
-  }
-  if (sMap && sMap.people) {
-    for (let i = 0; i < sMap.people.length; i++) {
-      const entity = Object.assign(new Person, sMap.people[i]);
-      entity.render(camera, spriteImages, sMap.peopleSettings)
+    if (sMap.vegetation) {
+      for (let i = 0; i < sMap.vegetation.length; i++) {
+        const entity = Object.assign(new Vegetation, sMap.vegetation[i]);
+        entity.render(camera, spriteImages, sMap.vegetationSettings);
+      }
     }
+    if (sMap.people) {
+      for (let i = 0; i < sMap.people.length; i++) {
+        const entity = Object.assign(new Person, sMap.people[i]);
+        entity.render(camera, spriteImages, sMap.peopleSettings)
+      }
+    }
+  }}
+  catch(e){
+    console.error(e);
   }
   fill(color(255, 100, 100, 100));
   ellipse(camera.x, camera.y, 10 / camera.z);
@@ -75,25 +81,23 @@ function moveCamera() {
 socket.on('map', function (mapData) {
   mapData = JSON.parse(mapData);
   console.log(mapData);
-  sMap = new Map(mapData.settings);
-  sMap.vegetationSettings = mapData.vegetationSettings;
-  // console.log(`vegSettings: ${mapData.vegetationSettings}`);
-  sMap.peopleSettings = mapData.peopleSettings;
-  sMap.people = mapData.people;
-  sMap.vegetation = mapData.vegetation;
+  sMap = Object.assign(new Map, mapData);
+  if (sMap.chunkData) {
+    for (property in sMap.chunkData) {
+      if (sMap.chunkData.hasOwnProperty(property)) {
+        let chunkData = sMap.chunkData[property];
+        // console.log(chunkData);
+        chunkImages[chunkData.name] = loadImage(chunkData.url);
+      }
+    }
+  }
   loadImg = true;
-  // width = w;
-  // height = h;
-  // maptiles = tiles;
-  // console.log(map);
-  // console.log(width);
-  // console.log(height);
 });
 
 socket.on('mapChunkAdd', function (chunkData) {
-  chunksJson.push(chunkData);
+  sMap.chunkData[chunkData.name] = chunkData;
   print(chunkData);
-  chunkImages.push(loadImage(chunkData.url));
+  chunkImages[chunkData.name] = loadImage(chunkData.url);
 });
 
 socket.on('vegetation', (vegetationData) => {
@@ -101,7 +105,9 @@ socket.on('vegetation', (vegetationData) => {
 });
 
 socket.on('people', (data) => {
-  sMap.people = data;
+  if (sMap){
+    sMap.people = data;
+  }
 });
 
 socket.on('camera', (cameraData) => {
@@ -114,4 +120,7 @@ socket.on('camera', (cameraData) => {
 socket.on('vegetationSettings', (vegetationSettings) => {
   sMap.vegetationSettings = vegetationSettings;
   console.log('revieved vegetation settings');
+});
+socket.on('error', (err) => {
+  console.error(`server error: ${err}`);
 });
