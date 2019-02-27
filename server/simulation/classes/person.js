@@ -7,19 +7,7 @@ function Person(id, x, y, speed, settingsIndex, baseSpriteIndex) {
   this.state = 'idle';
   this.speed = speed;
   this.goal = '';
-  this.state = [
-    {
-      "type": "item",
-      "name": "stick",
-      "plural": "sticks",
-      "amount": 6
-    },
-    {
-      "type": "item",
-      "name": "bundled sticks",
-      "amount": 5
-    }
-  ]
+  this.state = [];
   this.actionPlan = [];
   this.currentAction = idleState;
 }
@@ -167,7 +155,7 @@ function doAction(entity, map) {
         console.log(`${entity.name} finished doing action: ${action.name}`);
         entity.isNearTarget = false;
         entity.planIndex++;
-        entity.state = applyAction(entity.state,action);
+        entity.state = applyAction(entity.state, action);
         console.log(`new player state: ${JSON.stringify(entity.state)}`);
         if (entity.planIndex >= entity.plan.length) {
           entity.currentAction = idleState;
@@ -175,6 +163,9 @@ function doAction(entity, map) {
           //TODO: remove entities
         } else {
           entity.currentAction = doAction;
+          if (entity.plan[entity.planIndex].name == action.name){
+            entity.isNearTarget = true;
+          }
         }
       }, (action.cost * 1000));
       entity.currentAction = entityBusy;

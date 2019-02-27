@@ -1,4 +1,4 @@
-function AStarPath(position, direction, distance, isTarget) {
+function AStarPath(position, direction, distance) {
     // this.id = `city:${cityIndex}x:${x}y:${y}`;
     this.position = position;
     this.direction = direction;

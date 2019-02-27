@@ -10,6 +10,9 @@ Goap.prototype.loadActions = function (dir) {
     return new Promise((resolve, reject) => {
         let pathList = walkSync(dir);
         // console.log(JSON.stringify(pathList));
+        if(!pathList){
+            reject(`pathList empty`);
+        }
         for (i in pathList) {
             let path = pathList[i];
             console.log(`path: ${path}`);
