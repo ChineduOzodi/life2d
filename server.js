@@ -6,7 +6,22 @@ var socketIO = require('socket.io');
 var app = express();
 var server = http.Server(app);
 var io = socketIO(server);
+var fs = require("fs");
+//simulation classes
+var Map = require('./server/simulation/classes/map-gen');
+var Goap = require('./server/simulation/classes/goap');
 
+//global variables
+var saveDir = `./server/simulation/save`;
+var settingsPath = `./server/settings/mapgen.json`;
+var goapActionsPath = `./server/simulation/entities`;
+var regenerate = true;
+var players = {};
+var map;
+
+//=========================================
+
+//server setup
 app.set('port', 5000);
 app.use('/static', express.static(__dirname + '/static'));
 // Routing
@@ -18,63 +33,55 @@ server.listen(5000, function () {
   console.log('Starting server on port 5000');
 });
 
-// Add the WebSocket handlers
-io.on('connection', function (socket) {
+// simulation setup
+
+if (regenerate) {
+  console.log('reading map settings json file');
+  let mapSettingsData = fs.readFileSync(settingsPath);
+  let mapSettings = JSON.parse(mapSettingsData);
+  console.log('done reading map settings');
+  map = new Map(mapSettings);
+  map.generate(saveDir);
+}
+else{
+  try {
+    var saveJson = fs.readFileSync(saveDir + `/save.save`);
+    var saveData = JSON.parse(saveJson);
+    map = Object.assign(new Map, saveData);
+    map.correctClasses();
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+//GOAP setup
+var goap = new Goap();
+console.log('laoding goap actions');
+goap.loadActions(goapActionsPath).then(() =>{
+  // console.log(JSON.stringify(goap.actions));
+  console.log(`goap action loading complete`);
 });
 
-//=========================================================
-var Map = require('./server/simulation/map-gen');
-var fs = require("fs");
-var vegLocation = `./server/simulation/entities/vegetation`;
-var savePath = `./server/simulation/save/save.json`;
-
-console.log('reading map settings json file');
-var mapSettingsData = fs.readFileSync('./server/settings/mapgen.json');
-var chunkManifestJson = fs.readFileSync('./server/simulation/map/manifest.json');
-var saveJson = fs.readFileSync(savePath);
-var saveData = JSON.parse(saveJson);
-var mapSettings = JSON.parse(mapSettingsData);
-var chunkManifest = JSON.parse(chunkManifestJson);
-var pendingChunks = [];
-var players = {};
-
-console.log('done reading map settings');
-// console.log(mapSettings);
-var map = new Map(mapSettings, saveData);
-fs.readdir(vegLocation, (err, files) => {
-  if (err) {
-    console.log(err);
-  }
-  else {
-    console.log(`loading vegetation`);
-    files.forEach(x => {
-      let vegJson = fs.readFileSync(`${vegLocation}/${x}`);
-      let vegData = JSON.parse(vegJson);
-      map.vegetationSettings.push(vegData);
-      // console.log(vegData);
-    });
-    io.sockets.emit('vegetationSettings', map.vegetationSettings);
-    console.log(`done loading vegetation`);
-  }
-})
-map.setMap(chunkManifest, savePath);
-// map.generateMapChunk('topLeft', - map.settings.width / 2 * map.settings.scale, - map.settings.height / 2 * map.settings.scale, map.settings.width, map.settings.height, map.settings.scale / 2);
-// map.generateMap().then( () => {
-//   io.sockets.emit('map');
-// });
-//map.generateMap(mWidth, mHeight, 4);
-//console.log(map.render());
-
+// Add the WebSocket handlers
 io.on('connection', function (socket) {
   socket.on('new player', function () {
-    players[socket.id] = {
-      x: 0,
-      y: 0,
-      z: 1,
-      chunkNames: []
-    };
-    io.sockets.emit('map', JSON.stringify(map));
-    io.sockets.emit('vegetationSettings', map.vegetationSettings);
+    console.log(`player ${socket.id} joined`);
+    //create player
+    map.newPlayer(socket.id).then(person => {
+      console.log(`person x: ${person.position.x}, y: ${person.position.y}`);
+      players[socket.id] = {
+        x: person.position.x,
+        y: person.position.y,
+        z: 2
+      };
+      // console.log('has veg settings: ' + JSON.stringify(map.vegetationSettings));
+      io.sockets.emit('map', JSON.stringify(map));
+      io.sockets.emit('camera', players[socket.id]);
+      person.setGoal('build wooden shelter',goap,map);
+    }).catch(err => {
+      console.log(err);
+      io.sockets.emit('error', JSON.stringify(err));
+    });
   });
   socket.on('camera', function (data) {
     let player = players[socket.id] || {};
@@ -85,78 +92,30 @@ io.on('connection', function (socket) {
       players[socket.id] = player;
       players[socket.id].chunkNames = [];
     }
-    checkMapChunking(socket.id);
+    map.checkMapChunking(player.x, player.y, player.z).then((chunkGenerated) => {
+      if (chunkGenerated[0]){
+        let values = chunkGenerated[1]
+        // console.log(`server - chunkGen: ${chunkGenerated}, data: ${JSON.stringify(values)}`);
+        for (let c = 0; c < values.length; c++) {
+          const chunkData = values[c];
+          console.log(`pushing chunk ${chunkData.name} to players`);
+          io.sockets.emit('mapChunkAdd', chunkData);
+        }
+        io.sockets.emit('vegetation', thisMap.vegetation);
+      }      
+    });
     //console.log(`x: ${player.x}, y: ${player.y}, zoom: ${player.z}`)
   });
 });
 
 setInterval(function () {
-  //map.run();
-  //let render = map.render();
-  //console.log(render);
-  //console.log(map.width * map.height);
-  //io.sockets.emit('map',render,map.width, map.height);
+  map.run();
+  io.sockets.emit('people',map.people);
   io.sockets.emit('state', players);
 }, 1000 / 60);
 
-function checkMapChunking(id) {
-  for (let i = 0; i < map.settings.mapChunks.length; i++) {
-    const chunkSettings = map.settings.mapChunks[i];
-    // console.log(players);
-    let player = players[id];
-    //check if player position meets criteria
-    if (player.z > chunkSettings.minZoom &&
-      player.z < chunkSettings.maxZoom) {
-
-      //determine chunk name
-
-      let topX = Math.floor(player.x / (chunkSettings.width * chunkSettings.scale)) * chunkSettings.width * chunkSettings.scale;
-      let topY = Math.floor(player.y / (chunkSettings.height * chunkSettings.scale)) * chunkSettings.height * chunkSettings.scale;
-
-      let chunkName = `x${topX}y${topY}w${chunkSettings.width}h${chunkSettings.height}s${chunkSettings.scale}`;
-
-      if (player.chunkNames.indexOf(chunkName) < 0) {
-        //check if file already exists
-        if (pendingChunks.indexOf(chunkName) >= 0) {
-          console.log(`already generating ${chunkName}`);
-        } else if (chunkManifest.chunkNames.indexOf(chunkName) >= 0) {
-          //file exists
-          console.log('file exists');
-          var chunkSaveData = fs.readFileSync(`./server/simulation/map/${chunkName}.json`);
-          var chunkData = JSON.parse(chunkSaveData);
-          player.chunkNames.push(chunkData.name);
-          console.log(`pushing chunk ${chunkData.name} to player ${id}`);
-          io.sockets.connected[id].emit('mapChunkAdd', chunkData);
-        } else {
-          pendingChunks.push(chunkName);
-          //create map chunk
-          map.generateMapChunk(chunkName, topX, topY, chunkSettings.width, chunkSettings.height, chunkSettings.scale, chunkSettings.generate).then((chunkData) => {
-            chunkManifest.chunkNames.push(chunkName);
-            for (let b = 0; b < pendingChunks.length; b++) {
-              if (pendingChunks[b] === chunkName) {
-                pendingChunks.splice(b, 1);
-              }
-            }
-            player.chunkNames.push(chunkData.name);
-            console.log(`pushing chunk ${chunkData.name} to player ${id}`);
-            // console.log(chunkData);
-            io.sockets.connected[id].emit('mapChunkAdd', chunkData);
-            io.sockets.emit('vegetation', map.vegetation);
-          }).catch(err => {
-            console.log(err);
-            for (let b = 0; b < pendingChunks.length; b++) {
-              if (pendingChunks[b] === chunkName) {
-                pendingChunks.splice(b, 1);
-              }
-            }
-          })
-        }
-      }
-    }
-  }
-}
-
 setInterval(() => {
-  map.saveData(savePath);
-  fs.writeFileSync(`./server/simulation/map/manifest.json`, JSON.stringify(chunkManifest));
+  map.saveData(saveDir);
 }, 60 * 1000);
+
+module.exports = io;

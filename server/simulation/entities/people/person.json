@@ -1,0 +1,40 @@
+{
+    "name": "person",
+    "baseSpeed":1.4,
+    "spawnSettings": {
+        "biomes": [
+            {
+                "name": "land",
+                "chance": 0.001
+            }
+        ]
+    },
+    "baseSprites": [
+        {
+            "url": "static/simulation/sprites/people/pixelman.png",
+            "offsets": {
+                "x": 0.5,
+                "y": 0.9
+            },
+            "width": 300,
+            "height": 570,
+            "scale": 0.006,
+            "minZoom": 8,
+            "maxZoom": 1000,
+            "otherSpritesIndex": [0]
+        }
+    ],
+    "otherSprites":[{
+        "url": "http://2.bp.blogspot.com/-XG9Pgfu6xJ8/Us_Wal0voUI/AAAAAAAAAwg/WR9NeIP4J10/s1600/spr_plant.png",
+            "offsets": {
+                "x": 0.5,
+                "y": 0.5
+            },
+            "width": 16,
+            "height": 16,
+            "scale": 0.1875,
+            "minZoom": 0.1,
+            "maxZoom": 8
+    }
+    ]
+}
