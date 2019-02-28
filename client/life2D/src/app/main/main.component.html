@@ -1,11 +1,11 @@
 <div style="text-align:center">
   <ng-container *ngIf="this.user; else elseTemplate">
-    Logged In!
+    <app-simulation></app-simulation>
   </ng-container>
   <ng-template #elseTemplate>
     <div>
       <h1>
-        Welcome to {{ title }}!
+        Please Login
       </h1>
       <app-login></app-login>
     </div>

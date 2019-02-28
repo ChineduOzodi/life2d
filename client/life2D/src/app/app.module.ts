@@ -7,6 +7,7 @@ import { MainComponent } from './main/main.component';
 import { LoginComponent } from './login/login.component';
 import {SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
 import { fromEventPattern } from 'rxjs';
+import { SimulationComponent } from './simulation/simulation.component';
 
 const config: SocketIoConfig = {url: 'http://localhost:5000', options: {}};
 
@@ -15,7 +16,8 @@ const config: SocketIoConfig = {url: 'http://localhost:5000', options: {}};
     AppComponent,
     NavbarComponent,
     MainComponent,
-    LoginComponent
+    LoginComponent,
+    SimulationComponent
   ],
   imports: [
     BrowserModule,
