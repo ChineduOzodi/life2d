@@ -1,9 +1,15 @@
 <div>
-    <div class="row">
-      <div class="col-sm-auto" id='simulationContainer' #simulationConatiner>
+  <div class="row">
+    <div class="col-sm-auto" id='simulationContainer' #simulationConatiner>
+    </div>
+    <div class="col-sm-2">
+      Menu goes Here:
+      <div>
+        Movement: up - {{movement.up}} down - {{movement.down}} left - {{movement.left}} right - {{movement.right}}
       </div>
-      <div class="col-sm-2">
-        Menu goes Here
+      <div *ngIf="camera">
+        Camera position ( x: {{camera.position.x}} y: {{camera.position.y}} zoom: {{camera.zoomLevel}})
       </div>
     </div>
   </div>
+</div>

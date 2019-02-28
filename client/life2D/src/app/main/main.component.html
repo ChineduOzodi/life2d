@@ -10,5 +10,7 @@
       <app-login></app-login>
     </div>
   </ng-template>
-
+  <span *ngIf="error">A server error occured: {{error}}
+    <input type="button" value="okay" (click)="error = ''">
+  </span>
 </div>

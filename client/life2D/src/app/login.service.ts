@@ -6,10 +6,19 @@ import { Socket } from 'ngx-socket-io';
   providedIn: 'root'
 })
 export class LoginService {
-  user = this.socket.fromEvent<User>('user');
+  userEvent = this.socket.fromEvent<User>('user');
+  private user: User;
   constructor(private socket: Socket) { }
 
   login(username: string) {
     this.socket.emit('login', username);
+  }
+
+  setUser(user: User) {
+    this.user = user;
+  }
+
+  getUser() {
+    return this.user;
   }
 }

@@ -24,7 +24,7 @@ export class MainComponent implements OnInit {
     this.errorSub = this.simulationService.error.subscribe( (err: string) => {
       this.error = err;
     });
-    this.userSub = this.loginService.user.subscribe( (user) => {
+    this.userSub = this.loginService.userEvent.subscribe( (user) => {
       this.user = user;
     });
   }

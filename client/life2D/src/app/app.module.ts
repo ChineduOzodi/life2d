@@ -8,6 +8,7 @@ import { LoginComponent } from './login/login.component';
 import {SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
 import { fromEventPattern } from 'rxjs';
 import { SimulationComponent } from './simulation/simulation.component';
+import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
 
 const config: SocketIoConfig = {url: 'http://localhost:5000', options: {}};
 
@@ -22,7 +23,8 @@ const config: SocketIoConfig = {url: 'http://localhost:5000', options: {}};
   imports: [
     BrowserModule,
     FormsModule,
-    SocketIoModule.forRoot(config)
+    SocketIoModule.forRoot(config),
+    // LoggerModule.forRoot({serverLoggingUrl: '/api/logs', level: NgxLoggerLevel.DEBUG, serverLogLevel: NgxLoggerLevel.OFF}),
   ],
   providers: [],
   bootstrap: [AppComponent]
