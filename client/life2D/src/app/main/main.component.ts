@@ -1,4 +1,8 @@
+import { SimulationService } from './../simulation.service';
+import { Socket } from 'ngx-socket-io';
+import { LoginService } from './../login.service';
 import { Component, OnInit } from '@angular/core';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-main',
@@ -7,9 +11,22 @@ import { Component, OnInit } from '@angular/core';
 })
 export class MainComponent implements OnInit {
   title = 'life2D';
-  constructor() { }
+  user: any;
+  userSub: Subscription;
+  error: string;
+  errorSub: Subscription;
+  constructor(
+    private simulationService: SimulationService,
+    private loginService: LoginService
+    ) { }
 
   ngOnInit() {
+    this.errorSub = this.simulationService.error.subscribe( (err: string) => {
+      this.error = err;
+    });
+    this.userSub = this.loginService.user.subscribe( (user) => {
+      this.user = user;
+    });
   }
 
 }

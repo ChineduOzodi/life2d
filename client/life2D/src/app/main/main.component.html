@@ -1,5 +1,14 @@
 <div style="text-align:center">
-  <h1>
-    Welcome to {{ title }}!
-  </h1>
+  <ng-container *ngIf="this.user; else elseTemplate">
+    Logged In!
+  </ng-container>
+  <ng-template #elseTemplate>
+    <div>
+      <h1>
+        Welcome to {{ title }}!
+      </h1>
+      <app-login></app-login>
+    </div>
+  </ng-template>
+
 </div>

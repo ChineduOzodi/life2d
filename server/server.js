@@ -17,6 +17,7 @@ var settingsPath = `./server/settings/mapgen.json`;
 var goapActionsPath = `./server/simulation/entities`;
 var regenerate = true;
 var players = {};
+var users = {};
 var map;
 
 //=========================================
@@ -64,25 +65,6 @@ goap.loadActions(goapActionsPath).then(() =>{
 
 // Add the WebSocket handlers
 io.on('connection', function (socket) {
-  socket.on('new player', function () {
-    console.log(`player ${socket.id} joined`);
-    //create player
-    map.newPlayer(socket.id).then(person => {
-      console.log(`person x: ${person.position.x}, y: ${person.position.y}`);
-      players[socket.id] = {
-        x: person.position.x,
-        y: person.position.y,
-        z: 2
-      };
-      // console.log('has veg settings: ' + JSON.stringify(map.vegetationSettings));
-      io.sockets.emit('map', JSON.stringify(map));
-      io.sockets.emit('camera', players[socket.id]);
-      person.setGoal('build wooden shelter',goap,map);
-    }).catch(err => {
-      console.log(err);
-      io.sockets.emit('error', JSON.stringify(err));
-    });
-  });
   socket.on('camera', function (data) {
     let player = players[socket.id] || {};
     player.x = data.x;
@@ -106,6 +88,35 @@ io.on('connection', function (socket) {
     });
     //console.log(`x: ${player.x}, y: ${player.y}, zoom: ${player.z}`)
   });
+  socket.on('login', function (username) {
+    console.log(`${username} logged in`);
+    if (users[username]){
+      users[username].sockerId = socket.id;
+      io.to(socket.id).emit('user',users[username]);
+    }else{
+      //create player
+    map.newPlayer(socket.id).then(person => {
+      console.log(`person x: ${person.position.x}, y: ${person.position.y}`);
+      users[username] = {
+        socketId:socket.id,
+        username: username,
+        position: {
+          x: person.position.x,
+          y: person.position.y,
+          z: 2
+        }
+      };
+      // console.log('has veg settings: ' + JSON.stringify(map.vegetationSettings));
+      io.to(socket.id).emit('user',users[username]);
+      io.to(socket.id).emit('map', JSON.stringify(map));
+      io.to(socket.id).emit('camera', users[username].position);
+      person.setGoal('build wooden shelter',goap,map);
+    }).catch(err => {
+      console.log(err);
+      io.sockets.emit('error', JSON.stringify(err));
+    });
+    }
+  }); 
 });
 
 setInterval(function () {
