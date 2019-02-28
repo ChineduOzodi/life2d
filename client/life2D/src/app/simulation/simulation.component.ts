@@ -21,16 +21,16 @@ export class SimulationComponent implements OnInit, AfterViewInit {
     this.createCanvas();
   }
 
-  createCanvas(){
+  createCanvas() {
     new p5(this.sketch);
   }
 
   private sketch(p: any) {
     p.setup = () => {
-      let cnv = p.createCanvas(p.windowWidth * 0.8, p.windowHeight);
+      const cnv = p.createCanvas(p.windowWidth * 0.8, p.windowHeight);
       cnv.parent('simulationContainer');
     };
-  
+
     p.draw = () => {
       p.background(p.color('yellow'));
       p.fill(0);
@@ -39,7 +39,7 @@ export class SimulationComponent implements OnInit, AfterViewInit {
 
     p.windowResized = () => {
       p.resizeCanvas(p.windowWidth, p.windowHeight);
-    }
+    };
   }
 
 }

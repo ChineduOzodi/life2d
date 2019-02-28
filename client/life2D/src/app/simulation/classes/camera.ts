@@ -17,9 +17,9 @@ export class Camera {
     }
 
     zoom(delta: number, screenWidth: number, screenHeight: number) {
-        let newZoom = this.zoomLevel - this.cameraZoomSpeed * delta * this.zoomLevel;
-        let dx = this.position.x - screenWidth / 2;
-        let dy = this.position.y - screenHeight / 2;
+        const newZoom = this.zoomLevel - this.cameraZoomSpeed * delta * this.zoomLevel;
+        const dx = this.position.x - screenWidth / 2;
+        const dy = this.position.y - screenHeight / 2;
 
         this.position.x += dx / this.zoomLevel - dx / newZoom;
         this.position.y += dy / this.zoomLevel - dy / newZoom;
