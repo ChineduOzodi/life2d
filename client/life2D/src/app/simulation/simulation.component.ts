@@ -9,7 +9,7 @@ import * as p5 from 'p5';
 export class SimulationComponent implements OnInit, AfterViewInit {
 
   @ViewChild('simulationConatiner') elementView;
-  width;
+  width: number;
   constructor() { }
 
   ngOnInit() {
