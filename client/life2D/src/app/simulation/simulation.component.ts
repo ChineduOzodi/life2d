@@ -18,17 +18,21 @@ import { Position } from './classes/position';
 })
 export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
 
+  urlHead = 'http://localhost:5000';
   @ViewChild('simulationConatiner') elementView;
   p5: any;
   width: number;
   movement = new Movement();
   camera: Camera;
-  loadImg: boolean;
   sMap: Map;
   chunkImages = {};
   spriteImages = {};
   imageMap: any;
+  loadImg: boolean;
   mapSub: Subscription;
+  mapChunkAddSub: Subscription;
+  mapVegetationSub: Subscription;
+  mapPeopleSub: Subscription;
   constructor(
     private loginService: LoginService,
     private simulationService: SimulationService
@@ -36,12 +40,23 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
   ) { }
 
   ngOnInit() {
-    this.camera = this.loginService.getUser().camera;
-    this.mapSub = this.simulationService.map.subscribe( map => {
+    this.camera = Object.assign( new Camera(new Position(0,0,0),1),this.loginService.getUser().camera);
+    this.mapSub = this.simulationService.map.subscribe(map => {
       console.log(`recieved map`);
       this.sMap = map;
       this.loadImg = true;
     });
+    this.mapChunkAddSub = this.simulationService.chunkData.subscribe(chunkData => {
+      this.sMap.chunkData[chunkData.name] = chunkData;
+      console.log(chunkData);
+    });
+    this.mapChunkAddSub = this.simulationService.vegetation.subscribe(veg => {
+      this.sMap.vegetation = veg;
+    });
+    this.mapPeopleSub = this.simulationService.people.subscribe(people => {
+
+      this.sMap.people = people;
+    })
     // this.logger.debug('camera set', this.camera);
   }
 
@@ -57,77 +72,98 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
 
   createCanvas() {
     this.p5 = new p5(this.sketch);
+    this.p5.sim = this;
+    // console.log(`create sim: ${this.p5.sim}`);
   }
 
   private sketch(p: any) {
     p.setup = () => {
       const cnv = p.createCanvas(p.windowWidth * 0.8, p.windowHeight);
       cnv.parent('simulationContainer');
-    };
+    }
 
     p.draw = () => {
-      p.background('black');
-      p.translate(p.width * 0.5, p.height * 0.5);
-      p.translate(-this.camera.position.x * this.camera.position.z, -this.camera.position.y * this.camera.position.z);
-      p.scale(this.camera.position.z);
-      if (this.imageMap) {
-        p.image(this.imageMap, - this.sMap.settings.width * 0.5 * this.sMap.settings.scale,
-           - this.sMap.settings.height * 0.5 * this.sMap.settings.scale,
-           this.sMap.settings.width * this.sMap.settings.scale, this.sMap.settings.height * this.sMap.settings.scale);
-      }
-      try {
-        if (this.sMap) {
-          for (const property in this.sMap.chunkData) {
-            if (this.sMap.chunkData.hasOwnProperty(property)) {
-              const chunkData = this.sMap.chunkData[property];
-              // console.log(chunkData.imageIndex);
-              p.image(this.chunkImages[chunkData.name], chunkData.topX, chunkData.topY,
-                chunkData.scale * chunkData.width, chunkData.height * chunkData.scale);
-            }
-          }
-          if (this.sMap.vegetation) {
-            for (const vegetation of this.sMap.vegetation) {
-              // const entity: Vegetation = Object.assign(new Vegetation('','',new Position(0,0,0),0,0), vegetation);
-              vegetation.render(p, this.camera, this.spriteImages, this.sMap.vegetationSettings);
-            }
-          }
-          if (this.sMap.people) {
-            for (const person of this.sMap.people) {
-              // const entity: Person = Object.assign(new Person('', new Position(0,0,0),0,0,0), person);
-              person.render(p, this.camera, this.spriteImages, this.sMap.peopleSettings);
-            }
-          }
+      if (p.sim) {
+        p.background('black');
+        p.translate(p.width * 0.5, p.height * 0.5);
+        // console.log(`sim: ${p.sim}`);
+        p.translate(-p.sim.camera.position.x * p.sim.camera.position.z, -p.sim.camera.position.y * p.sim.camera.position.z);
+        p.scale(p.sim.camera.zoomLevel);
+        if (p.sim.imageMap) {
+          p.image(p.sim.imageMap, - p.sim.sMap.settings.width * 0.5 * p.sim.sMap.settings.scale,
+            - p.sim.sMap.settings.height * 0.5 * p.sim.sMap.settings.scale,
+            p.sim.sMap.settings.width * p.sim.sMap.settings.scale, p.sim.sMap.settings.height * p.sim.sMap.settings.scale);
         }
-      } catch (e) {
-        console.error(e);
-      }
-      p.fill(p.color(255, 100, 100, 100));
-      p.ellipse(this.camera.position.x, this.camera.position.y, 10 / this.camera.position.z);
-      if (this.loadImg) {
-        this.loadImg = false;
-        this.imageMap = p.loadImage('./static/map.png');
-        if (this.sMap.chunkData) {
-          for (const property in this.sMap.chunkData) {
-            if (this.sMap.chunkData.hasOwnProperty(property)) {
-              let chunkData = this.sMap.chunkData[property];
-              // console.log(chunkData);
-              this.chunkImages[chunkData.name] = p.loadImage(chunkData.url);
+        try {
+          if (p.sim.sMap) {
+            for (const property in p.sim.sMap.chunkData) {
+              if (p.sim.sMap.chunkData.hasOwnProperty(property)) {
+                const chunkData = p.sim.sMap.chunkData[property];
+                // console.log(chunkData.imageIndex);
+                if (p.sim.chunkImages[chunkData.name]) {
+                  p.image(p.sim.chunkImages[chunkData.name], chunkData.topX, chunkData.topY,
+                    chunkData.scale * chunkData.width, chunkData.height * chunkData.scale);
+                } else {
+                  p.sim.chunkImages[chunkData.name] = p.loadImage(p.sim.urlHead + chunkData.url);
+                  p.image(p.sim.chunkImages[chunkData.name], chunkData.topX, chunkData.topY,
+                    chunkData.scale * chunkData.width, chunkData.height * chunkData.scale);
+                }
+              }
+            }
+            if (p.sim.sMap.vegetation) {
+              for (const vegetation of p.sim.sMap.vegetation) {
+                const entity: Vegetation = Object.assign(new Vegetation('','',new Position(0,0,0),0,0), vegetation);
+                entity.render(p, p.sim.camera, p.sim.spriteImages, p.sim.sMap.vegetationSettings);
+              }
+            }
+            if (p.sim.sMap.people) {
+              for (const person of p.sim.sMap.people) {
+                const entity: Person = Object.assign(new Person('', new Position(0,0,0),0,0,0), person);
+                entity.render(p, p.sim.camera, p.sim.spriteImages, p.sim.sMap.peopleSettings);
+              }
             }
           }
+        } catch (e) {
+          console.error(e);
         }
-        console.log('image(s) loaded');
+        p.fill(p.color(255, 100, 100, 100));
+        p.ellipse(p.sim.camera.position.x, p.sim.camera.position.y, 10 / p.sim.camera.position.z);
+        if (p.sim.loadImg) {
+          p.sim.loadImg = false;
+          p.sim.imageMap = p.loadImage(`${p.sim.urlHead}/static/map.png`);
+          if (p.sim.sMap.chunkData) {
+            for (const property in p.sim.sMap.chunkData) {
+              if (p.sim.sMap.chunkData.hasOwnProperty(property)) {
+                let chunkData = p.sim.sMap.chunkData[property];
+                // console.log(chunkData);
+
+                p.sim.chunkImages[chunkData.name] = p.loadImage(p.sim.urlHead + chunkData.url);
+              }
+            }
+          }
+          console.log('image(s) loaded');
+        }
+        // print(`x: ${p.sim.camera.position.x}, y: ${p.sim.camera.position.y}, zoom: ${p.sim.camera.position.z}`);
+        p.sim.moveCamera();
       }
-      // print(`x: ${this.camera.position.x}, y: ${this.camera.position.y}, zoom: ${this.camera.position.z}`);
-      this.moveCamera();
-    };
+    }
+
+    p.mouseWheel = function(event: any) {
+      p.sim.camera.zoom(event.delta, p.mouseX, p.mouseY, p.width, p.height);
+      p.sim.simulationService.sendCamera(p.sim.camera);
+      // console.log(`z: ${camera.z}`);
+      //uncomment to block page scrolling
+      return false;
+    }
 
     p.windowResized = () => {
       p.resizeCanvas(p.windowWidth * 0.8, p.windowHeight);
-    };
+    }
   }
 
   moveCamera() {
     if (this.camera.translate(this.movement)) {
+      console.log(this.camera);
       this.simulationService.sendCamera(this.camera);
     }
   }

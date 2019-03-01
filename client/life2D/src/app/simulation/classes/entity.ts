@@ -7,7 +7,7 @@ export class Entity {
     baseSpriteIndex: number;
     id: string;
     reserved = false;
-
+    urlHead = 'http://localhost:5000';
     constructor(name: string, id: string, position: Position, settingsIndex: number, baseSpriteIndex: number) {
         this.name = name;
         this.position = position;
@@ -27,7 +27,9 @@ export class Entity {
           let entitySettings: any = settingsList[this.settingsIndex];
           let baseSprite = entitySettings.baseSprites[this.baseSpriteIndex];
           if (!spriteImages[`${baseSprite.url}`]) {
-            spriteImages[`${baseSprite.url}`] = p.loadImage(baseSprite.url);
+            console.log(`baseSprite: ${baseSprite.url[0]}`);
+            let url = (baseSprite.url[0] === '/') ? this.urlHead + baseSprite.url : baseSprite.url;
+            spriteImages[`${baseSprite.url}`] = p.loadImage(url);
           }
           if (camera.zoomLevel >= baseSprite.minZoom && camera.zoomLevel < baseSprite.maxZoom) {
             p.image(spriteImages[`${baseSprite.url}`],
@@ -43,7 +45,8 @@ export class Entity {
                 const otherSpriteIndex = baseSprite.otherSpritesIndex[s];
                 let otherSprite = entitySettings.otherSprites[otherSpriteIndex];
                 if (!spriteImages[`${otherSprite.url}`]) {
-                  spriteImages[`${otherSprite.url}`] = p.loadImage(otherSprite.url);
+                  let url = (otherSprite.url[0] === '/') ? this.urlHead + otherSprite.url : otherSprite.url;
+                  spriteImages[`${otherSprite.url}`] = p.loadImage(url);
                 }
       
                 if (camera.zoomLevel >= otherSprite.minZoom && camera.zoomLevel < otherSprite.maxZoom) {

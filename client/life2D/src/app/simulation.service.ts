@@ -11,10 +11,10 @@ import { Injectable } from '@angular/core';
 export class SimulationService {
   error = this.socket.fromEvent<string>('error');
   map = this.socket.fromEvent<Map>('map');
-  chunkData = this.socket.fromEvent('mapAddChunk');
+  chunkData = this.socket.fromEvent<any>('mapAddChunk');
   vegetation = this.socket.fromEvent<Vegetation[]>('vegetation');
   people = this.socket.fromEvent<Person[]>('people');
-  
+
   constructor(private socket: Socket) { }
 
   sendCamera(camera: Camera) {

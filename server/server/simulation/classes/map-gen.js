@@ -226,7 +226,7 @@ Map.prototype.newPlayer = function (id) {
   })
 }
 
-Map.prototype.checkMapChunking = function (x, y, z) {
+Map.prototype.checkMapChunking = function (camera) {
   let thisMap = this;
   return new Promise((resolve, reject) => {
     let promises = [];
@@ -235,12 +235,12 @@ Map.prototype.checkMapChunking = function (x, y, z) {
       const chunkSettings = thisMap.settings.mapChunks[i];
       // console.log(players);
       //check if player position meets criteria
-      if (z > chunkSettings.minZoom &&
-        z < chunkSettings.maxZoom) {
+      if (camera.zoomLevel > chunkSettings.minZoom &&
+        camera.zoomLevel < chunkSettings.maxZoom) {
 
         //determine chunk name
-        let topX = Math.floor(x / (chunkSettings.width * chunkSettings.scale)) * chunkSettings.width * chunkSettings.scale;
-        let topY = Math.floor(y / (chunkSettings.height * chunkSettings.scale)) * chunkSettings.height * chunkSettings.scale;
+        let topX = Math.floor(camera.position.x / (chunkSettings.width * chunkSettings.scale)) * chunkSettings.width * chunkSettings.scale;
+        let topY = Math.floor(camera.position.y / (chunkSettings.height * chunkSettings.scale)) * chunkSettings.height * chunkSettings.scale;
 
         let chunkName = `x${topX}y${topY}w${chunkSettings.width}h${chunkSettings.height}s${chunkSettings.scale}`;
 
@@ -460,7 +460,7 @@ Map.prototype.generateMapChunk = function (name, topX, topY, width, height, scal
       width: width,
       height: height,
       scale: scale,
-      url: `./static/map/${name}.png`
+      url: `/static/map/${name}.png`
     }
     mapgen.saveMapChunk(name, width, height, map).then(() => {
       mapgen.chunkData[chunkData.name] = chunkData;

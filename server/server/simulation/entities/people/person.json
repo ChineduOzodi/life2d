@@ -11,7 +11,7 @@
     },
     "baseSprites": [
         {
-            "url": "static/simulation/sprites/people/pixelman.png",
+            "url": "/static/simulation/sprites/people/pixelman.png",
             "offsets": {
                 "x": 0.5,
                 "y": 0.9

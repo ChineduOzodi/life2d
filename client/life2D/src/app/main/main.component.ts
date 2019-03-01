@@ -13,6 +13,7 @@ export class MainComponent implements OnInit {
   title = 'life2D';
   user: any;
   userSub: Subscription;
+  logoutSub: Subscription;
   error: string;
   errorSub: Subscription;
   constructor(
@@ -27,6 +28,9 @@ export class MainComponent implements OnInit {
     this.userSub = this.loginService.userEvent.subscribe( (user) => {
       this.user = user;
     });
+    this.logoutSub = this.loginService.logout.subscribe( () => {
+      this.user = undefined;
+    })
   }
 
 }

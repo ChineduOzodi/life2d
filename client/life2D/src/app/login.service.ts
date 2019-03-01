@@ -7,6 +7,7 @@ import { Socket } from 'ngx-socket-io';
 })
 export class LoginService {
   userEvent = this.socket.fromEvent<User>('user');
+  logout = this.socket.fromEvent<any>('logout');
   private user: User;
   constructor(private socket: Socket) { }
 

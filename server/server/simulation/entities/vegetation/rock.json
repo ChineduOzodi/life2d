@@ -10,7 +10,7 @@
     },
     "baseSprites": [
         {
-            "url": "static/simulation/sprites/vegetation/rocks/foliagePack_055.png",
+            "url": "/static/simulation/sprites/vegetation/rocks/foliagePack_055.png",
             "offsets": {
                 "x": 0.5,
                 "y": 1
@@ -23,7 +23,7 @@
             "otherSpritesIndex": []
         },
         {
-            "url": "static/simulation/sprites/vegetation/rocks/foliagePack_057.png",
+            "url": "/static/simulation/sprites/vegetation/rocks/foliagePack_057.png",
             "offsets": {
                 "x": 0.5,
                 "y": 1
