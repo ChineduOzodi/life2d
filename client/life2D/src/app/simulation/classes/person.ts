@@ -47,7 +47,7 @@ export class Person extends Entity {
             const action = this.actionPlan[this.actionPlanIndex];
             console.log('action: ' + JSON.stringify(action));
             if (action.distanceCost > 0 && !this.isNearTarget) {
-                let aStar = new AStar();
+                const aStar = new AStar();
                 aStar.findPath(this.position, action.target.position, map).then((path) => {
                     this.path = path;
                     this.pathIndex = 0;
@@ -55,7 +55,7 @@ export class Person extends Entity {
                 }).catch((err) => {
                     console.log('an error occured with doAction findPath');
                     console.error(err);
-                })
+                });
             } else {
                 // do action
                 console.log(this.name + ' doing action: ' + action.name);
