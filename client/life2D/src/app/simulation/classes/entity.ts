@@ -24,8 +24,8 @@ export class Entity {
           camera.position.y + p.height * 0.5 / camera.zoomLevel > this.position.y &&
           camera.position.y - p.height * 0.5 / camera.zoomLevel < this.position.y
         ) {
-          let entitySettings: any = settingsList[this.settingsIndex];
-          let baseSprite = entitySettings.baseSprites[this.baseSpriteIndex];
+          const entitySettings: any = settingsList[this.settingsIndex];
+          const baseSprite = entitySettings.baseSprites[this.baseSpriteIndex];
           if (!spriteImages[`${baseSprite.url}`]) {
             console.log(`baseSprite: ${baseSprite.url[0]}`);
             let url = (baseSprite.url[0] === '/') ? this.urlHead + baseSprite.url : baseSprite.url;
@@ -39,16 +39,16 @@ export class Entity {
               baseSprite.height * baseSprite.scale
             );
           } else {
-            //check for conditional sprites
+            // check for conditional sprites
             if (baseSprite.otherSpritesIndex && baseSprite.otherSpritesIndex.length > 0) {
               for (let s = 0; s < baseSprite.otherSpritesIndex.length; s++) {
                 const otherSpriteIndex = baseSprite.otherSpritesIndex[s];
-                let otherSprite = entitySettings.otherSprites[otherSpriteIndex];
+                const otherSprite = entitySettings.otherSprites[otherSpriteIndex];
                 if (!spriteImages[`${otherSprite.url}`]) {
                   let url = (otherSprite.url[0] === '/') ? this.urlHead + otherSprite.url : otherSprite.url;
                   spriteImages[`${otherSprite.url}`] = p.loadImage(url);
                 }
-      
+
                 if (camera.zoomLevel >= otherSprite.minZoom && camera.zoomLevel < otherSprite.maxZoom) {
                     p.image(spriteImages[`${otherSprite.url}`],
                     this.position.x - otherSprite.offsets.x * otherSprite.scale,
@@ -56,7 +56,7 @@ export class Entity {
                     otherSprite.width * otherSprite.scale,
                     otherSprite.height * otherSprite.scale
                   );
-                  break;
+                    break;
                 }
               }
             }
