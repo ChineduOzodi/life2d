@@ -1,3 +1,5 @@
+import { Person } from './classes/person';
+import { SimulationService } from './../simulation.service';
 import { LoginService } from './../login.service';
 import { Camera } from './classes/camera';
 import { Movement } from './classes/movement';
@@ -13,7 +15,7 @@ import * as p5 from 'p5';
 export class SimulationComponent implements OnInit, AfterViewInit {
 
   @ViewChild('simulationConatiner') elementView;
-
+  p5: any;
   width: number;
   movement = new Movement();
   camera: Camera;
@@ -24,6 +26,7 @@ export class SimulationComponent implements OnInit, AfterViewInit {
   imageMap: any;
   constructor(
     private loginService: LoginService,
+    private simulationService: SimulationService
     // private logger: NGXLogger
   ) { }
 
@@ -39,7 +42,7 @@ export class SimulationComponent implements OnInit, AfterViewInit {
   }
 
   createCanvas() {
-    new p5(this.sketch);
+    this.p5 = new p5(this.sketch);
   }
 
   private sketch(p: any) {
@@ -54,7 +57,9 @@ export class SimulationComponent implements OnInit, AfterViewInit {
       p.translate(-this.camera.position.x * this.camera.position.z, -this.camera.position.y * this.camera.position.z);
       p.scale(this.camera.position.z);
       if (this.imageMap) {
-        p.image(this.imageMap, - this.sMap.settings.width * 0.5 * this.sMap.settings.scale, - this.sMap.settings.height * 0.5 * this.sMap.settings.scale, this.sMap.settings.width * this.sMap.settings.scale, this.sMap.settings.height * this.sMap.settings.scale);
+        p.image(this.imageMap, - this.sMap.settings.width * 0.5 * this.sMap.settings.scale,
+           - this.sMap.settings.height * 0.5 * this.sMap.settings.scale,
+           this.sMap.settings.width * this.sMap.settings.scale, this.sMap.settings.height * this.sMap.settings.scale);
       }
       try {
         if (this.sMap) {
@@ -62,18 +67,19 @@ export class SimulationComponent implements OnInit, AfterViewInit {
             if (this.sMap.chunkData.hasOwnProperty(property)) {
               const chunkData = this.sMap.chunkData[property];
               // console.log(chunkData.imageIndex);
-              p.image(this.chunkImages[chunkData.name], chunkData.topX, chunkData.topY, chunkData.scale * chunkData.width, chunkData.height * chunkData.scale);
+              p.image(this.chunkImages[chunkData.name], chunkData.topX, chunkData.topY,
+                chunkData.scale * chunkData.width, chunkData.height * chunkData.scale);
             }
           }
           if (this.sMap.vegetation) {
-            for (let i = 0; i < this.sMap.vegetation.length; i++) {
-              const entity = Object.assign(new Vegetation, this.sMap.vegetation[i]);
+            for (const vegetation of this.sMap.vegetation) {
+              const entity = Object.assign(new Vegetation, vegetation);
               entity.render(this.camera, this.spriteImages, this.sMap.vegetationSettings);
             }
           }
           if (this.sMap.people) {
-            for (let i = 0; i < this.sMap.people.length; i++) {
-              const entity = Object.assign(new Person, this.sMap.people[i]);
+            for (const person of this.sMap.people) {
+              const entity = Object.assign(new Person, person);
               entity.render(this.camera, this.spriteImages, this.sMap.peopleSettings);
             }
           }
@@ -99,7 +105,7 @@ export class SimulationComponent implements OnInit, AfterViewInit {
 
   moveCamera() {
     if (this.camera.translate(this.movement)) {
-      this.socket.emit('camera', camera);
+      this.simulationService.sendCamera(this.camera);
     }
   }
 
