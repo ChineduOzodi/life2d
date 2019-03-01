@@ -14,7 +14,7 @@ export class SimulationService {
   chunkData = this.socket.fromEvent('mapAddChunk');
   vegetation = this.socket.fromEvent<Vegetation[]>('vegetation');
   people = this.socket.fromEvent<Person[]>('people');
-  
+
   constructor(private socket: Socket) { }
 
   sendCamera(camera: Camera) {

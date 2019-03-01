@@ -109,7 +109,7 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
         if (this.sMap.chunkData) {
           for (const property in this.sMap.chunkData) {
             if (this.sMap.chunkData.hasOwnProperty(property)) {
-              let chunkData = this.sMap.chunkData[property];
+              const chunkData = this.sMap.chunkData[property];
               // console.log(chunkData);
               this.chunkImages[chunkData.name] = p.loadImage(chunkData.url);
             }
