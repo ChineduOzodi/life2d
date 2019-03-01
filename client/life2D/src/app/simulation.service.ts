@@ -9,7 +9,7 @@ export class SimulationService {
   error = this.socket.fromEvent('error');
   constructor(private socket: Socket) { }
 
-  sendCamera(camera: Camera){
+  sendCamera(camera: Camera) {
     this.socket.emit('camera', camera);
   }
 }

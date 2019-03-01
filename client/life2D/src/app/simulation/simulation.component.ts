@@ -58,9 +58,9 @@ export class SimulationComponent implements OnInit, AfterViewInit {
       }
       try {
         if (this.sMap) {
-          for (let property in this.sMap.chunkData) {
+          for (const property in this.sMap.chunkData) {
             if (this.sMap.chunkData.hasOwnProperty(property)) {
-              let chunkData = this.sMap.chunkData[property];
+              const chunkData = this.sMap.chunkData[property];
               // console.log(chunkData.imageIndex);
               p.image(this.chunkImages[chunkData.name], chunkData.topX, chunkData.topY, chunkData.scale * chunkData.width, chunkData.height * chunkData.scale);
             }
@@ -74,12 +74,11 @@ export class SimulationComponent implements OnInit, AfterViewInit {
           if (this.sMap.people) {
             for (let i = 0; i < this.sMap.people.length; i++) {
               const entity = Object.assign(new Person, this.sMap.people[i]);
-              entity.render(this.camera, this.spriteImages, this.sMap.peopleSettings)
+              entity.render(this.camera, this.spriteImages, this.sMap.peopleSettings);
             }
           }
         }
-      }
-      catch (e) {
+      } catch (e) {
         console.error(e);
       }
       p.fill(p.color(255, 100, 100, 100));
@@ -95,7 +94,7 @@ export class SimulationComponent implements OnInit, AfterViewInit {
 
     p.windowResized = () => {
       p.resizeCanvas(p.windowWidth * 0.8, p.windowHeight);
-    }
+    };
   }
 
   moveCamera() {
