@@ -40,7 +40,7 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
   ) { }
 
   ngOnInit() {
-    this.camera = Object.assign( new Camera(new Position(0,0,0),1),this.loginService.getUser().camera);
+    this.camera = Object.assign( new Camera(new Position(0, 0, 0), 1), this.loginService.getUser().camera);
     this.mapSub = this.simulationService.map.subscribe(map => {
       console.log(`recieved map`);
       this.sMap = map;
@@ -56,7 +56,7 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
     this.mapPeopleSub = this.simulationService.people.subscribe(people => {
 
       this.sMap.people = people;
-    })
+    });
     // this.logger.debug('camera set', this.camera);
   }
 
@@ -80,7 +80,7 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
     p.setup = () => {
       const cnv = p.createCanvas(p.windowWidth * 0.8, p.windowHeight);
       cnv.parent('simulationContainer');
-    }
+    };
 
     p.draw = () => {
       if (p.sim) {
@@ -112,13 +112,13 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
             }
             if (p.sim.sMap.vegetation) {
               for (const vegetation of p.sim.sMap.vegetation) {
-                const entity: Vegetation = Object.assign(new Vegetation('','',new Position(0,0,0),0,0), vegetation);
+                const entity: Vegetation = Object.assign(new Vegetation('', '', new Position(0, 0, 0), 0, 0), vegetation);
                 entity.render(p, p.sim.camera, p.sim.spriteImages, p.sim.sMap.vegetationSettings);
               }
             }
             if (p.sim.sMap.people) {
               for (const person of p.sim.sMap.people) {
-                const entity: Person = Object.assign(new Person('', new Position(0,0,0),0,0,0), person);
+                const entity: Person = Object.assign(new Person('', new Position(0, 0, 0), 0, 0, 0), person);
                 entity.render(p, p.sim.camera, p.sim.spriteImages, p.sim.sMap.peopleSettings);
               }
             }
@@ -134,7 +134,7 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
           if (p.sim.sMap.chunkData) {
             for (const property in p.sim.sMap.chunkData) {
               if (p.sim.sMap.chunkData.hasOwnProperty(property)) {
-                let chunkData = p.sim.sMap.chunkData[property];
+                const chunkData = p.sim.sMap.chunkData[property];
                 // console.log(chunkData);
 
                 p.sim.chunkImages[chunkData.name] = p.loadImage(p.sim.urlHead + chunkData.url);
@@ -146,19 +146,19 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
         // print(`x: ${p.sim.camera.position.x}, y: ${p.sim.camera.position.y}, zoom: ${p.sim.camera.position.z}`);
         p.sim.moveCamera();
       }
-    }
+    };
 
     p.mouseWheel = function(event: any) {
       p.sim.camera.zoom(event.delta, p.mouseX, p.mouseY, p.width, p.height);
       p.sim.simulationService.sendCamera(p.sim.camera);
       // console.log(`z: ${camera.z}`);
-      //uncomment to block page scrolling
+      // uncomment to block page scrolling
       return false;
-    }
+    };
 
     p.windowResized = () => {
       p.resizeCanvas(p.windowWidth * 0.8, p.windowHeight);
-    }
+    };
   }
 
   moveCamera() {

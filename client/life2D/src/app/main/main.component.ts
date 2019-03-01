@@ -30,7 +30,7 @@ export class MainComponent implements OnInit {
     });
     this.logoutSub = this.loginService.logout.subscribe( () => {
       this.user = undefined;
-    })
+    });
   }
 
 }

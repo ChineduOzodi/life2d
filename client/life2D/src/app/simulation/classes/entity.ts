@@ -28,7 +28,7 @@ export class Entity {
           const baseSprite = entitySettings.baseSprites[this.baseSpriteIndex];
           if (!spriteImages[`${baseSprite.url}`]) {
             console.log(`baseSprite: ${baseSprite.url[0]}`);
-            let url = (baseSprite.url[0] === '/') ? this.urlHead + baseSprite.url : baseSprite.url;
+            const url = (baseSprite.url[0] === '/') ? this.urlHead + baseSprite.url : baseSprite.url;
             spriteImages[`${baseSprite.url}`] = p.loadImage(url);
           }
           if (camera.zoomLevel >= baseSprite.minZoom && camera.zoomLevel < baseSprite.maxZoom) {
@@ -45,7 +45,7 @@ export class Entity {
                 const otherSpriteIndex = baseSprite.otherSpritesIndex[s];
                 const otherSprite = entitySettings.otherSprites[otherSpriteIndex];
                 if (!spriteImages[`${otherSprite.url}`]) {
-                  let url = (otherSprite.url[0] === '/') ? this.urlHead + otherSprite.url : otherSprite.url;
+                  const url = (otherSprite.url[0] === '/') ? this.urlHead + otherSprite.url : otherSprite.url;
                   spriteImages[`${otherSprite.url}`] = p.loadImage(url);
                 }
 
