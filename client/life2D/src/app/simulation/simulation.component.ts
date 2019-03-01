@@ -1,18 +1,22 @@
+import { Map } from './interfaces/map';
+import { Subscription } from 'rxjs';
+import { Vegetation } from './classes/vegetation';
 import { Person } from './classes/person';
 import { SimulationService } from './../simulation.service';
 import { LoginService } from './../login.service';
 import { Camera } from './classes/camera';
 import { Movement } from './classes/movement';
-import { Component, OnInit, ViewChild, AfterViewInit, HostListener } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit, HostListener, OnDestroy } from '@angular/core';
 // import { NGXLogger } from 'ngx-logger';
 import * as p5 from 'p5';
+import { Position } from './classes/position';
 
 @Component({
   selector: 'app-simulation',
   templateUrl: './simulation.component.html',
   styleUrls: ['./simulation.component.css']
 })
-export class SimulationComponent implements OnInit, AfterViewInit {
+export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChild('simulationConatiner') elementView;
   p5: any;
@@ -20,10 +24,11 @@ export class SimulationComponent implements OnInit, AfterViewInit {
   movement = new Movement();
   camera: Camera;
   loadImg: boolean;
-  sMap: any;
+  sMap: Map;
   chunkImages = {};
   spriteImages = {};
   imageMap: any;
+  mapSub: Subscription;
   constructor(
     private loginService: LoginService,
     private simulationService: SimulationService
@@ -32,7 +37,16 @@ export class SimulationComponent implements OnInit, AfterViewInit {
 
   ngOnInit() {
     this.camera = this.loginService.getUser().camera;
+    this.mapSub = this.simulationService.map.subscribe( map => {
+      console.log(`recieved map`);
+      this.sMap = map;
+      this.loadImg = true;
+    });
     // this.logger.debug('camera set', this.camera);
+  }
+
+  ngOnDestroy() {
+    this.mapSub.unsubscribe();
   }
 
   ngAfterViewInit() {
@@ -73,14 +87,14 @@ export class SimulationComponent implements OnInit, AfterViewInit {
           }
           if (this.sMap.vegetation) {
             for (const vegetation of this.sMap.vegetation) {
-              const entity = Object.assign(new Vegetation, vegetation);
-              entity.render(this.camera, this.spriteImages, this.sMap.vegetationSettings);
+              // const entity: Vegetation = Object.assign(new Vegetation('','',new Position(0,0,0),0,0), vegetation);
+              vegetation.render(p, this.camera, this.spriteImages, this.sMap.vegetationSettings);
             }
           }
           if (this.sMap.people) {
             for (const person of this.sMap.people) {
-              const entity = Object.assign(new Person, person);
-              entity.render(this.camera, this.spriteImages, this.sMap.peopleSettings);
+              // const entity: Person = Object.assign(new Person('', new Position(0,0,0),0,0,0), person);
+              person.render(p, this.camera, this.spriteImages, this.sMap.peopleSettings);
             }
           }
         }
@@ -92,7 +106,16 @@ export class SimulationComponent implements OnInit, AfterViewInit {
       if (this.loadImg) {
         this.loadImg = false;
         this.imageMap = p.loadImage('./static/map.png');
-        console.log('image loaded');
+        if (this.sMap.chunkData) {
+          for (const property in this.sMap.chunkData) {
+            if (this.sMap.chunkData.hasOwnProperty(property)) {
+              let chunkData = this.sMap.chunkData[property];
+              // console.log(chunkData);
+              this.chunkImages[chunkData.name] = p.loadImage(chunkData.url);
+            }
+          }
+        }
+        console.log('image(s) loaded');
       }
       // print(`x: ${this.camera.position.x}, y: ${this.camera.position.y}, zoom: ${this.camera.position.z}`);
       this.moveCamera();
