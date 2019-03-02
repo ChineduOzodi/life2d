@@ -199,7 +199,7 @@ Map.prototype.newPlayer = function (id) {
             let v = Math.floor(Math.random() * entitySettings.baseSprites.length);
             let person = new Person(id, randomX, randomY, entitySettings.baseSpeed, i, v);
             thisMap.people.push(person);
-            thisMap.checkMapChunking(randomX, randomY, 1).then(() => {
+            thisMap.checkMapChunking({x: randomX, y: randomY}, 1).then(() => {
               resolve(person);
             }).catch((err) => {
               reject(err);
@@ -226,7 +226,7 @@ Map.prototype.newPlayer = function (id) {
   })
 }
 
-Map.prototype.checkMapChunking = function (camera) {
+Map.prototype.checkMapChunking = function (position, zoomLevel) {
   let thisMap = this;
   return new Promise((resolve, reject) => {
     let promises = [];
@@ -235,12 +235,12 @@ Map.prototype.checkMapChunking = function (camera) {
       const chunkSettings = thisMap.settings.mapChunks[i];
       // console.log(players);
       //check if player position meets criteria
-      if (camera.zoomLevel > chunkSettings.minZoom &&
-        camera.zoomLevel < chunkSettings.maxZoom) {
+      if (zoomLevel > chunkSettings.minZoom &&
+        zoomLevel < chunkSettings.maxZoom) {
 
         //determine chunk name
-        let topX = Math.floor(camera.position.x / (chunkSettings.width * chunkSettings.scale)) * chunkSettings.width * chunkSettings.scale;
-        let topY = Math.floor(camera.position.y / (chunkSettings.height * chunkSettings.scale)) * chunkSettings.height * chunkSettings.scale;
+        let topX = Math.floor(position.x / (chunkSettings.width * chunkSettings.scale)) * chunkSettings.width * chunkSettings.scale;
+        let topY = Math.floor(position.y / (chunkSettings.height * chunkSettings.scale)) * chunkSettings.height * chunkSettings.scale;
 
         let chunkName = `x${topX}y${topY}w${chunkSettings.width}h${chunkSettings.height}s${chunkSettings.scale}`;
 

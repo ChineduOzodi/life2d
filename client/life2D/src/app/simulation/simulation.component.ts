@@ -50,7 +50,7 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
       this.sMap.chunkData[chunkData.name] = chunkData;
       console.log(chunkData);
     });
-    this.mapChunkAddSub = this.simulationService.vegetation.subscribe(veg => {
+    this.mapVegetationSub = this.simulationService.vegetation.subscribe(veg => {
       this.sMap.vegetation = veg;
     });
     this.mapPeopleSub = this.simulationService.people.subscribe(people => {
@@ -87,7 +87,7 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
         p.background('black');
         p.translate(p.width * 0.5, p.height * 0.5);
         // console.log(`sim: ${p.sim}`);
-        p.translate(-p.sim.camera.position.x * p.sim.camera.position.z, -p.sim.camera.position.y * p.sim.camera.position.z);
+        p.translate(-p.sim.camera.position.x * p.sim.camera.zoomLevel, -p.sim.camera.position.y * p.sim.camera.zoomLevel);
         p.scale(p.sim.camera.zoomLevel);
         if (p.sim.imageMap) {
           p.image(p.sim.imageMap, - p.sim.sMap.settings.width * 0.5 * p.sim.sMap.settings.scale,
@@ -127,7 +127,7 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
           console.error(e);
         }
         p.fill(p.color(255, 100, 100, 100));
-        p.ellipse(p.sim.camera.position.x, p.sim.camera.position.y, 10 / p.sim.camera.position.z);
+        p.ellipse(p.sim.camera.position.x, p.sim.camera.position.y, 10 / p.sim.camera.zoomLevel);
         if (p.sim.loadImg) {
           p.sim.loadImg = false;
           p.sim.imageMap = p.loadImage(`${p.sim.urlHead}/static/map.png`);
@@ -143,12 +143,12 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
           }
           console.log('image(s) loaded');
         }
-        // print(`x: ${p.sim.camera.position.x}, y: ${p.sim.camera.position.y}, zoom: ${p.sim.camera.position.z}`);
+        // print(`x: ${p.sim.camera.position.x}, y: ${p.sim.camera.position.y}, zoom: ${p.sim.camera.zoomLevel}`);
         p.sim.moveCamera();
       }
     };
 
-    p.mouseWheel = function(event: any) {
+    p.mouseWheel = (event: any) => {
       p.sim.camera.zoom(event.delta, p.mouseX, p.mouseY, p.width, p.height);
       p.sim.simulationService.sendCamera(p.sim.camera);
       // console.log(`z: ${camera.z}`);
@@ -163,7 +163,7 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
 
   moveCamera() {
     if (this.camera.translate(this.movement)) {
-      console.log(this.camera);
+      // console.log(this.camera);
       this.simulationService.sendCamera(this.camera);
     }
   }

@@ -74,12 +74,12 @@ goap.loadActions(goapActionsPath).then(() => {
 // Add the WebSocket handlers
 io.on('connection', function (socket) {
   socket.on('camera', function (camera) {
-    console.log('camera: ' + JSON.stringify(camera));
+    // console.log('camera: ' + JSON.stringify(camera));
     let user = users[players[socket.id]];
-    console.log('user: ' + JSON.stringify(user));
+    // console.log('user: ' + JSON.stringify(user));
     if (user) {
       user.camera = camera;
-      map.checkMapChunking(user.camera).then((chunkGenerated) => {
+      map.checkMapChunking(user.camera.position, user.camera.zoomLevel).then((chunkGenerated) => {
         if (chunkGenerated[0]) {
           let values = chunkGenerated[1]
           // console.log(`server - chunkGen: ${chunkGenerated}, data: ${JSON.stringify(values)}`);

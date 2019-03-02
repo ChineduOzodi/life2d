@@ -11,7 +11,7 @@ import { Injectable } from '@angular/core';
 export class SimulationService {
   error = this.socket.fromEvent<string>('error');
   map = this.socket.fromEvent<Map>('map');
-  chunkData = this.socket.fromEvent<any>('mapAddChunk');
+  chunkData = this.socket.fromEvent<any>('mapChunkAdd');
   vegetation = this.socket.fromEvent<Vegetation[]>('vegetation');
   people = this.socket.fromEvent<Person[]>('people');
 
