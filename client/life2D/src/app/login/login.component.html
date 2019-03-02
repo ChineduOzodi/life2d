@@ -1,0 +1,6 @@
+<div>
+  Enter Login Username:
+  <input type="text" [(ngModel)]='username' placeholder="username" (keydown.enter)="login(username)">
+  <input type="submit" value="Login" (click)="login(username)">
+  <div *ngIf="this.user">Login Successful!</div>
+</div>
