@@ -27,7 +27,7 @@ export class Entity {
           const entitySettings: any = settingsList[this.settingsIndex];
           const baseSprite = entitySettings.baseSprites[this.baseSpriteIndex];
           if (!spriteImages[`${baseSprite.url}`]) {
-            console.log(`baseSprite: ${baseSprite.url[0]}`);
+            // console.log(`baseSprite: ${baseSprite.url[0]}`);
             const url = (baseSprite.url[0] === '/') ? this.urlHead + baseSprite.url : baseSprite.url;
             spriteImages[`${baseSprite.url}`] = p.loadImage(url);
           }
@@ -41,8 +41,7 @@ export class Entity {
           } else {
             // check for conditional sprites
             if (baseSprite.otherSpritesIndex && baseSprite.otherSpritesIndex.length > 0) {
-              for (let s = 0; s < baseSprite.otherSpritesIndex.length; s++) {
-                const otherSpriteIndex = baseSprite.otherSpritesIndex[s];
+              for (const otherSpriteIndex of baseSprite.otherSpritesIndex) {
                 const otherSprite = entitySettings.otherSprites[otherSpriteIndex];
                 if (!spriteImages[`${otherSprite.url}`]) {
                   const url = (otherSprite.url[0] === '/') ? this.urlHead + otherSprite.url : otherSprite.url;

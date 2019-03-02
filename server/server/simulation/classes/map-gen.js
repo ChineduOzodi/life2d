@@ -606,10 +606,6 @@ function distanceCost(pos1, pos2) {
   return sDist * 10 + oDist * 14;
 }
 
-function createVector(x, y) {
-  return { x: x, y: y };
-}
-
 function lerp(min, max, num) {
   return (num - min) / (max - min);
 }
