@@ -1,0 +1,16 @@
+<div style="text-align:center">
+  <ng-container *ngIf="this.user; else elseTemplate">
+    <app-simulation></app-simulation>
+  </ng-container>
+  <ng-template #elseTemplate>
+    <div>
+      <h1>
+        Please Login
+      </h1>
+      <app-login></app-login>
+    </div>
+  </ng-template>
+  <span *ngIf="error">A server error occured: {{error}}
+    <input type="button" value="okay" (click)="error = ''">
+  </span>
+</div>
