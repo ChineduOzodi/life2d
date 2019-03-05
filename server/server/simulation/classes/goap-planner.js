@@ -15,7 +15,7 @@ GoapPlanner.prototype.createPlan = function (map, agent, state, actions, goal) {
         }
         console.log(`usable actions length: ${usableActions.length}`);
         // console.log(`usable actions: ${JSON.stringify(usableActions)}`);
-        let start = new GoapNode(null, 0,0, state, null);
+        let start = new GoapNode(null, 0, 0, state, null);
         let leaves = [];
         let success = thisPlanner.buildGraph(0, start, leaves, usableActions, goal);
         if (!success) {
@@ -35,20 +35,20 @@ GoapPlanner.prototype.createPlan = function (map, agent, state, actions, goal) {
             }
             // console.log(`selected action: ${JSON.stringify(selectedAction)}`);
             console.log(`selected steps (${(selectionNode.runningCost + selectionNode.actionCost + selectionNode.distanceCost)}): ${actionList(selectionNode)}`);
-            let actionPlan = this.constructPlan([],selectionNode);
+            let actionPlan = this.constructPlan([], selectionNode);
             resolve(actionPlan);
         }
     })
 }
 
-GoapPlanner.prototype.constructPlan = function(path,node){
-    if (node.action){
-        for (let i = 0; i < node.actionRepeat; i++){
+GoapPlanner.prototype.constructPlan = function (path, node) {
+    if (node.action) {
+        for (let i = 0; i < node.actionRepeat; i++) {
             path.unshift(node.action);
         }
     }
-    if (node.parent){
-        path = this.constructPlan(path,node.parent);
+    if (node.parent) {
+        path = this.constructPlan(path, node.parent);
     }
     return path;
 }
@@ -56,16 +56,58 @@ GoapPlanner.prototype.constructPlan = function(path,node){
 GoapPlanner.prototype.isActionUsable = function (map, agent, action) {
     for (let i in action.preconditions) {
         let precondition = action.preconditions[i];
-        if (precondition.type == 'reserve' && precondition.reserve == 'entity') {
-            let closestEntity = map.findNearestEntity(precondition.name, map.vegetation, agent.position);
-            if (closestEntity) {
-                // console.log(`found closest entity for ${action.name} - ${precondition.name}: ${JSON.stringify(closestEntity)}`);
-                action.distanceCost = distanceCost(closestEntity.position, agent.position) / (agent.speed * 10);
-                action.target = closestEntity;
-            } else {
-                console.log(`could not find closest entity for ${action.name} - ${precondition.name}`);
-                return false;
+        if (precondition.type == 'reserve') {
+            if (precondition.reserve == 'entity') {
+                let closestEntity = map.findNearestEntity(precondition.name, map.vegetation, agent.position);
+                if (closestEntity) {
+                    // console.log(`found closest entity for ${action.name} - ${precondition.name}: ${JSON.stringify(closestEntity)}`);
+                    action.distanceCost = distanceCost(closestEntity.position, agent.position) / (agent.speed * 10);
+                    action.target = closestEntity;
+                } else {
+                    console.log(`could not find closest entity for ${action.name} - ${precondition.name}`);
+                    return false;
+                }
+            } else if (precondition.reserve == 'location') {
+                // find and add a location to map.locationReserve
+                let dimensions = precondition.dimensions;
+                let xOffset = 0;
+                let yOffset = 0;
+                let attempts = 0;
+                let found = false;
+                while (attempts < 10) {
+                    attempts++;
+                    let blocked = false;
+                    for (let x = agent.position.x + xOffset; x < agent.position.x + xOffset + dimensions.width; x++) {
+                        for (let y = agent.position.y + yOffset; y < agent.position.y + yOffset + dimensions.height; y++) {
+                            if (map.map[`x:${x},y:${y}`] && map.map[`x:${x},y:${y}`].vegIndex >= 0) {
+                                blocked = true;
+                                break;
+                            }
+                        }
+                        if (blocked) {
+                            break;
+                        }
+                    }
+                    if (blocked) {
+                        xOffset = Math.floor(Math.random() * 100) - 50;
+                        yOffset = Math.floor(Math.random() * 100) - 50;
+                    } else {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if ( found){
+                    precondition.position = {x: agent.position.x + xOffset, y:agent.position.y + yOffset }
+                    //TODO: create a location reservation class
+                    map.locationReservations.push();
+                }else{
+                    console.log(`could not find location for ${action.name}`);
+                    return false
+                }
+
             }
+
         }
     }
 

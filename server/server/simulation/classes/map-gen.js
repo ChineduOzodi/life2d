@@ -21,6 +21,7 @@ function Map(settings) {
   this.people = [];
   this.chunkData = {};
   this.id = 1;
+  this.map = {};
 }
 
 Map.prototype.run = function () {
@@ -417,7 +418,7 @@ Map.prototype.generateMapChunk = function (name, topX, topY, width, height, scal
 
       //add biomes
       // console.log(map[iX][iY].height);
-      var b = biome(map[iX][iY].height, this.settings.biomes);
+      let b = biome(map[iX][iY].height, this.settings.biomes);
       map[iX][iY].biome = b[0];
       map[iX][iY].biomeColor = b[1];
       //generate entities
@@ -439,6 +440,11 @@ Map.prototype.generateMapChunk = function (name, topX, topY, width, height, scal
                 //spawn watever vegetation is needed
                 let entity = new Vegetation(vegSettings.name, this.id++, x, y, i, v);
                 this.vegetation.push(entity);
+                this.map[`x:${x},y:${y}`] = {
+                  biome: b[0],
+                  height: map[iX][iY].height,
+                  vegIndex: this.vegetation.length - 1
+                };
               }
             }
 
