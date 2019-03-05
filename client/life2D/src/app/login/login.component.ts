@@ -9,7 +9,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit, OnDestroy {
-
+  loggingIn = false;
   user: User;
   private userSub: Subscription;
   constructor(
@@ -31,6 +31,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   login(username: string) {
     this.loginService.login(username);
+    this.loggingIn = true;
   }
 
 }

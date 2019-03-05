@@ -63,7 +63,8 @@
                     "amount": 30
                 },
                 {
-                    "type": "destroy"
+                    "type": "destroy",
+                    "target": "self"
                 }
             ]
         },

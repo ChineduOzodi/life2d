@@ -7,7 +7,13 @@ function Person(id, x, y, speed, settingsIndex, baseSpriteIndex) {
   this.state = 'idle';
   this.speed = speed;
   this.goal = '';
-  this.state = [];
+  this.state = [
+    {
+      "type": "item",
+      "name": "stone axe",
+      "amount": 1
+  }
+  ];
   this.actionPlan = [];
   this.currentAction = idleState;
 }
@@ -156,7 +162,10 @@ function doAction(entity, map) {
         entity.isNearTarget = false;
         entity.planIndex++;
         entity.state = applyAction(entity.state, action);
-        console.log(`new player state: ${JSON.stringify(entity.state)}`);
+        // console.log(`new player state: ${JSON.stringify(entity.state)}`);
+        if (action.target && action.target.destroy) {
+          map.updateVegetation = true;
+        }
         if (entity.planIndex >= entity.plan.length) {
           entity.currentAction = idleState;
           console.log("plan complete!");
@@ -199,12 +208,14 @@ Person.prototype.setGoal = function (goal, goap, map) {
 
 function followPath(entity, map) {
   if (entity.path) {
-    if (entity.path[entity.pathIndex].moveAgent(entity, 1 / 60)) {
+    let distanceLeft = entity.path[entity.pathIndex].moveAgent(entity, 1 / 60);
+    if (entity.path.length - 1 == entity.pathIndex && distanceLeft <= 1) {
+      //reached target
+      entity.isNearTarget = true;
+      entity.currentAction = doAction;
+    }else if (distanceLeft == 0){
+      //move to next leg of path
       entity.pathIndex++;
-      if (entity.pathIndex >= entity.path.length) {
-        entity.isNearTarget = true;
-        entity.currentAction = doAction;
-      }
     }
   } else {
     console.log(`no path to follow`);
@@ -254,6 +265,12 @@ var applyAction = function (state, action) {
     } else if (effect.type === 'own') {
       let newItemCondition = Object.assign({}, effect);
       newState.push(newItemCondition);
+    } else if (effect.type === 'destroy') {
+      if (action.target) {
+        action.target.destroy = true;
+      } else {
+        console.error('did not find target to destroy');
+      }
     }
   }
 

@@ -126,6 +126,7 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
         } catch (e) {
           console.error(e);
         }
+        p.noStroke();
         p.fill(p.color(255, 100, 100, 100));
         p.ellipse(p.sim.camera.position.x, p.sim.camera.position.y, 10 / p.sim.camera.zoomLevel);
         if (p.sim.loadImg) {

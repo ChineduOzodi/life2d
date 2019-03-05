@@ -22,12 +22,17 @@ AStarPath.prototype.moveAgent = function (agent, deltaTime) {
         agent.position.y = Math.min(this.position.y, agent.position.y);
     }
 
-    //check if reached target
-    if (this.position.x == agent.position.x && this.position.y == agent.position.y) {
-        return true;
-    } else {
-        return false;
-    }
+    //return distance to target
+    return distance(this.position,agent.position);
 }
+
+function distance(pos1, pos2) {
+    xDist = math.abs(pos1.x - pos2.x);
+    yDist = math.abs(pos1.y - pos2.y);
+    sDist = math.abs(xDist - yDist);
+    oDist = math.max(xDist, yDist) - sDist;
+  
+    return sDist + oDist * 1.4;
+  }
 
 module.exports = AStarPath;

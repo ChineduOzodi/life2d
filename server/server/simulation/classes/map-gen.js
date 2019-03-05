@@ -504,7 +504,7 @@ Map.prototype.findNearestEntity = function(entityName, location, position) {
   for (let i in location) {
     let entity = location[i];
     let entityDistance = distanceCost(entity.position, position);
-    if (entityDistance < closestDistance && entityName === entity.name){
+    if (!entity.destroy && entityDistance < closestDistance && entityName === entity.name){
       closestEntity = entity;
       closestDistance = entityDistance;
     }

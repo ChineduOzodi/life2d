@@ -88,7 +88,6 @@ io.on('connection', function (socket) {
             console.log(`pushing chunk ${chunkData.name} to players`);
             io.sockets.emit('mapChunkAdd', chunkData);
           }
-          io.sockets.emit('vegetation', thisMap.vegetation);
         }
       });
     } else {
@@ -128,8 +127,17 @@ setInterval(function () {
   map.run();
   io.sockets.emit('people', map.people);
   io.sockets.emit('state', players);
+  if (map.updateVegetation) {
+    map.updateVegetation = false;
+    io.sockets.emit('vegetation', map.vegetation);
+  }
 }, 1000 / 60);
 
+// setInterval(function () {
+//   map.run();
+//   if (thisMap.ap)
+//   io.sockets.emit('vegetation', thisMap.vegetation);
+// }, 1000 / 20);
 setInterval(() => {
   map.saveData(saveDir);
 }, 60 * 1000);

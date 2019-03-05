@@ -56,7 +56,8 @@
                     "amount": 1
                 },
                 {
-                    "type": "destroy"
+                    "type": "destroy",
+                    "target": "self"
                 }
             ]
         }
