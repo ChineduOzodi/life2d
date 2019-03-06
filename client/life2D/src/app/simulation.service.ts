@@ -1,3 +1,4 @@
+import { LocationReserve } from './simulation/classes/location-reserve';
 import { Person } from './simulation/classes/person';
 import { Vegetation } from './simulation/classes/vegetation';
 import { Map } from './simulation/interfaces/map';
@@ -14,10 +15,15 @@ export class SimulationService {
   chunkData = this.socket.fromEvent<any>('mapChunkAdd');
   vegetation = this.socket.fromEvent<Vegetation[]>('vegetation');
   people = this.socket.fromEvent<Person[]>('people');
-
+  locationReservations = this.socket.fromEvent<LocationReserve[]>('locationReservations');
+  goapActions = this.socket.fromEvent<any[]>('goapActions');
   constructor(private socket: Socket) { }
 
   sendCamera(camera: Camera) {
     this.socket.emit('camera', camera);
+  }
+
+  setGoal(goal: string) {
+    this.socket.emit('setPersonGoal', goal);
   }
 }

@@ -22,6 +22,7 @@ function Map(settings) {
   this.chunkData = {};
   this.id = 1;
   this.map = {};
+  this.locationReservations = [];
 }
 
 Map.prototype.run = function () {

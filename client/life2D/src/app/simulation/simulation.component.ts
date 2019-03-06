@@ -25,14 +25,20 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
   movement = new Movement();
   camera: Camera;
   sMap: Map;
+  actions: any[];
   chunkImages = {};
   spriteImages = {};
   imageMap: any;
   loadImg: boolean;
+
+
   mapSub: Subscription;
   mapChunkAddSub: Subscription;
   mapVegetationSub: Subscription;
   mapPeopleSub: Subscription;
+  locationReservationsSub: Subscription;
+  goapActionsSub: Subscription;
+
   constructor(
     private loginService: LoginService,
     private simulationService: SimulationService
@@ -57,6 +63,14 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
 
       this.sMap.people = people;
     });
+    this.locationReservationsSub = this.simulationService.locationReservations.subscribe( reservations => {
+      this.sMap.locationReservations = reservations;
+      console.log('location reservations updated');
+    });
+    this.goapActionsSub = this.simulationService.goapActions.subscribe( actions => {
+      console.log('received actions');
+      this.actions = actions;
+    })
     // this.logger.debug('camera set', this.camera);
   }
 
@@ -167,6 +181,10 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
       // console.log(this.camera);
       this.simulationService.sendCamera(this.camera);
     }
+  }
+
+  setGoal(index) {
+    this.simulationService.setGoal(this.actions[index].name);
   }
 
   @HostListener('document:keydown', ['$event']) onKeyDown(event: any) {

@@ -1,4 +1,5 @@
 AStar = require('./a-star');
+LocationReserve = require('./location-reserve');
 
 function GoapPlanner() {
 }
@@ -35,16 +36,21 @@ GoapPlanner.prototype.createPlan = function (map, agent, state, actions, goal) {
             }
             // console.log(`selected action: ${JSON.stringify(selectedAction)}`);
             console.log(`selected steps (${(selectionNode.runningCost + selectionNode.actionCost + selectionNode.distanceCost)}): ${actionList(selectionNode)}`);
-            let actionPlan = this.constructPlan([], selectionNode);
+            let actionPlan = this.constructPlan([], selectionNode, map);
             resolve(actionPlan);
         }
     })
 }
 
-GoapPlanner.prototype.constructPlan = function (path, node) {
+GoapPlanner.prototype.constructPlan = function (path, node, map) {
     if (node.action) {
         for (let i = 0; i < node.actionRepeat; i++) {
             path.unshift(node.action);
+            if (node.action.hasReserve) {
+                map.locationReservations.push(node.action.target);
+                map.locationReserveChanged = true;
+                console.log(`created location reservation for ${node.action.name}`);
+            }
         }
     }
     if (node.parent) {
@@ -97,17 +103,16 @@ GoapPlanner.prototype.isActionUsable = function (map, agent, action) {
                     }
                 }
 
-                if ( found){
-                    precondition.position = {x: agent.position.x + xOffset, y:agent.position.y + yOffset }
-                    //TODO: create a location reservation class
-                    map.locationReservations.push();
-                }else{
+                if (found) {
+                    let position = { x: agent.position.x + xOffset, y: agent.position.y + yOffset };
+                    action.hasReserve = true;
+                    action.target = new LocationReserve(position, dimensions.width, dimensions.height, agent.id);
+                    action.distanceCost = distanceCost(position, agent.position) / (agent.speed * 10);
+                } else {
                     console.log(`could not find location for ${action.name}`);
                     return false
                 }
-
             }
-
         }
     }
 

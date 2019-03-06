@@ -1,3 +1,4 @@
+import { LocationReserve } from './../classes/location-reserve';
 import { Vegetation } from './../classes/vegetation';
 import { Person } from './../classes/person';
 export interface Map {
@@ -14,4 +15,5 @@ export interface Map {
     people: Person[];
     chunkData: {};
     map: {};
+    locationReservations: LocationReserve[];
 }

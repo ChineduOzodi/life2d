@@ -27,7 +27,7 @@ var map;
 //server setup
 app.set('port', 5000);
 
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
@@ -73,6 +73,34 @@ goap.loadActions(goapActionsPath).then(() => {
 
 // Add the WebSocket handlers
 io.on('connection', function (socket) {
+  socket.on('login', function (username) {
+    if (users[username]) {
+      console.log(`${username} logged in`);
+      players[socket.id] = username;
+      delete players[users[username].socketId]
+      users[username].socketId = socket.id;
+      io.to(socket.id).emit('user', users[username]);
+      io.to(socket.id).emit('map', map);
+      io.to(socket.id).emit('goapActions', goap.actions);
+    } else {
+      //create player
+      console.log(`new user ${username} logged in`);
+      map.newPlayer(socket.id).then(person => {
+        console.log(`person x: ${person.position.x}, y: ${person.position.y}`);
+        users[username] = new User(socket.id, username, socket.id, new Camera(person.position, 5));
+        players[socket.id] = username;
+        // console.log('has veg settings: ' + JSON.stringify(map.vegetationSettings));
+        io.to(socket.id).emit('user', users[username]);
+        io.to(socket.id).emit('map', map);
+        io.to(socket.id).emit('goapActions', goap.actions);
+        person.setGoal('build wooden shelter', goap, map);
+      }).catch(err => {
+        console.log(err);
+        io.to(socket.id).emit('error', JSON.stringify(err));
+      });
+    }
+    
+  });
   socket.on('camera', function (camera) {
     // console.log('camera: ' + JSON.stringify(camera));
     let user = users[players[socket.id]];
@@ -93,33 +121,27 @@ io.on('connection', function (socket) {
     } else {
       io.to(socket.id).emit('logout');
     }
-    
+
     //console.log(`x: ${player.x}, y: ${player.y}, zoom: ${player.z}`)
   });
-  socket.on('login', function (username) {
-    if (users[username]) {
-      console.log(`${username} logged in`);
-      players[socket.id] = username;
-      delete players[users[username].socketId]
-      users[username].socketId = socket.id;
-      io.to(socket.id).emit('user', users[username]);
-      io.to(socket.id).emit('map', map);
+  socket.on('setPersonGoal', function (goal) {
+    // console.log('camera: ' + JSON.stringify(camera));
+    let user = users[players[socket.id]];
+    // console.log('user: ' + JSON.stringify(user));
+    if (user) {
+      let person = map.people.find(x => x.id == user.username);
+      if (!person.gaol) {
+        person.gaol = goal;
+        person.setGoal(goal, goap, map);
+      }
+      else {
+        io.to(socket.id).emit('error', "person already has a goal");
+      }
     } else {
-      //create player
-      console.log(`new user ${username} logged in`);
-      map.newPlayer(socket.id).then(person => {
-        console.log(`person x: ${person.position.x}, y: ${person.position.y}`);
-        users[username] = new User(socket.id,username, new Camera(person.position,5));
-        players[socket.id] = username;
-        // console.log('has veg settings: ' + JSON.stringify(map.vegetationSettings));
-        io.to(socket.id).emit('user', users[username]);
-        io.to(socket.id).emit('map', map);
-        person.setGoal('build wooden shelter', goap, map);
-      }).catch(err => {
-        console.log(err);
-        io.sockets.emit('error', JSON.stringify(err));
-      });
+      io.to(socket.id).emit('logout');
     }
+
+    //console.log(`x: ${player.x}, y: ${player.y}, zoom: ${player.z}`)
   });
 });
 
@@ -130,6 +152,10 @@ setInterval(function () {
   if (map.updateVegetation) {
     map.updateVegetation = false;
     io.sockets.emit('vegetation', map.vegetation);
+  }
+  if (map.locationReserveChanged) {
+    map.locationReserveChanged = false;
+    io.sockets.emit('locationReservations', map.locationReservations);
   }
 }, 1000 / 60);
 
