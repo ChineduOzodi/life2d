@@ -10,7 +10,7 @@ export class Person extends Entity {
     isNearTarget = false;
     path = [];
     pathIndex: number;
-
+    goals = [];
     constructor(id: string, position: Position, speed: number, settingsIndex: number, baseSpriteIndex: number) {
         super('person', id, position, settingsIndex, baseSpriteIndex);
 

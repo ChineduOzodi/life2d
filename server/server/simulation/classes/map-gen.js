@@ -25,12 +25,12 @@ function Map(settings) {
   this.locationReservations = [];
 }
 
-Map.prototype.run = function () {
+Map.prototype.run = function (goap) {
   if (this.people.length > 0) {
     // console.log(JSON.stringify(this.people));
     for (i in this.people) {
       let person = this.people[i];
-      person.run(this);
+      person.run(this, goap);
     }
   }
 }

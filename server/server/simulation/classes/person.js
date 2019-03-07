@@ -6,13 +6,13 @@ function Person(id, x, y, speed, settingsIndex, baseSpriteIndex) {
   Entity.call(this, 'person', id, x, y, settingsIndex, baseSpriteIndex);
   this.state = 'idle';
   this.speed = speed;
-  this.goal = '';
+  this.goals = [];
   this.state = [
     {
       "type": "item",
       "name": "stone axe",
       "amount": 1
-  }
+    }
   ];
   this.actionPlan = [];
   this.currentAction = idleState;
@@ -20,12 +20,13 @@ function Person(id, x, y, speed, settingsIndex, baseSpriteIndex) {
 
 Person.prototype = Object.create(Entity.prototype);
 
-Person.prototype.run = function (map) {
-  this.currentAction(this, map);
+Person.prototype.run = function (map, goap) {
+  this.currentAction(this, map, goap);
 }
 
-function idleState(entity, map) {
+function idleState(entity, map, goap) {
   // console.log('waiting');
+  entity.checkGoals(goap, map);
 }
 
 function doAction(entity, map) {
@@ -57,11 +58,11 @@ function doAction(entity, map) {
         if (entity.planIndex >= entity.plan.length) {
           entity.currentAction = idleState;
           console.log("plan complete!");
-          entity.goal = '';
+          entity.goals.splice(0, 1);
           //TODO: remove entities
         } else {
           entity.currentAction = doAction;
-          if (entity.plan[entity.planIndex].name == action.name){
+          if (entity.plan[entity.planIndex].name == action.name) {
             entity.isNearTarget = true;
           }
         }
@@ -78,22 +79,28 @@ function entityBusy(entity, map) {
 
 }
 
-Person.prototype.setGoal = function (goal, goap, map) {
-  let goalAction = goap.findAction(goal);
-  if (goalAction) {
-    let goapPlanner = new GoapPlanner();
-    goapPlanner.createPlan(map, this, this.state, goap.actions, goalAction.effects).then((plan) => {
-      if (plan) {
-        this.goal = goal;
-        this.plan = plan;
-        this.planIndex = 0;
-        this.currentAction = doAction;
-        this.isNearTarget = false;
-      }
-    });
-  } else {
-    console.log(`could not find a goal action(s) for: ${goal}`);
+Person.prototype.checkGoals = function (goap, map) {
+  if (this.goals.length > 0) {
+    let goal = this.goals[0];
+    let goalAction = goap.findAction(goal);
+    if (goalAction) {
+      let goapPlanner = new GoapPlanner();
+      goapPlanner.createPlan(map, this, this.state, goap.actions, goalAction.effects).then((plan) => {
+        if (plan) {
+          this.plan = plan;
+          this.planIndex = 0;
+          this.currentAction = doAction;
+          this.isNearTarget = false;
+        }
+      }).catch( err => {
+        console.err(`an error with creating plan for ${goal} occurred`);
+        console.error(err);
+      });
+    } else {
+      console.log(`could not find a goal action(s) for: ${goal}`);
+    }
   }
+
 }
 
 function followPath(entity, map) {
@@ -103,7 +110,7 @@ function followPath(entity, map) {
       //reached target
       entity.isNearTarget = true;
       entity.currentAction = doAction;
-    }else if (distanceLeft == 0){
+    } else if (distanceLeft == 0) {
       //move to next leg of path
       entity.pathIndex++;
     }

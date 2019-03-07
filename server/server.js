@@ -130,13 +130,7 @@ io.on('connection', function (socket) {
     // console.log('user: ' + JSON.stringify(user));
     if (user) {
       let person = map.people.find(x => x.id == user.username);
-      if (!person.goal) {
-        person.goal = goal;
-        person.setGoal(goal, goap, map);
-      }
-      else {
-        io.to(socket.id).emit('error', "person already has a goal");
-      }
+      person.goals.push(goal);
     } else {
       io.to(socket.id).emit('logout');
     }
@@ -146,7 +140,7 @@ io.on('connection', function (socket) {
 });
 
 setInterval(function () {
-  map.run();
+  map.run(goap);
   io.sockets.emit('people', map.people);
   io.sockets.emit('state', players);
   if (map.updateVegetation) {

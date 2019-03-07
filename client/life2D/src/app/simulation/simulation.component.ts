@@ -31,7 +31,7 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
   imageMap: any;
   loadImg: boolean;
 
-
+  person: Person;
   mapSub: Subscription;
   mapChunkAddSub: Subscription;
   mapVegetationSub: Subscription;
@@ -60,8 +60,8 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
       this.sMap.vegetation = veg;
     });
     this.mapPeopleSub = this.simulationService.people.subscribe(people => {
-
       this.sMap.people = people;
+      this.person = people.find(x => x.id == this.loginService.getUser().username);
     });
     this.locationReservationsSub = this.simulationService.locationReservations.subscribe( reservations => {
       this.sMap.locationReservations = reservations;
