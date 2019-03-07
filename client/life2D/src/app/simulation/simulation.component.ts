@@ -69,6 +69,7 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
     });
     this.goapActionsSub = this.simulationService.goapActions.subscribe( actions => {
       console.log('received actions');
+      console.log(actions);
       this.actions = actions;
     });
     // this.logger.debug('camera set', this.camera);

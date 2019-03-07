@@ -85,7 +85,7 @@ io.on('connection', function (socket) {
     } else {
       //create player
       console.log(`new user ${username} logged in`);
-      map.newPlayer(socket.id).then(person => {
+      map.newPlayer(username).then(person => {
         console.log(`person x: ${person.position.x}, y: ${person.position.y}`);
         users[username] = new User(socket.id, username, socket.id, new Camera(person.position, 5));
         players[socket.id] = username;
@@ -130,8 +130,8 @@ io.on('connection', function (socket) {
     // console.log('user: ' + JSON.stringify(user));
     if (user) {
       let person = map.people.find(x => x.id == user.username);
-      if (!person.gaol) {
-        person.gaol = goal;
+      if (!person.goal) {
+        person.goal = goal;
         person.setGoal(goal, goap, map);
       }
       else {
@@ -159,11 +159,6 @@ setInterval(function () {
   }
 }, 1000 / 60);
 
-// setInterval(function () {
-//   map.run();
-//   if (thisMap.ap)
-//   io.sockets.emit('vegetation', thisMap.vegetation);
-// }, 1000 / 20);
 setInterval(() => {
   map.saveData(saveDir);
 }, 60 * 1000);
