@@ -48,7 +48,7 @@
                     "amount": 1
                 }
             ],
-            "cost": 2,
+            "cost": 1,
             "effects": [
                 {
                     "type": "item",

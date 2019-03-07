@@ -93,7 +93,7 @@ io.on('connection', function (socket) {
         io.to(socket.id).emit('user', users[username]);
         io.to(socket.id).emit('map', map);
         io.to(socket.id).emit('goapActions', goap.actions);
-        person.setGoal('build wooden shelter', goap, map);
+        // person.setGoal('build wooden shelter', goap, map);
       }).catch(err => {
         console.log(err);
         io.to(socket.id).emit('error', JSON.stringify(err));

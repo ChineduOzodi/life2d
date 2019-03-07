@@ -3,7 +3,7 @@
     "type":"building",
     "goap": [
         {
-            "name": "build wooden shelter",
+            "name": "build log shelter",
             "preconditions": [
                 {
                     "type": "item",
@@ -13,10 +13,10 @@
                 {
                     "type": "reserve",
                     "reserve": "location",
-                    "dimensions": {"width":4,"height":4}
+                    "dimensions": {"width":2,"height":2}
                 }
             ],
-            "cost": 180,
+            "cost": 10,
             "effects": [
                 {
                     "type": "own",
@@ -26,7 +26,7 @@
             ]
         },
         {
-            "name": "build wooden shelter",
+            "name": "build stick shelter",
             "preconditions": [
                 {
                     "type": "item",
@@ -36,10 +36,10 @@
                 {
                     "type": "reserve",
                     "reserve": "location",
-                    "dimensions": {"width":4,"height":4}
+                    "dimensions": {"width":2,"height":2}
                 }
             ],
-            "cost": 200,
+            "cost": 12,
             "effects": [
                 {
                     "type": "own",

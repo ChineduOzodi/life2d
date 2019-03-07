@@ -7,8 +7,8 @@ function AStar() {
 AStar.prototype.findPath = function (startPosition, endPosition, map) {
     let closedNodes = [];
     let openNodes = [];
-    let startNode = new AStarNode(startPosition.x, startPosition.y, map, 0, distanceCost(startPosition, endPosition));
-    let targetNode = new AStarNode(endPosition.x, endPosition.y, map);
+    let startNode = new AStarNode(Math.round(startPosition.x), Math.round(startPosition.y), map, 0, distanceCost(startPosition, endPosition));
+    let targetNode = new AStarNode(Math.round(endPosition.x), Math.round(endPosition.y), map);
     openNodes.push(startNode);
     thisAStar = this;
     let nodeMap = {};

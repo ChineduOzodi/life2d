@@ -1,6 +1,6 @@
 {
     "name": "person",
-    "baseSpeed":1.4,
+    "baseSpeed":20,
     "spawnSettings": {
         "biomes": [
             {
