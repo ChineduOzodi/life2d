@@ -17,7 +17,7 @@ import { Position } from './classes/position';
   styleUrls: ['./simulation.component.css']
 })
 export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
-
+  debug = false;
   urlHead = 'http://localhost:5000';
   @ViewChild('simulationConatiner') elementView;
   p5: any;
@@ -176,7 +176,9 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
       p.resizeCanvas(p.windowWidth * 0.8, p.windowHeight);
     };
   }
-
+  toggleDebug() {
+    this.debug = !this.debug;
+  }
   moveCamera() {
     if (this.camera.translate(this.movement)) {
       // console.log(this.camera);
