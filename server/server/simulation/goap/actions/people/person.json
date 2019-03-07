@@ -18,7 +18,7 @@
             },
             "width": 300,
             "height": 570,
-            "scale": 0.006,
+            "scale": 1,
             "minZoom": 8,
             "maxZoom": 1000,
             "otherSpritesIndex": [0]
@@ -32,7 +32,7 @@
             },
             "width": 16,
             "height": 16,
-            "scale": 0.1875,
+            "scale": 1,
             "minZoom": 0.1,
             "maxZoom": 8
     }

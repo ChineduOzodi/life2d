@@ -34,11 +34,12 @@ export class Entity {
           spriteImages[`${baseSprite.url}`] = p.loadImage(url);
         }
         if (camera.zoomLevel >= baseSprite.minZoom && camera.zoomLevel < baseSprite.maxZoom) {
+          let adj = baseSprite.scale / baseSprite.width;
           p.image(spriteImages[`${baseSprite.url}`],
-            this.position.x - baseSprite.offsets.x * baseSprite.scale * baseSprite.width,
-            this.position.y - baseSprite.offsets.y * baseSprite.scale * baseSprite.height,
-            baseSprite.width * baseSprite.scale,
-            baseSprite.height * baseSprite.scale
+            this.position.x - baseSprite.offsets.x * adj * baseSprite.width,
+            this.position.y - baseSprite.offsets.y * adj * baseSprite.height,
+            baseSprite.width * adj,
+            baseSprite.height * adj
           );
         } else {
           // check for conditional sprites
@@ -49,13 +50,13 @@ export class Entity {
                 const url = (otherSprite.url[0] === '/') ? this.urlHead + otherSprite.url : otherSprite.url;
                 spriteImages[`${otherSprite.url}`] = p.loadImage(url);
               }
-
+              let adj = otherSprite.scale / otherSprite.width;
               if (camera.zoomLevel >= otherSprite.minZoom && camera.zoomLevel < otherSprite.maxZoom) {
                 p.image(spriteImages[`${otherSprite.url}`],
-                  this.position.x - otherSprite.offsets.x * otherSprite.scale,
-                  this.position.y - otherSprite.offsets.y * otherSprite.scale,
-                  otherSprite.width * otherSprite.scale,
-                  otherSprite.height * otherSprite.scale
+                  this.position.x - otherSprite.offsets.x * adj,
+                  this.position.y - otherSprite.offsets.y * adj,
+                  otherSprite.width * adj,
+                  otherSprite.height * adj
                 );
                 break;
               }
