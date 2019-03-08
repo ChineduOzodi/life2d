@@ -50,7 +50,7 @@ function doAction(entity, map) {
         console.log(`${entity.name} finished doing action: ${action.name}`);
         entity.isNearTarget = false;
         entity.planIndex++;
-        entity.state = applyAction(entity.state, action);
+        entity.state = applyAction(entity.state, action, map);
         // console.log(`new player state: ${JSON.stringify(entity.state)}`);
         if (action.target && action.target.destroy) {
           map.updateVegetation = true;
@@ -92,7 +92,7 @@ Person.prototype.checkGoals = function (goap, map) {
           this.currentAction = doAction;
           this.isNearTarget = false;
         }
-      }).catch( err => {
+      }).catch(err => {
         console.err(`an error with creating plan for ${goal} occurred`);
         console.error(err);
       });
@@ -120,7 +120,7 @@ function followPath(entity, map) {
   }
 }
 
-var applyAction = function (state, action) {
+var applyAction = function (state, action, map) {
   let newState = state.map(a => ({ ...a }));
 
   //remove precondition items
@@ -162,6 +162,29 @@ var applyAction = function (state, action) {
     } else if (effect.type === 'own') {
       let newItemCondition = Object.assign({}, effect);
       newState.push(newItemCondition);
+      let index = map.otherSettings.findIndex(x => x.name === effect.name);
+      if (index == -1) {
+        console.error(`could not find settings for ${effect.name} in otherSettings`);
+      } else {
+        let otherSettings = map.otherSettings[index];
+        let v = Math.floor(Math.random() * otherSettings.baseSprites.length);
+        let entity = new Entity(effect.name, map.id++, action.target.position.x, action.target.position.y, index, v);
+        map.others.push(entity);
+        for (let x = action.target.position.x; x < action.target.position.x + action.target.width; x++) {
+          for (let y = action.target.position.y; y < action.target.position.y + action.target.height; y++) {
+            if (map.map[`x:${x},y:${y}`]) {
+              console.error(` map of x:${x},y:${y} already exists, can't set owned`);
+            }
+            else {
+              map.map[`x:${x},y:${y}`] = {
+                biome: map.getBiome(x,y),
+                height: map.getHeight(x,y),
+                otherIndex: map.others.length - 1
+              };
+            }
+          }
+        }
+      }
     } else if (effect.type === 'destroy') {
       if (action.target) {
         action.target.destroy = true;

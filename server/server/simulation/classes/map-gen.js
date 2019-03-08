@@ -16,9 +16,11 @@ function Map(settings) {
   this.cities = [];
   this.vegetationSettings = [];
   this.peopleSettings = [];
+  this.otherSettings = [];
   this.pendingChunks = [];
   this.vegetation = [];
   this.people = [];
+  this.others = [];
   this.chunkData = {};
   this.id = 1;
   this.map = {};
@@ -53,13 +55,13 @@ Map.prototype.saveData = function (dir) {
   })
 }
 
-Map.prototype.correctClasses = function() {
+Map.prototype.correctClasses = function () {
   this.people = assignClasses(this.people, Person);
   this.vegetation = assignClasses(this.vegetation, Vegetation);
   console.log('classes corrected');
 }
 
-assignClasses = function(location, Class) {
+assignClasses = function (location, Class) {
   let assignedList = [];
   for (let k of Object.keys(location)) {
     let object = location[k];
@@ -85,9 +87,10 @@ Map.prototype.generate = function (saveDir) {
       let promises = [];
       let vegLocation = map.settings.locations.vegLocation;
       let peopleLocation = map.settings.locations.peopleLocation;
+      let otherLocation = map.settings.location.otherLocation;
       promises.push(map.setClassSettings(map.vegetationSettings, vegLocation));
       promises.push(map.setClassSettings(map.peopleSettings, peopleLocation));
-
+      promises.push(map.setClassSettings(map.otherSettings, otherLocation));
       //settings all loaded and set
       Promise.all(promises).then(() => {
         map.saveData(saveDir).then(() => {
@@ -106,24 +109,44 @@ Map.prototype.generate = function (saveDir) {
 
 Map.prototype.setClassSettings = function (location, dir) {
   return new Promise((resolve, reject) => {
-    fs.readdir(dir, (err, files) => {
-      if (err) {
-        reject(err);
-      }
-      else {
-        console.log(`loading settings from ${dir}`);
-        files.forEach(x => {
-          let json = fs.readFileSync(`${dir}/${x}`);
-          let data = JSON.parse(json);
+    let pathList = walkSync(dir);
+    if (!pathList) {
+      reject(`pathList empty`);
+    }
+    for (const path of pathList) {
+      let json = fs.readFileSync(path);
+      try {
+        let data = JSON.parse(json);
+        if (data.name) {
+          console.log(`path: ${path}`);
           location.push(data);
-          // console.log(vegData);
-        });
-        console.log(`done saving settings from ${dir}`);
-        resolve();
+        } else {
+          console.log(`skipped path: ${path}`);
+        }
+      } catch (err) {
+        console.error(`could not read from: ${path}, err: ${err}`);
       }
-    });
-  })
+    }
+    resolve();
+  });
 }
+
+// List all files in a directory in Node.js recursively in a synchronous fashion
+var walkSync = function (dir, filelist) {
+  var path = path || require('path');
+  var fs = fs || require('fs'),
+    files = fs.readdirSync(dir);
+  filelist = filelist || [];
+  files.forEach(function (file) {
+    if (fs.statSync(path.join(dir, file)).isDirectory()) {
+      filelist = walkSync(path.join(dir, file), filelist);
+    }
+    else {
+      filelist.push(path.join(dir, file));
+    }
+  });
+  return filelist;
+};
 
 Map.prototype.deleteSaveData = function () {
   let dir = `./static/map`;
@@ -201,7 +224,7 @@ Map.prototype.newPlayer = function (id) {
             let v = Math.floor(Math.random() * entitySettings.baseSprites.length);
             let person = new Person(id, randomX, randomY, entitySettings.baseSpeed, i, v);
             thisMap.people.push(person);
-            thisMap.checkMapChunking({x: randomX, y: randomY}, 1).then(() => {
+            thisMap.checkMapChunking({ x: randomX, y: randomY }, 1).then(() => {
               resolve(person);
             }).catch((err) => {
               reject(err);
@@ -316,7 +339,7 @@ Map.prototype.generateMap = function () {
         this.settings.noise.minNoiseHeight = noiseHeight;
       }
       //console.log(b);
-      let tile = {height:noiseHeight};
+      let tile = { height: noiseHeight };
 
       map[iX].push(tile);
     }
@@ -427,8 +450,7 @@ Map.prototype.generateMapChunk = function (name, topX, topY, width, height, scal
         // console.log(`should start generating`);
         for (let i = 0; i < this.vegetationSettings.length; i++) {
           const vegSettings = this.vegetationSettings[i];
-          for (let b = 0; b < vegSettings.spawnSettings.biomes.length; b++) {
-            const biome = vegSettings.spawnSettings.biomes[b];
+          for (const biome of vegSettings.spawnSettings.biomes) {
             if (biome.name == map[iX][iY].biome) {
               //console.log("biome name match");
               let num = Math.random();
@@ -442,7 +464,7 @@ Map.prototype.generateMapChunk = function (name, topX, topY, width, height, scal
                 let entity = new Vegetation(vegSettings.name, this.id++, x, y, i, v);
                 this.vegetation.push(entity);
                 this.map[`x:${x},y:${y}`] = {
-                  biome: b[0],
+                  biome: biome.name,
                   height: map[iX][iY].height,
                   vegIndex: this.vegetation.length - 1
                 };
@@ -504,14 +526,14 @@ Map.prototype.getBiome = function (x, y) {
   return biome(this.getHeight(x, y), this.settings.biomes);
 }
 
-Map.prototype.findNearestEntity = function(entityName, location, position) {
+Map.prototype.findNearestEntity = function (entityName, location, position) {
   let closestEntity;
   let closestDistance = 100000000000000000000000000000000000;
 
   for (let i in location) {
     let entity = location[i];
     let entityDistance = distanceCost(entity.position, position);
-    if (!entity.destroy && entityDistance < closestDistance && entityName === entity.name){
+    if (!entity.destroy && entityDistance < closestDistance && entityName === entity.name) {
       closestEntity = entity;
       closestDistance = entityDistance;
     }
