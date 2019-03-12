@@ -2,10 +2,8 @@ var Entity = require('./entity');
 var GoapPlanner = require('./goap-planner');
 AStar = require('./a-star');
 
-function Person(id, x, y, speed, settingsIndex, baseSpriteIndex) {
+function Person(id, x, y, settingsIndex, baseSpriteIndex) {
   Entity.call(this, 'person', id, x, y, settingsIndex, baseSpriteIndex);
-  this.state = 'idle';
-  this.speed = speed;
   this.goals = [];
   this.state = [
     {
@@ -16,12 +14,95 @@ function Person(id, x, y, speed, settingsIndex, baseSpriteIndex) {
   ];
   this.actionPlan = [];
   this.currentAction = idleState;
+  this.speed = 0;
+  this.energy = 0;
+  this.maxEnergy = 0;
+  this.energyGainRate = 0;
+  this.energyLossRate = 0;
+  this.hungerRate = 0;
+  this.stamina = 0;
+  this.maxStamina = 0;
+  this.staminaRecoveryRate = 0;
+  this.fullness = 0;
+  this.modifiers = [];
+  this.isSleeping = false;
 }
 
 Person.prototype = Object.create(Entity.prototype);
 
 Person.prototype.run = function (map, goap) {
+  this.resetBaseAttributes();
+  this.applyModifiers();
+  this.applyBaseRates();
   this.currentAction(this, map, goap);
+}
+
+Person.prototype.resetBaseAttributes = function () {
+  this.speed = this.baseSpeed;
+  this.maxEnergy = this.baseMaxEnergy;
+  this.energyGainRate = this.baseEnergyGainRate;
+  this.energyLossRate = this.baseEnergyLossRate;
+  this.hungerRate = this.baseHungerRate;
+  this.maxStamina = this.baseMaxStamina;
+  this.staminaRecoveryRate = this.baseStaminaRecoveryRate;
+  this.maxFullness = this.baseMaxFullness;
+}
+
+Person.prototype.applyBaseRates = function () {
+  if (this.isSleeping) {
+    this.energy += this.energyGainRate;
+    this.energy = Math.min(this.energy, this.maxEnergy);
+  } else {
+    this.energy -= this.energyLossRate;
+    this.energy = Math.max(this.energy, 0);
+  }
+  
+  if (this.fullness > 0) {
+    this.fullness -= this.hungerRate;
+    this.fullness = Math.max(this.fullness, 0);
+  }
+
+  if (this.stamina < this.maxStamina) {
+    this.stamina += this.staminaRecoveryRate;
+    this.stamina = Math.min(this.maxStamina, this.stamina);
+
+  }
+}
+
+Person.prototype.applyModifiers = function () {
+  for (let modifier of this.modifiers) {
+    switch (modifier.name) {
+      case 'speed':
+        this.speed = applyModifier(this.speed, modifier);
+        break;
+      case 'sleepRate':
+        this.energyGainRate = applyModifier(this.energyGainRate, modifier);
+        break;
+      case 'stamina':
+        this.stamina = applyModifier(this.stamina, modifier);
+        break;
+      case 'staminaRecoveryRate':
+        this.staminaRecoveryRate = applyModifier(this.staminaRecoveryRate, modifier);
+        break;
+      case 'fullness':
+        this.fullness = applyModifier(this.fullness, modifier);
+        break;
+      default:
+      // code block
+    }
+  }
+}
+
+function applyModifier(location, modifier) {
+  switch (modifier.type) {
+    case 'add':
+      return location + modifier.amount;
+    case 'multiply':
+      return location * modifier.amount;
+    default:
+      console.debug(`modifier type ${modifier.type} not recognized`);
+      return location;
+  }
 }
 
 function idleState(entity, map, goap) {
@@ -170,6 +251,7 @@ var applyAction = function (state, action, map) {
         let v = Math.floor(Math.random() * otherSettings.baseSprites.length);
         let entity = new Entity(effect.name, map.id++, action.target.position.x, action.target.position.y, index, v);
         map.others.push(entity);
+        map.updateOthers = true;
         for (let x = action.target.position.x; x < action.target.position.x + action.target.width; x++) {
           for (let y = action.target.position.y; y < action.target.position.y + action.target.height; y++) {
             if (map.map[`x:${x},y:${y}`]) {
@@ -177,8 +259,8 @@ var applyAction = function (state, action, map) {
             }
             else {
               map.map[`x:${x},y:${y}`] = {
-                biome: map.getBiome(x,y),
-                height: map.getHeight(x,y),
+                biome: map.getBiome(x, y),
+                height: map.getHeight(x, y),
                 otherIndex: map.others.length - 1
               };
             }

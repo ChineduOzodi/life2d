@@ -3,7 +3,7 @@
     "type": "building",
     "baseSprites": [
         {
-            "url": "https://img.itch.zone/aW1nLzE1MjEzNTUucG5n/original/4hriuT.png",
+            "url": "/static/simulation/sprites/other/crafting/wooden-house.png",
             "offsets": {
                 "x": 0.5,
                 "y": 0.8
@@ -20,14 +20,14 @@
     ],
     "otherSprites": [
         {
-            "url": "https://www.google.com/url?sa=i&source=images&cd=&cad=rja&uact=8&ved=2ahUKEwjXjs_9lvHgAhWil-AKHeUeC74QjRx6BAgBEAU&url=https%3A%2F%2Fitch.io%2Fjam%2Fmy-first-game-jam%2Ftopic%2F12894%2Fdevlog-wooden-house&psig=AOvVaw1JxkyFAEYo5zAu4bCsUIuU&ust=1552087578114819",
+            "url": "/static/simulation/sprites/other/crafting/wooden-house.png",
             "offsets": {
                 "x": 0.5,
-                "y": 0.9
+                "y": 0.8
             },
-            "width": 330,
-            "height": 300,
-            "scale": 1,
+            "width": 456,
+            "height": 480,
+            "scale": 2,
             "minZoom": 1.9,
             "maxZoom": 8
         }

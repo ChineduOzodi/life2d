@@ -1,6 +1,16 @@
 {
     "name": "person",
-    "baseSpeed":20,
+    "baseSpeed":10,
+    "energy":1000,
+    "baseMaxEnergy": 100,
+    "baseEnergyLossRate": 1,
+    "baseEnergyGainRate":2,
+    "stamina":100,
+    "baseMaxStamina":100,
+    "baseStaminaRecoveryRate":1,
+    "fullness":500,
+    "baseMaxFullness":100,
+    "baseHungerRate":1,
     "spawnSettings": {
         "biomes": [
             {

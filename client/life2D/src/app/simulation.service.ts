@@ -1,3 +1,4 @@
+import { Entity } from './simulation/classes/entity';
 import { LocationReserve } from './simulation/classes/location-reserve';
 import { Person } from './simulation/classes/person';
 import { Vegetation } from './simulation/classes/vegetation';
@@ -16,6 +17,7 @@ export class SimulationService {
   vegetation = this.socket.fromEvent<Vegetation[]>('vegetation');
   people = this.socket.fromEvent<Person[]>('people');
   locationReservations = this.socket.fromEvent<LocationReserve[]>('locationReservations');
+  others = this.socket.fromEvent<Entity[]>('updateOthers');
   goapActions = this.socket.fromEvent<any[]>('goapActions');
   constructor(private socket: Socket) { }
 

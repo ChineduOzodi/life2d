@@ -87,7 +87,7 @@ Map.prototype.generate = function (saveDir) {
       let promises = [];
       let vegLocation = map.settings.locations.vegLocation;
       let peopleLocation = map.settings.locations.peopleLocation;
-      let otherLocation = map.settings.location.otherLocation;
+      let otherLocation = map.settings.locations.otherLocation;
       promises.push(map.setClassSettings(map.vegetationSettings, vegLocation));
       promises.push(map.setClassSettings(map.peopleSettings, peopleLocation));
       promises.push(map.setClassSettings(map.otherSettings, otherLocation));
@@ -222,7 +222,7 @@ Map.prototype.newPlayer = function (id) {
             shouldBreak = true;
             found = true;
             let v = Math.floor(Math.random() * entitySettings.baseSprites.length);
-            let person = new Person(id, randomX, randomY, entitySettings.baseSpeed, i, v);
+            let person = Object.assign( new Person(id, randomX, randomY, i, v), entitySettings);
             thisMap.people.push(person);
             thisMap.checkMapChunking({ x: randomX, y: randomY }, 1).then(() => {
               resolve(person);

@@ -151,6 +151,10 @@ setInterval(function () {
     map.locationReserveChanged = false;
     io.sockets.emit('locationReservations', map.locationReservations);
   }
+  if (map.updateOthers) {
+    map.updateOthers = false;
+    io.sockets.emit('updateOthers', map.others);
+  }
 }, 1000 / 60);
 
 setInterval(() => {

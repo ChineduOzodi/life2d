@@ -10,6 +10,7 @@ import { Component, OnInit, ViewChild, AfterViewInit, HostListener, OnDestroy } 
 // import { NGXLogger } from 'ngx-logger';
 import * as p5 from 'p5';
 import { Position } from './classes/position';
+import { Entity } from './classes/entity';
 
 @Component({
   selector: 'app-simulation',
@@ -38,7 +39,7 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
   mapPeopleSub: Subscription;
   locationReservationsSub: Subscription;
   goapActionsSub: Subscription;
-
+  othersSub: Subscription;
   constructor(
     private loginService: LoginService,
     private simulationService: SimulationService
@@ -71,6 +72,10 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
       console.log('received actions');
       console.log(actions);
       this.actions = actions;
+    });
+    this.othersSub = this.simulationService.others.subscribe( others => {
+      console.log('received others');
+      this.sMap.others = others;
     });
     // this.logger.debug('camera set', this.camera);
   }
@@ -135,6 +140,12 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
               for (const person of p.sim.sMap.people) {
                 const entity: Person = Object.assign(new Person('', new Position(0, 0, 0), 0, 0, 0), person);
                 entity.render(p, p.sim.camera, p.sim.spriteImages, p.sim.sMap.peopleSettings);
+              }
+            }
+            if (p.sim.sMap.others) {
+              for (const other of p.sim.sMap.others) {
+                const entity: Entity = Object.assign(new Entity('','', new Position(0, 0, 0), 0, 0), other);
+                entity.render(p, p.sim.camera, p.sim.spriteImages, p.sim.sMap.otherSettings);
               }
             }
           }
