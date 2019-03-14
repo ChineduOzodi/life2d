@@ -13,18 +13,17 @@
           </div>
       </div>
       <div *ngIf="person">
+        <small>Energy: {{person.energy}} of {{person.maxEnergy}}</small>
         <div class="progress">
-          <small>Food: {{person.energy}} of {{person.energyMax}} </small>
-          <div class="progress-bar bg-success" role="progressbar" style="width: {{person.energy/person.energyMax}}%" aria-valuenow="person.energy" aria-valuemin="0" aria-valuemax="person.energyMax"></div>
+          <div class="progress-bar bg-info" role="progressbar"  [style.width] = "energyPercentString" aria-valuenow="person.energy" aria-valuemin="0" aria-valuemax="person.maxEnergy"></div>
         </div>
+        <small>Stamina: {{person.stamina}} of {{person.maxStamina}}</small>
         <div class="progress">
-          <div class="progress-bar bg-info" role="progressbar" style="width: 50%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+          <div class="progress-bar bg-warning" role="progressbar" [style.width] = "staminaPercentString" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
         </div>
+        <small>Food: {{person.fullness}} of {{person.maxFullness}}</small>
         <div class="progress">
-          <div class="progress-bar bg-warning" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
-        </div>
-        <div class="progress">
-          <div class="progress-bar bg-danger" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+          <div class="progress-bar bg-success" role="progressbar" [style.width] = "fullnessPercentString"  aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
         </div>
       </div>
       <div id="accordion">

@@ -140,7 +140,7 @@ io.on('connection', function (socket) {
 });
 
 setInterval(function () {
-  map.run(goap);
+  map.run(goap, 1/60);
   io.sockets.emit('people', map.people);
   io.sockets.emit('state', players);
   if (map.updateVegetation) {

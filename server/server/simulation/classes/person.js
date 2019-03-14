@@ -24,17 +24,19 @@ function Person(id, x, y, settingsIndex, baseSpriteIndex) {
   this.maxStamina = 0;
   this.staminaRecoveryRate = 0;
   this.fullness = 0;
+  this.maxFullness = 0;
   this.modifiers = [];
   this.isSleeping = false;
 }
 
 Person.prototype = Object.create(Entity.prototype);
 
-Person.prototype.run = function (map, goap) {
+Person.prototype.run = function (map, goap, deltaTime) {
   this.resetBaseAttributes();
   this.applyModifiers();
-  this.applyBaseRates();
+  this.applyBaseRates(deltaTime);
   this.currentAction(this, map, goap);
+  // console.log(`energy: ${this.energy}`);
 }
 
 Person.prototype.resetBaseAttributes = function () {
@@ -48,24 +50,23 @@ Person.prototype.resetBaseAttributes = function () {
   this.maxFullness = this.baseMaxFullness;
 }
 
-Person.prototype.applyBaseRates = function () {
+Person.prototype.applyBaseRates = function (deltaTime) {
   if (this.isSleeping) {
-    this.energy += this.energyGainRate;
+    this.energy += this.energyGainRate * deltaTime;
     this.energy = Math.min(this.energy, this.maxEnergy);
   } else {
-    this.energy -= this.energyLossRate;
+    this.energy -= this.energyLossRate * deltaTime;
     this.energy = Math.max(this.energy, 0);
   }
   
   if (this.fullness > 0) {
-    this.fullness -= this.hungerRate;
+    this.fullness -= this.hungerRate * deltaTime;
     this.fullness = Math.max(this.fullness, 0);
   }
 
   if (this.stamina < this.maxStamina) {
-    this.stamina += this.staminaRecoveryRate;
+    this.stamina += this.staminaRecoveryRate * deltaTime;
     this.stamina = Math.min(this.maxStamina, this.stamina);
-
   }
 }
 

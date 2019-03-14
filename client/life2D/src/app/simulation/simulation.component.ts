@@ -31,7 +31,9 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
   spriteImages = {};
   imageMap: any;
   loadImg: boolean;
-
+  energyPercentString: string;
+  staminaPercentString: string;
+  fullnessPercentString: string;
   person: Person;
   mapSub: Subscription;
   mapChunkAddSub: Subscription;
@@ -63,6 +65,13 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
     this.mapPeopleSub = this.simulationService.people.subscribe(people => {
       this.sMap.people = people;
       this.person = people.find(x => x.id == this.loginService.getUser().username);
+      const energyPercent = Math.floor(this.person.energy / this.person.maxEnergy * 100);
+      this.person.energy = Math.floor(this.person.energy);
+      this.energyPercentString = `${energyPercent}%`;     
+      this.staminaPercentString = `${Math.floor(this.person.stamina/this.person.maxStamina)}%`;
+      this.person.stamina = Math.floor(this.person.stamina);
+      this.fullnessPercentString = `${Math.floor(this.person.fullness/this.person.maxFullness)}%`;
+      this.person.fullness = Math.floor(this.person.fullness);
     });
     this.locationReservationsSub = this.simulationService.locationReservations.subscribe( reservations => {
       this.sMap.locationReservations = reservations;
