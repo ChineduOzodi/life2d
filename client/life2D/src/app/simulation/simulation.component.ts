@@ -206,8 +206,8 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  setGoal(index) {
-    this.simulationService.setGoal(this.actions[index].name);
+  setGoal(name) {
+    this.simulationService.setGoal(name);
   }
 
   @HostListener('document:keydown', ['$event']) onKeyDown(event: any) {

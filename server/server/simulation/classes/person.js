@@ -161,10 +161,14 @@ function entityBusy(entity, map) {
 
 }
 
+/**
+ * checks for goals in the this.goals list, and appends the oldest one this.goals[0]
+ */
 Person.prototype.checkGoals = function (goap, map) {
   if (this.goals.length > 0) {
     let goal = this.goals[0];
     let goalAction = goap.findAction(goal);
+    console.log(`goal: ${goal}`);
     if (goalAction) {
       let goapPlanner = new GoapPlanner();
       goapPlanner.createPlan(map, this, this.state, goap.actions, goalAction.effects).then((plan) => {

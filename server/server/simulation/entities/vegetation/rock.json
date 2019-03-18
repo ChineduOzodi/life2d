@@ -1,5 +1,6 @@
 {
     "name": "rock",
+    "category":"vegetation",
     "spawnSettings": {
         "biomes": [
             {

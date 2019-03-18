@@ -87,6 +87,7 @@ io.on('connection', function (socket) {
       console.log(`new user ${username} logged in`);
       map.newPlayer(username).then(person => {
         console.log(`person x: ${person.position.x}, y: ${person.position.y}`);
+        person.goals.push('eat berry');
         users[username] = new User(socket.id, username, socket.id, new Camera(person.position, 5));
         players[socket.id] = username;
         // console.log('has veg settings: ' + JSON.stringify(map.vegetationSettings));

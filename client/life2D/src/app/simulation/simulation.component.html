@@ -40,7 +40,7 @@
           <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
             <div class="card-body" *ngIf="actions">
               <div *ngFor="let action of actions; let i=index">
-                <input type="button" value="{{action.name}}" class="btn btn-outline-secondary" (click)="setGoal(i)">
+                <input type="button" value="{{action.name}}" class="btn btn-outline-secondary" (click)="setGoal(action.name)">
               </div>
             </div>
           </div>
