@@ -67,10 +67,10 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
       this.person = people.find(x => x.id == this.loginService.getUser().username);
       const energyPercent = Math.floor(this.person.energy / this.person.maxEnergy * 100);
       this.person.energy = Math.floor(this.person.energy);
-      this.energyPercentString = `${energyPercent}%`;     
-      this.staminaPercentString = `${Math.floor(this.person.stamina/this.person.maxStamina * 100)}%`;
+      this.energyPercentString = `${energyPercent}%`;
+      this.staminaPercentString = `${Math.floor(this.person.stamina / this.person.maxStamina * 100)}%`;
       this.person.stamina = Math.floor(this.person.stamina);
-      this.fullnessPercentString = `${Math.floor(this.person.fullness/this.person.maxFullness * 100)}%`;
+      this.fullnessPercentString = `${Math.floor(this.person.fullness / this.person.maxFullness * 100)}%`;
       this.person.fullness = Math.floor(this.person.fullness);
     });
     this.locationReservationsSub = this.simulationService.locationReservations.subscribe( reservations => {
