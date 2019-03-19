@@ -50,6 +50,21 @@ Person.prototype.resetBaseAttributes = function () {
   this.maxFullness = this.baseMaxFullness;
 }
 
+Person.prototype.addToBaseStat = function (statName, amount) {
+  statName = camelize(statName);
+  this[statName] += amount;
+  let maxName = camelize(`max ${statName}`);
+  console.log(`statName: ${statName}, amount: ${this[statName]}, addAmount: ${amount} maxName: ${maxName} maxAmount: ${this[maxName]}`);
+  this[statName] = Math.min(this[maxName], this[statName]);
+  this[statName] = Math.max(0, this[statName]);
+}
+
+function camelize(str) {
+  return str.replace(/(?:^\w|[A-Z]|\b\w)/g, function (letter, index) {
+    return index == 0 ? letter.toLowerCase() : letter.toUpperCase();
+  }).replace(/\s+/g, '');
+}
+
 Person.prototype.applyBaseRates = function (deltaTime) {
   if (this.isSleeping) {
     this.energy += this.energyGainRate * deltaTime;
@@ -58,7 +73,7 @@ Person.prototype.applyBaseRates = function (deltaTime) {
     this.energy -= this.energyLossRate * deltaTime;
     this.energy = Math.max(this.energy, 0);
   }
-  
+
   if (this.fullness > 0) {
     this.fullness -= this.hungerRate * deltaTime;
     this.fullness = Math.max(this.fullness, 0);
@@ -132,7 +147,7 @@ function doAction(entity, map) {
         console.log(`${entity.name} finished doing action: ${action.name}`);
         entity.isNearTarget = false;
         entity.planIndex++;
-        entity.state = applyAction(entity.state, action, map);
+        entity.applyAction(action, map);
         // console.log(`new player state: ${JSON.stringify(entity.state)}`);
         if (action.target && action.target.destroy) {
           map.updateVegetation = true;
@@ -179,8 +194,9 @@ Person.prototype.checkGoals = function (goap, map) {
           this.isNearTarget = false;
         }
       }).catch(err => {
-        console.err(`an error with creating plan for ${goal} occurred`);
+        console.error(`an error with creating plan for ${goal} occurred`);
         console.error(err);
+        this.goals.splice(0, 1);
       });
     } else {
       console.log(`could not find a goal action(s) for: ${goal}`);
@@ -206,15 +222,13 @@ function followPath(entity, map) {
   }
 }
 
-var applyAction = function (state, action, map) {
-  let newState = state.map(a => ({ ...a }));
+Person.prototype.applyAction = function (action, map) {
 
   //remove precondition items
   for (let i in action.preconditions) {
     let precondition = action.preconditions[i];
     if (precondition.type == 'item') {
-      for (let v in newState) {
-        let condition = newState[v];
+      for (let condition of this.state) {
         if (condition.type === 'item' && precondition.name === condition.name) {
           condition.amount -= precondition.amount;
           if (condition.amount < 0) {
@@ -232,8 +246,8 @@ var applyAction = function (state, action, map) {
     let effect = action.effects[i];
     if (effect.type == 'item') {
       let foundStateItem = false;
-      for (let v in newState) {
-        let condition = newState[v];
+      for (let v in this.state) {
+        let condition = this.state[v];
         if (condition.type === 'item' && effect.name === condition.name) {
           condition.amount += effect.amount;
           foundStateItem = true;
@@ -242,12 +256,12 @@ var applyAction = function (state, action, map) {
       }
       if (!foundStateItem) {
         let newItemCondition = Object.assign({}, effect);
-        newState.push(newItemCondition);
+        this.state.push(newItemCondition);
       }
-      // console.log(JSON.stringify(newState));
+      // console.log(JSON.stringify(this.state));
     } else if (effect.type === 'own') {
       let newItemCondition = Object.assign({}, effect);
-      newState.push(newItemCondition);
+      this.state.push(newItemCondition);
       let index = map.otherSettings.findIndex(x => x.name === effect.name);
       if (index == -1) {
         console.error(`could not find settings for ${effect.name} in otherSettings`);
@@ -260,7 +274,7 @@ var applyAction = function (state, action, map) {
         for (let x = action.target.position.x; x < action.target.position.x + action.target.width; x++) {
           for (let y = action.target.position.y; y < action.target.position.y + action.target.height; y++) {
             if (map.map[`x:${x},y:${y}`]) {
-              console.error(` map of x:${x},y:${y} already exists, can't set owned`);
+              console.error(`map of x:${x},y:${y} already exists, can't set owned`);
             }
             else {
               map.map[`x:${x},y:${y}`] = {
@@ -278,10 +292,21 @@ var applyAction = function (state, action, map) {
       } else {
         console.error('did not find target to destroy');
       }
+    } else if (effect.type === 'self') {
+      if (effect.target === 'base stats') {
+        if (effect.effect === 'add') {
+          this.addToBaseStat(effect.name,effect.amount)
+        } else if (effect.effect === 'multiply') {
+          //TODO: implement multiply
+          console.log('multiply not yet implemented');
+        } else {
+          console.log(`effect type ${effect.effect} not recognised in action ${action.name}`);
+        }
+      }
     }
   }
 
-  return newState;
+  return this.state;
 }
 
 function createVector(x, y) {

@@ -221,6 +221,31 @@ GoapPlanner.prototype.applyAction = function (state, action, actionRepeat) {
         } else if (effect.type === 'own') {
             let newItemCondition = Object.assign({}, effect);
             newState.push(newItemCondition);
+        } else if (effect.type === 'self') {
+            let foundStateItem = false;
+            for (let condition of newState) {
+                if (condition.type === 'self' &&
+                        condition.name === effect.name &&
+                        condition.target === effect.target &&
+                        condition.effect === effect.effect
+                    ) {
+                    if (effect.effect === 'add') {
+                        condition.amount += effect.amount * actionRepeat;
+                        foundStateItem = true;
+                    } else if ( effect.effect === 'multiply') {
+                        condition.amount *= effect.amount * actionRepeat;
+                    } else {
+                        console.log(`effect type ${effect.effect} not recognised in action ${action.name}`);
+                    }
+                    foundStateItem = true;
+                    break;
+                }
+            }
+            if (!foundStateItem) {
+                let newItemCondition = Object.assign({}, effect);
+                newItemCondition.amount *= actionRepeat;
+                newState.push(newItemCondition);
+            }
         }
     }
 
@@ -321,8 +346,45 @@ GoapPlanner.prototype.inState = function (preconditions, preconditionRepeat, goa
             if (count >= 10000) {
                 console.error(`instate while loop error for item, broken out of`);
             }
-        } else {
+        } else if (precondition.type === 'self') {
+            let done = false;
+            let count = 0;
+            while (!done && count < 10001) {
+                count++;
+                done = true;
+                for (let condition of goapNode.state) {
+                    if (condition.type === 'self' &&
+                        condition.name === precondition.name &&
+                        condition.target === precondition.target &&
+                        condition.effect === precondition.effect
+                    ) {
+                        if (precondition.amount * preconditionRepeat <= condition.amount) {
+                            match = true;
+                            break;
+                        } else {
+                            break;
+                            //TODO: figure out how to properly integrate self stats into goap
+                            // //see if you can increase condition amount in the parent nodes
+                            // let results = this.increaseItemAmount(precondition, preconditionRepeat, goapNode);
+                            // if (results) {
+                            //     done = false;
+                            //     break;
+                            // }
+                        }
+                    }
+                }
+            }
+            if (count >= 10000) {
+                console.error(`instate while loop error for item, broken out of`);
+            }
+        } 
+        else if (precondition.type === 'reserve' || precondition.type === 'destroy') {
+            //reserve and destroy happens during the execution of the plan
             continue;
+        }
+        else {
+            console.debug(`type: ${precondition.type} not accounted for`);
+            return false;
         }
         if (!match) {
             allMatch = false;

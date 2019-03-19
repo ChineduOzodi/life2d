@@ -19,9 +19,9 @@
             "effects": [
                 {
                     "type": "self",
-                    "target": "stats",
-                    "name":"fullness",
+                    "target": "base stats",
                     "effect":"add",
+                    "name":"fullness",
                     "amount": 30
                 }
             ]
