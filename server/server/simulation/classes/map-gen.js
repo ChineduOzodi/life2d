@@ -1,5 +1,6 @@
 var Person = require('./person');
 var Vegetation = require('./vegetation');
+var Entity = require('./entity');
 var math = require('mathjs');
 var SimplexNoise = require('simplex-noise');
 var PNGImage = require('pngjs-image');
@@ -58,6 +59,7 @@ Map.prototype.saveData = function (dir) {
 Map.prototype.correctClasses = function () {
   this.people = assignClasses(this.people, Person);
   this.vegetation = assignClasses(this.vegetation, Vegetation);
+  this.others = assignClasses(this.others, Entity)
   console.log('classes corrected');
 }
 

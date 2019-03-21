@@ -1,1 +1,111 @@
-{"name":"Awesome Map","width":1000,"height":1000,"scale":1000,"seed":79.17445233270801,"randomSeed":true,"locations":{"vegLocation":"./server/simulation/entities/vegetation","peopleLocation":"./server/simulation/entities/people","otherLocation":"./server/simulation/entities/other"},"noise":{"seed":65.43207659014628,"randomSeed":true,"scale":0.000001,"octaves":12,"minNoiseHeight":-1.6723386752659535,"maxNoiseHeight":1.6673714203659595,"persistence":0.5,"lacunarity":2,"offsets":[[-95107.43201331778,77445.41041070892],[-65524.883727760316,24148.409319410363],[-47578.53727560019,87394.12564905855],[18938.596490139957,31652.94679105727],[-51739.68481973267,31101.161314905738],[26966.515885892964,10787.043412906787],[2623.653969257459,34319.410643999436],[-52167.21614640142,-82677.54731217105],[-86662.24132157589,-64546.153581836756],[65644.77098784517,73220.87330658847],[32962.1036083721,82018.26815642705],[-32300.18969205978,95861.22216275331]]},"biomes":[{"name":"water","minHeight":-1,"maxHeight":0.5},{"name":"land","minHeight":0.5,"maxHeight":2}],"mapChunks":[{"width":1000,"height":1000,"scale":100,"maxZoom":1000,"minZoom":0.01,"generate":false},{"width":1000,"height":1000,"scale":10,"maxZoom":1000,"minZoom":0.1,"generate":true},{"width":1000,"height":1000,"scale":1,"maxZoom":1000,"minZoom":0.6,"generate":true}]}
+{
+    "name": "Awesome Map",
+    "width": 1000,
+    "height": 1000,
+    "scale": 1000,
+    "seed": 16.163116528603627,
+    "randomSeed": true,
+    "locations": {
+        "vegLocation": "./server/simulation/entities/vegetation",
+        "peopleLocation": "./server/simulation/entities/people",
+        "otherLocation": "./server/simulation/entities/other"
+    },
+    "noise": {
+        "seed": 62.271233314667896,
+        "randomSeed": true,
+        "scale": 0.000001,
+        "octaves": 12,
+        "minNoiseHeight": -1.6723386752659535,
+        "maxNoiseHeight": 1.6673714203659595,
+        "persistence": 0.5,
+        "lacunarity": 2,
+        "offsets": [
+            [
+                -59357.01109137118,
+                32495.720257356064
+            ],
+            [
+                -71986.77194962584,
+                -34767.48194550592
+            ],
+            [
+                73164.13875044824,
+                81782.75269971561
+            ],
+            [
+                -12403.108956343625,
+                -21392.13095265298
+            ],
+            [
+                69596.29943436387,
+                -34922.04012531666
+            ],
+            [
+                37439.34239443764,
+                819.7012701555796
+            ],
+            [
+                15534.361159519409,
+                71540.66041685344
+            ],
+            [
+                -96430.77493733255,
+                70059.86220189519
+            ],
+            [
+                -65314.990193194455,
+                18845.658524522572
+            ],
+            [
+                -5089.402876382519,
+                -37843.574036376405
+            ],
+            [
+                80217.82462499349,
+                30123.305011228484
+            ],
+            [
+                49466.461544802645,
+                39686.96729372491
+            ]
+        ]
+    },
+    "biomes": [
+        {
+            "name": "water",
+            "minHeight": -1,
+            "maxHeight": 0.5
+        },
+        {
+            "name": "land",
+            "minHeight": 0.5,
+            "maxHeight": 2
+        }
+    ],
+    "mapChunks": [
+        {
+            "width": 1000,
+            "height": 1000,
+            "scale": 100,
+            "maxZoom": 1000,
+            "minZoom": 0.01,
+            "generate": false
+        },
+        {
+            "width": 1000,
+            "height": 1000,
+            "scale": 10,
+            "maxZoom": 1000,
+            "minZoom": 0.1,
+            "generate": true
+        },
+        {
+            "width": 1000,
+            "height": 1000,
+            "scale": 1,
+            "maxZoom": 1000,
+            "minZoom": 0.6,
+            "generate": true
+        }
+    ]
+}
