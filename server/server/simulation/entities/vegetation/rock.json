@@ -1,5 +1,6 @@
 {
     "name": "rock",
+    "category":"vegetation",
     "spawnSettings": {
         "biomes": [
             {
@@ -17,7 +18,7 @@
             },
             "width": 82,
             "height": 59,
-            "scale": 0.02,
+            "scale": 0.5,
             "minZoom": 8,
             "maxZoom": 1000,
             "otherSpritesIndex": []
@@ -30,7 +31,7 @@
             },
             "width": 79,
             "height": 39,
-            "scale": 0.02,
+            "scale": 0.5,
             "minZoom": 8,
             "maxZoom": 1000,
             "otherSpritesIndex": []
@@ -44,11 +45,12 @@
                 {
                     "type": "reserve",
                     "reserve": "entity",
+                    "location":"vegetation",
                     "name": "rock",
                     "amount": 1
                 }
             ],
-            "cost": 2,
+            "cost": 1,
             "effects": [
                 {
                     "type": "item",
@@ -56,8 +58,7 @@
                     "amount": 1
                 },
                 {
-                    "type": "destroy",
-                    "target": "self"
+                    "type": "destroy"
                 }
             ]
         }

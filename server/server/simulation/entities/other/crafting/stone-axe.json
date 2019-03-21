@@ -11,7 +11,7 @@
                     "amount": 1
                 },
                 {
-                    "type": "own",
+                    "type": "equip",
                     "name": "knife",
                     "amount": 1
                 },
@@ -21,7 +21,7 @@
                     "amount": 2
                 }
             ],
-            "cost": 200,
+            "cost": 5,
             "effects": [
                 {
                     "type": "item",
@@ -44,7 +44,7 @@
                     "amount": 1
                 }
             ],
-            "cost": 120,
+            "cost": 3,
             "effects": [
                 {
                     "type": "item",

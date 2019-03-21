@@ -5,6 +5,7 @@ function Entity(name, id, x, y, settingsIndex, baseSpriteIndex) {
     this.baseSpriteIndex = baseSpriteIndex;
     this.id = id;
     this.reserved = false;
+    this.destroy = false;
 }
 
 function createVector(x,y) {
