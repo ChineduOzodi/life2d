@@ -10,6 +10,7 @@ import { Component, OnInit, ViewChild, AfterViewInit, HostListener, OnDestroy } 
 // import { NGXLogger } from 'ngx-logger';
 import * as p5 from 'p5';
 import { Position } from './classes/position';
+import { Entity } from './classes/entity';
 
 @Component({
   selector: 'app-simulation',
@@ -17,7 +18,7 @@ import { Position } from './classes/position';
   styleUrls: ['./simulation.component.css']
 })
 export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
-
+  debug = false;
   urlHead = 'http://localhost:5000';
   @ViewChild('simulationConatiner') elementView;
   p5: any;
@@ -25,14 +26,22 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
   movement = new Movement();
   camera: Camera;
   sMap: Map;
+  actions: any[];
   chunkImages = {};
   spriteImages = {};
   imageMap: any;
   loadImg: boolean;
+  energyPercentString: string;
+  staminaPercentString: string;
+  fullnessPercentString: string;
+  person: Person;
   mapSub: Subscription;
   mapChunkAddSub: Subscription;
   mapVegetationSub: Subscription;
   mapPeopleSub: Subscription;
+  locationReservationsSub: Subscription;
+  goapActionsSub: Subscription;
+  othersSub: Subscription;
   constructor(
     private loginService: LoginService,
     private simulationService: SimulationService
@@ -54,8 +63,28 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
       this.sMap.vegetation = veg;
     });
     this.mapPeopleSub = this.simulationService.people.subscribe(people => {
-
       this.sMap.people = people;
+      this.person = people.find(x => x.id == this.loginService.getUser().username);
+      const energyPercent = Math.floor(this.person.energy / this.person.maxEnergy * 100);
+      this.person.energy = Math.floor(this.person.energy);
+      this.energyPercentString = `${energyPercent}%`;
+      this.staminaPercentString = `${Math.floor(this.person.stamina / this.person.maxStamina * 100)}%`;
+      this.person.stamina = Math.floor(this.person.stamina);
+      this.fullnessPercentString = `${Math.floor(this.person.fullness / this.person.maxFullness * 100)}%`;
+      this.person.fullness = Math.floor(this.person.fullness);
+    });
+    this.locationReservationsSub = this.simulationService.locationReservations.subscribe( reservations => {
+      this.sMap.locationReservations = reservations;
+      console.log('location reservations updated');
+    });
+    this.goapActionsSub = this.simulationService.goapActions.subscribe( actions => {
+      console.log('received actions');
+      console.log(actions);
+      this.actions = actions;
+    });
+    this.othersSub = this.simulationService.others.subscribe( others => {
+      console.log('received others');
+      this.sMap.others = others;
     });
     // this.logger.debug('camera set', this.camera);
   }
@@ -116,6 +145,12 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
                 entity.render(p, p.sim.camera, p.sim.spriteImages, p.sim.sMap.vegetationSettings);
               }
             }
+            if (p.sim.sMap.others) {
+              for (const other of p.sim.sMap.others) {
+                const entity: Entity = Object.assign(new Entity('', '', new Position(0, 0, 0), 0, 0), other);
+                entity.render(p, p.sim.camera, p.sim.spriteImages, p.sim.sMap.otherSettings);
+              }
+            }
             if (p.sim.sMap.people) {
               for (const person of p.sim.sMap.people) {
                 const entity: Person = Object.assign(new Person('', new Position(0, 0, 0), 0, 0, 0), person);
@@ -126,6 +161,7 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
         } catch (e) {
           console.error(e);
         }
+        p.noStroke();
         p.fill(p.color(255, 100, 100, 100));
         p.ellipse(p.sim.camera.position.x, p.sim.camera.position.y, 10 / p.sim.camera.zoomLevel);
         if (p.sim.loadImg) {
@@ -160,12 +196,18 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
       p.resizeCanvas(p.windowWidth * 0.8, p.windowHeight);
     };
   }
-
+  toggleDebug() {
+    this.debug = !this.debug;
+  }
   moveCamera() {
     if (this.camera.translate(this.movement)) {
       // console.log(this.camera);
       this.simulationService.sendCamera(this.camera);
     }
+  }
+
+  setGoal(name) {
+    this.simulationService.setGoal(name);
   }
 
   @HostListener('document:keydown', ['$event']) onKeyDown(event: any) {

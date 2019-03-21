@@ -7,8 +7,8 @@ function AStar() {
 AStar.prototype.findPath = function (startPosition, endPosition, map) {
     let closedNodes = [];
     let openNodes = [];
-    let startNode = new AStarNode(startPosition.x, startPosition.y, map, 0, distanceCost(startPosition, endPosition));
-    let targetNode = new AStarNode(endPosition.x, endPosition.y, map);
+    let startNode = new AStarNode(Math.round(startPosition.x), Math.round(startPosition.y), map, 0, distanceCost(startPosition, endPosition));
+    let targetNode = new AStarNode(Math.round(endPosition.x), Math.round(endPosition.y), map);
     openNodes.push(startNode);
     thisAStar = this;
     let nodeMap = {};
@@ -95,20 +95,20 @@ AStar.prototype.createPath = function (endNode) {
 }
 
 function extendPath(path,node,direction) {
-    let nX = node.position.x - node.parent.position.x;
-    let nY = node.position.y - node.parent.position.y;
-    if (nY != 0 && nX != 0) {
-        nX *= 10 / 14;
-        nY *= 10 / 14;
-    }
-    if (nX == direction.x && nY == direction.y){
-        //increase distance
-        path[0].distance += Math.abs(nX + nY);
-    }else{
-        let newDirection = {x:nX,y:nY};
-        path.unshift(new AStarPath(node.position,newDirection,Math.abs(nX + nY)))
-    }
-    if (node.parent.parent){
+    if (node.parent) {
+        let nX = node.position.x - node.parent.position.x;
+        let nY = node.position.y - node.parent.position.y;
+        if (nY != 0 && nX != 0) {
+            nX *= 10 / 14;
+            nY *= 10 / 14;
+        }
+        if (nX == direction.x && nY == direction.y){
+            //increase distance
+            path[0].distance += Math.abs(nX + nY);
+        }else{
+            let newDirection = {x:nX,y:nY};
+            path.unshift(new AStarPath(node.position,newDirection,Math.abs(nX + nY)))
+        }
         path = extendPath(path,node.parent,path[0].direction);
     }
     return path;

@@ -1,82 +1,39 @@
 {
-    "name": "tree",
+    "name": "berry bush",
     "category":"vegetation",
     "spawnSettings": {
         "biomes": [
             {
                 "name": "land",
-                "chance": 0.01
+                "chance": 0.005
             }
         ]
     },
     "baseSprites": [
         {
-            "url": "https://cdn4.iconfinder.com/data/icons/free-game-icons/64/Tree.png",
+            "url": "/static/simulation/sprites/vegetation/bushes/berry-bush.png",
             "offsets": {
                 "x": 0.5,
-                "y": 1
+                "y": 0.6
             },
-            "width": 64,
-            "height": 64,
-            "scale": 2,
+            "width": 234,
+            "height": 210,
+            "scale": 1,
             "minZoom": 8,
             "maxZoom": 1000,
-            "otherSpritesIndex": [
-                0
-            ]
+            "otherSpritesIndex": []
         }
     ],
-    "otherSprites": [
-        {
-            "url": "https://www.southbayinnandsuites.com/wp-content/uploads/2017/08/SouthBayLogo.png",
-            "offsets": {
-                "x": 0.5,
-                "y": 1
-            },
-            "width": 16,
-            "height": 16,
-            "scale": 4,
-            "minZoom": 1.9,
-            "maxZoom": 8
-        }
-    ],
+    "otherSprites": [],
     "goap": [
         {
-            "name": "chop wood",
-            "preconditions": [
-                {
-                    "type": "equip",
-                    "name": "stone axe",
-                    "amount": 1
-                },
-                {
-                    "type": "reserve",
-                    "reserve": "entity",
-                    "location":"vegetation",
-                    "name": "tree",
-                    "amount": 1
-                }
-            ],
-            "cost": 10,
-            "effects": [
-                {
-                    "type": "item",
-                    "name": "log",
-                    "amount": 30
-                },
-                {
-                    "type": "destroy"
-                }
-            ]
-        },
-        {
-            "name": "strip tree",
+            "name": "pick berry",
             "preconditions": [
                 {
                     "type": "reserve",
                     "reserve": "entity",
                     "location":"vegetation",
-                    "name": "tree",
+                    "name": "berry bush",
                     "amount": 1
                 }
             ],
@@ -84,8 +41,36 @@
             "effects": [
                 {
                     "type": "item",
+                    "name": "berry",
+                    "amount": 30
+                }
+            ]
+        },
+        {
+            "name": "cut berry tree",
+            "preconditions": [
+                {
+                    "type": "reserve",
+                    "reserve": "entity",
+                    "location":"vegetation",
+                    "name": "berry bush",
+                    "amount": 1
+                }
+            ],
+            "cost": 15,
+            "effects": [
+                {
+                    "type": "item",
                     "name": "stick",
-                    "amount": 10
+                    "amount": 30
+                },
+                {
+                    "type": "item",
+                    "name": "berry",
+                    "amount": 30
+                },
+                {
+                    "type": "destroy"
                 }
             ]
         }

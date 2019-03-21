@@ -1,6 +1,26 @@
-<div>
-  Enter Login Username:
-  <input type="text" [(ngModel)]='username' placeholder="username" (keydown.enter)="login(username)">
-  <input type="submit" value="Login" (click)="login(username)">
-  <div *ngIf="this.user">Login Successful!</div>
+<div class="container">
+  <div class="row">
+    <div class="col-sm">
+
+    </div>
+    <div class="col-sm">
+      <ng-container *ngIf="loggingIn; else loginTemplate">
+        Logging in...
+      </ng-container>
+      <ng-template #loginTemplate>
+        <div>
+          <div class="form-group">
+            <label for="usernameInput">Enter Login Username:</label>
+            <input type="text" id="usernameInput" class="form-control" [(ngModel)]='username' placeholder="username"
+              (keydown.enter)="login(username)" minlength="3" required>
+            <small class="form-text text-muted">Has to be at least 3 characters</small>
+            <input type="submit" class="btn btn-outline-dark" value="Login" (click)="login(username)">
+          </div>
+        </div>
+      </ng-template>
+    </div>
+    <div class="col-sm">
+
+    </div>
+  </div>
 </div>

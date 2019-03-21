@@ -1,3 +1,5 @@
+import { Entity } from './../classes/entity';
+import { LocationReserve } from './../classes/location-reserve';
 import { Vegetation } from './../classes/vegetation';
 import { Person } from './../classes/person';
 export interface Map {
@@ -12,6 +14,8 @@ export interface Map {
     pendingChunks: any[];
     vegetation: Vegetation[];
     people: Person[];
+    others: Entity[];
     chunkData: {};
     map: {};
+    locationReservations: LocationReserve[];
 }

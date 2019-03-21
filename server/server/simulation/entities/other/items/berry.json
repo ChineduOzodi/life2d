@@ -1,0 +1,30 @@
+{
+    "name":"berry",
+    "category": "edible",
+    "tags": [
+        "vegetarian",
+        "wild"
+    ],
+    "goap": [
+        {
+            "name": "eat berry",
+            "preconditions": [
+                {
+                    "type": "item",
+                    "name": "berry",
+                    "amount": 50
+                }
+            ],
+            "cost": 5,
+            "effects": [
+                {
+                    "type": "self",
+                    "target": "base stats",
+                    "effect":"add",
+                    "name":"fullness",
+                    "amount": 100
+                }
+            ]
+        }
+    ]
+}
