@@ -145,16 +145,16 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
                 entity.render(p, p.sim.camera, p.sim.spriteImages, p.sim.sMap.vegetationSettings);
               }
             }
-            if (p.sim.sMap.people) {
-              for (const person of p.sim.sMap.people) {
-                const entity: Person = Object.assign(new Person('', new Position(0, 0, 0), 0, 0, 0), person);
-                entity.render(p, p.sim.camera, p.sim.spriteImages, p.sim.sMap.peopleSettings);
-              }
-            }
             if (p.sim.sMap.others) {
               for (const other of p.sim.sMap.others) {
                 const entity: Entity = Object.assign(new Entity('', '', new Position(0, 0, 0), 0, 0), other);
                 entity.render(p, p.sim.camera, p.sim.spriteImages, p.sim.sMap.otherSettings);
+              }
+            }
+            if (p.sim.sMap.people) {
+              for (const person of p.sim.sMap.people) {
+                const entity: Person = Object.assign(new Person('', new Position(0, 0, 0), 0, 0, 0), person);
+                entity.render(p, p.sim.camera, p.sim.spriteImages, p.sim.sMap.peopleSettings);
               }
             }
           }

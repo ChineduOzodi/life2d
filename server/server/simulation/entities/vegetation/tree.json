@@ -52,6 +52,7 @@
                 {
                     "type": "reserve",
                     "reserve": "entity",
+                    "location":"vegetation",
                     "name": "tree",
                     "amount": 1
                 }
@@ -74,6 +75,7 @@
                 {
                     "type": "reserve",
                     "reserve": "entity",
+                    "location":"vegetation",
                     "name": "tree",
                     "amount": 1
                 }

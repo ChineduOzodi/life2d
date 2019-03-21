@@ -1,16 +1,16 @@
 {
     "name": "person",
-    "baseSpeed":10,
-    "energy":1000,
+    "baseSpeed": 10,
+    "energy": 1000,
     "baseMaxEnergy": 1000,
     "baseEnergyLossRate": 1,
-    "baseEnergyGainRate":2,
-    "stamina":100,
-    "baseMaxStamina":100,
-    "baseStaminaRecoveryRate":1,
-    "fullness":500,
-    "baseMaxFullness":500,
-    "baseHungerRate":1,
+    "baseEnergyGainRate": 2,
+    "stamina": 100,
+    "baseMaxStamina": 100,
+    "baseStaminaRecoveryRate": 1,
+    "fullness": 500,
+    "baseMaxFullness": 500,
+    "baseHungerRate": 1,
     "spawnSettings": {
         "biomes": [
             {
@@ -31,11 +31,14 @@
             "scale": 1,
             "minZoom": 8,
             "maxZoom": 1000,
-            "otherSpritesIndex": [0]
+            "otherSpritesIndex": [
+                0
+            ]
         }
     ],
-    "otherSprites":[{
-        "url": "http://2.bp.blogspot.com/-XG9Pgfu6xJ8/Us_Wal0voUI/AAAAAAAAAwg/WR9NeIP4J10/s1600/spr_plant.png",
+    "otherSprites": [
+        {
+            "url": "http://2.bp.blogspot.com/-XG9Pgfu6xJ8/Us_Wal0voUI/AAAAAAAAAwg/WR9NeIP4J10/s1600/spr_plant.png",
             "offsets": {
                 "x": 0.5,
                 "y": 0.5
@@ -45,6 +48,23 @@
             "scale": 3,
             "minZoom": 0.1,
             "maxZoom": 8
-    }
+        }
+    ],
+    "goap": [
+        {
+            "name": "sleep on ground",
+            "preconditions": [],
+            "cost": 10,
+            "sleeping":true,
+            "effects": [
+                {
+                    "type": "self",
+                    "target": "base stats",
+                    "effect": "add",
+                    "name": "energy",
+                    "amount": 15
+                }
+            ]
+        }
     ]
 }

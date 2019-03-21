@@ -18,7 +18,7 @@ GoapPlanner.prototype.createPlan = function (map, agent, state, actions, goal) {
         // console.log(`usable actions: ${JSON.stringify(usableActions)}`);
         let start = new GoapNode(null, 0, 0, state, null);
         let leaves = [];
-        let success = thisPlanner.buildGraph(0, start, leaves, usableActions, goal);
+        let success = thisPlanner.buildGraph(0, start, leaves, usableActions, goal, 10000000000);
         if (!success) {
             reject('could not find a plan');
         } else {
@@ -54,7 +54,7 @@ GoapPlanner.prototype.constructPlan = function (path, node, map) {
         }
     }
     if (node.parent) {
-        path = this.constructPlan(path, node.parent);
+        path = this.constructPlan(path, node.parent, map);
     }
     return path;
 }
@@ -62,9 +62,9 @@ GoapPlanner.prototype.constructPlan = function (path, node, map) {
 GoapPlanner.prototype.isActionUsable = function (map, agent, action) {
     for (let i in action.preconditions) {
         let precondition = action.preconditions[i];
-        if (precondition.type == 'reserve') {
-            if (precondition.reserve == 'entity') {
-                let closestEntity = map.findNearestEntity(precondition.name, map.vegetation, agent.position);
+        if (precondition.type === 'reserve') {
+            if (precondition.reserve === 'entity') {
+                let closestEntity = map.findNearestEntity(precondition.name, map[precondition.location], agent.position);
                 if (closestEntity) {
                     // console.log(`found closest entity for ${action.name} - ${precondition.name}: ${JSON.stringify(closestEntity)}`);
                     action.distanceCost = distanceCost(closestEntity.position, agent.position) / (agent.speed * 10);
@@ -113,6 +113,9 @@ GoapPlanner.prototype.isActionUsable = function (map, agent, action) {
                     return false
                 }
             }
+        } else if (precondition.type === 'own' && precondition.target) {
+            action.distanceCost = distanceCost(precondition.target.position, agent.position) / (agent.speed * 10);
+            action.target = precondition.target;
         }
     }
 
@@ -123,7 +126,7 @@ GoapPlanner.prototype.isActionUsable = function (map, agent, action) {
     return true;
 }
 
-GoapPlanner.prototype.buildGraph = function (length, parent, leaves, usableActions, goal) {
+GoapPlanner.prototype.buildGraph = function (length, parent, leaves, usableActions, goal, minCost) {
     length++;
     let foundOne = false;
     // console.log(`graph - usable actions length: ${usableActions.length}`);
@@ -140,19 +143,27 @@ GoapPlanner.prototype.buildGraph = function (length, parent, leaves, usableActio
             let state = this.applyAction(parent.state, usableAction, 1);
 
             let goapNode = new GoapNode(parent, parent.runningCost + parent.actionCost + parent.distanceCost, usableAction.distanceCost, state, usableAction);
-
+            let totalCost = goapNode.runningCost + goapNode.actionCost + goapNode.distanceCost;
             //check if goal  is met
-            if (this.inState(goal, 1, goapNode)) {
-                leaves.push(goapNode);
-                foundOne = true;
-            } else {
-                let newUsableActions = usableActions.map(a => ({ ...a }));
-                newUsableActions.splice(i, 1);
-                let found = this.buildGraph(length, goapNode, leaves, newUsableActions, goal);
-                if (found) {
+            if (totalCost <= minCost) {
+                if (this.inState(goal, 1, goapNode)) {
+                    // console.log(`Found plan ${leaves.length + 1}`);
+                    // console.log(actionList(goapNode));
+                    leaves.push(goapNode);
                     foundOne = true;
+                    if (totalCost < minCost) {
+                        minCost = totalCost;
+                    }
+                } else {
+                    let newUsableActions = usableActions.map(a => ({ ...a }));
+                    newUsableActions.splice(i, 1);
+                    let found = this.buildGraph(length, goapNode, leaves, newUsableActions, goal, minCost);
+                    if (found) {
+                        foundOne = true;
+                    }
                 }
             }
+            
         }
     }
     return foundOne;
@@ -220,19 +231,20 @@ GoapPlanner.prototype.applyAction = function (state, action, actionRepeat) {
             // console.log(JSON.stringify(newState));
         } else if (effect.type === 'own') {
             let newItemCondition = Object.assign({}, effect);
+            //find required reserve precondition location
             newState.push(newItemCondition);
         } else if (effect.type === 'self') {
             let foundStateItem = false;
             for (let condition of newState) {
                 if (condition.type === 'self' &&
-                        condition.name === effect.name &&
-                        condition.target === effect.target &&
-                        condition.effect === effect.effect
-                    ) {
+                    condition.name === effect.name &&
+                    condition.target === effect.target &&
+                    condition.effect === effect.effect
+                ) {
                     if (effect.effect === 'add') {
                         condition.amount += effect.amount * actionRepeat;
                         foundStateItem = true;
-                    } else if ( effect.effect === 'multiply') {
+                    } else if (effect.effect === 'multiply') {
                         condition.amount *= effect.amount * actionRepeat;
                     } else {
                         console.log(`effect type ${effect.effect} not recognised in action ${action.name}`);
@@ -362,14 +374,12 @@ GoapPlanner.prototype.inState = function (preconditions, preconditionRepeat, goa
                             match = true;
                             break;
                         } else {
-                            break;
-                            //TODO: figure out how to properly integrate self stats into goap
-                            // //see if you can increase condition amount in the parent nodes
-                            // let results = this.increaseItemAmount(precondition, preconditionRepeat, goapNode);
-                            // if (results) {
-                            //     done = false;
-                            //     break;
-                            // }
+                            //see if you can increase condition amount in the parent nodes
+                            let results = this.increaseItemAmount(precondition, preconditionRepeat, goapNode);
+                            if (results) {
+                                done = false;
+                                break;
+                            }
                         }
                     }
                 }
@@ -377,7 +387,7 @@ GoapPlanner.prototype.inState = function (preconditions, preconditionRepeat, goa
             if (count >= 10000) {
                 console.error(`instate while loop error for item, broken out of`);
             }
-        } 
+        }
         else if (precondition.type === 'reserve' || precondition.type === 'destroy') {
             //reserve and destroy happens during the execution of the plan
             continue;
@@ -402,15 +412,13 @@ GoapPlanner.prototype.increaseItemAmount = function (precondition, preconditionR
     }
 
     if (goapNode.action) {
-        for (let i in goapNode.action.effects) {
-            let effect = goapNode.action.effects[i];
-            if (effect.type === 'item') {
+        for (let effect of goapNode.action.effects) {
+            if (effect.type === 'item' && precondition.type === 'item') {
                 // let newItemCondition = Object.assign({}, effect);
-                if (precondition.type === 'item' && effect.name === precondition.name) {
+                if (effect.name === precondition.name) {
                     //look for an already existing state for goapNode actions
                     let existingItemAmount = 0;
-                    for (let s in goapNode.parent.state) {
-                        let pState = goapNode.parent.state[s];
+                    for (let pState of goapNode.parent.state) {
                         if (pState.type === 'item' && pState.name === effect.name) {
                             existingItemAmount = pState.amount;
                             break;
@@ -429,17 +437,44 @@ GoapPlanner.prototype.increaseItemAmount = function (precondition, preconditionR
                     break;
                 }
             }
+            else if (effect.type === 'self' && precondition.type === 'self') {
+                if (effect.name === precondition.name &&
+                    effect.target === precondition.target &&
+                    effect.effect === precondition.effect) {
+                    //look for an already existing state for goapNode actions
+                    let existingItemAmount = 0;
+                    for (let pState of goapNode.parent.state) {
+                        if (pState.type === 'self' &&
+                            pState.name === precondition.name &&
+                            pState.target === precondition.target &&
+                            pState.effect === precondition.effect) {
+                            existingItemAmount = pState.amount;
+                            break;
+                        }
+                    }
+
+                    //increase how many times action is repeated
+                    let repeatCount = 0
+                    while (repeatCount < 10001 && effect.amount * goapNode.actionRepeat + existingItemAmount < precondition.amount * preconditionRepeat) {
+                        repeatCount++;
+                        itemCountIncreased = true;
+                        goapNode.actionRepeat++;
+                    }
+                    if (repeatCount === 10000) {
+                        console.error('increaseItemAmount experienced infinite loop, was broken out of');
+                    }
+                    break;
+                }
+            }
         }
         if (itemCountIncreased) {
             //check to make sure preconditions of goapNode action all have enough items, recalculate costs
-            for (let i in goapNode.action.preconditions) {
-                let precondition = goapNode.action.preconditions[i];
-                if (precondition.type === 'item') {
-                    for (let s in goapNode.parent.state) {
-                        let pState = goapNode.parent.state[s];
-                        if (pState.type === 'item' && pState.name === precondition.name) {
-                            if (precondition.amount * goapNode.actionRepeat > pState.amount) {
-                                let results = this.increaseItemAmount(precondition, goapNode.actionRepeat, goapNode.parent);
+            for (let actionPrecondition of goapNode.action.preconditions) {
+                if (actionPrecondition.type === 'item') {
+                    for (let pState of goapNode.parent.state) {
+                        if (pState.type === 'item' && pState.name === actionPrecondition.name) {
+                            if (actionPrecondition.amount * goapNode.actionRepeat > pState.amount) {
+                                let results = this.increaseItemAmount(actionPrecondition, goapNode.actionRepeat, goapNode.parent);
                                 if (!results) {
                                     itemCountIncreased = false;
                                 }
@@ -447,7 +482,21 @@ GoapPlanner.prototype.increaseItemAmount = function (precondition, preconditionR
                             break;
                         }
                     }
-
+                } else if (actionPrecondition.type === 'self') {
+                    for (let pState of goapNode.parent.state) {
+                        if (pState.type === 'self' &&
+                            pState.name === actionPrecondition.name &&
+                            pState.target === actionPrecondition.target &&
+                            pState.effect === actionPrecondition.effect) {
+                            if (actionPrecondition.amount * goapNode.actionRepeat > pState.amount) {
+                                let results = this.increaseItemAmount(actionPrecondition, goapNode.actionRepeat, goapNode.parent);
+                                if (!results) {
+                                    itemCountIncreased = false;
+                                }
+                            }
+                            break;
+                        }
+                    }
                 }
                 if (!itemCountIncreased) {
                     break;

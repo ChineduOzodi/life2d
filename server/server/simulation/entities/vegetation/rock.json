@@ -45,6 +45,7 @@
                 {
                     "type": "reserve",
                     "reserve": "entity",
+                    "location":"vegetation",
                     "name": "rock",
                     "amount": 1
                 }

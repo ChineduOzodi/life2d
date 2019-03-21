@@ -32,6 +32,7 @@
                 {
                     "type": "reserve",
                     "reserve": "entity",
+                    "location":"vegetation",
                     "name": "berry bush",
                     "amount": 1
                 }
@@ -51,6 +52,7 @@
                 {
                     "type": "reserve",
                     "reserve": "entity",
+                    "location":"vegetation",
                     "name": "berry bush",
                     "amount": 1
                 }

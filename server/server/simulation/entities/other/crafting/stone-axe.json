@@ -11,7 +11,7 @@
                     "amount": 1
                 },
                 {
-                    "type": "own",
+                    "type": "equip",
                     "name": "knife",
                     "amount": 1
                 },

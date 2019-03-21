@@ -12,7 +12,7 @@
                 {
                     "type": "item",
                     "name": "berry",
-                    "amount": 30
+                    "amount": 50
                 }
             ],
             "cost": 5,
@@ -22,7 +22,7 @@
                     "target": "base stats",
                     "effect":"add",
                     "name":"fullness",
-                    "amount": 30
+                    "amount": 100
                 }
             ]
         }

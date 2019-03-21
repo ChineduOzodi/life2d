@@ -67,20 +67,28 @@ function camelize(str) {
 
 Person.prototype.applyBaseRates = function (deltaTime) {
   if (this.isSleeping) {
-    this.energy += this.energyGainRate * deltaTime;
-    this.energy = Math.min(this.energy, this.maxEnergy);
+    // this.energy += this.energyGainRate * deltaTime;
+    // this.energy = Math.min(this.energy, this.maxEnergy);
   } else {
     this.energy -= this.energyLossRate * deltaTime;
     this.energy = Math.max(this.energy, 0);
   }
 
   if (this.fullness > 0) {
-    this.fullness -= this.hungerRate * deltaTime;
+    if (this.isSleeping) {
+      this.fullness -= this.hungerRate * deltaTime * 0.5;
+    } else {
+      this.fullness -= this.hungerRate * deltaTime;
+    }
     this.fullness = Math.max(this.fullness, 0);
   }
 
   if (this.stamina < this.maxStamina) {
-    this.stamina += this.staminaRecoveryRate * deltaTime;
+    if (this.isSleeping) {
+      this.stamina += this.staminaRecoveryRate * deltaTime * 2;
+    } else {
+      this.stamina += this.staminaRecoveryRate * deltaTime;
+    }
     this.stamina = Math.min(this.maxStamina, this.stamina);
   }
 }
@@ -124,6 +132,96 @@ function applyModifier(location, modifier) {
 function idleState(entity, map, goap) {
   // console.log('waiting');
   entity.checkGoals(goap, map);
+  if (entity.goals.length === 0) {
+    entity.findPotentialGoals(goap, map);
+  }
+}
+
+Person.prototype.findPotentialGoals = function (goap, map) {
+  let potentionGoals = [];
+  let sleep = {
+    "name": 'sleep',
+    'potential': (this.maxEnergy - this.energy) / this.maxEnergy,
+    'preconditions': [
+      {
+        "type": "self",
+        "target": "base stats",
+        "effect": "add",
+        "name": "energy",
+        "amount": this.maxEnergy - this.energy
+      }
+    ]
+  }
+  potentionGoals.push(sleep);
+  let eat = {
+    'name': 'eat',
+    'potential': (this.maxFullness - this.fullness) / this.maxFullness,
+    'preconditions': [
+      {
+        "type": "self",
+        "target": "base stats",
+        "effect": "add",
+        "name": "fullness",
+        "amount": this.maxFullness - this.fullness
+      }
+    ]
+  }
+  potentionGoals.push(eat);
+
+  let chosenPreconditions;
+  let highestPotential = .2;
+  for (let potentialGoal of potentionGoals) {
+    if (highestPotential < potentialGoal.potential) {
+      console.log(`highest potential ${potentialGoal.name}: ${potentialGoal.potential}`);
+      highestPotential = potentialGoal.potential;
+      chosenPreconditions = potentialGoal.preconditions;
+    }
+  }
+
+  if (chosenPreconditions) {
+    this.createPlan(goap, map, chosenPreconditions);
+  }
+}
+
+Person.prototype.createPlan = function (goap, map, goalEffects) {
+  let goapPlanner = new GoapPlanner();
+  console.log('creating plan');
+  goapPlanner.createPlan(map, this, this.state, goap.actions, goalEffects).then((plan) => {
+    if (plan) {
+      console.log('found plan');
+      this.plan = plan;
+      this.planIndex = 0;
+      this.currentAction = doAction;
+      this.isNearTarget = false;
+    }
+    else {
+      console.log('did not find plan');
+      this.currentAction = idleState;
+    }
+  }).catch(err => {
+    console.error(`an error with creating plan for ${goal} occurred`);
+    console.error(err);
+    this.goals.splice(0, 1);
+    this.currentAction = idleState;
+  });
+  this.currentAction = entityBusy;
+}
+
+/**
+ * checks for goals in the this.goals list, and appends the oldest one this.goals[0]
+ */
+Person.prototype.checkGoals = function (goap, map) {
+  if (this.goals.length > 0) {
+    let goal = this.goals[0];
+    let goalAction = goap.findAction(goal);
+    console.log(`goal: ${goal}`);
+    if (goalAction) {
+      this.createPlan(goap, map, goalAction.effects);
+    } else {
+      console.log(`could not find a goal action(s) for: ${goal}`);
+    }
+  }
+
 }
 
 function doAction(entity, map) {
@@ -133,9 +231,15 @@ function doAction(entity, map) {
     if (action.distanceCost > 0 && !entity.isNearTarget) {
       let aStar = new AStar();
       aStar.findPath(entity.position, action.target.position, map).then((path) => {
-        entity.path = path;
-        entity.pathIndex = 0;
-        entity.currentAction = followPath;
+        if (path) {
+          entity.path = path;
+          entity.pathIndex = 0;
+          entity.currentAction = followPath;
+        } else {
+          console.log('already there');
+          entity.isNearTarget = true;
+          entity.currentAction = doAction;
+        }
       }).catch((err) => {
         console.log('an error occured with doAction findPath');
         console.error(err);
@@ -143,10 +247,14 @@ function doAction(entity, map) {
     } else {
       //do action
       console.log(entity.name + ' doing action: ' + action.name);
+      if (action.sleeping) {
+        entity.isSleeping = true;
+      }
       setTimeout(() => {
         console.log(`${entity.name} finished doing action: ${action.name}`);
         entity.isNearTarget = false;
         entity.planIndex++;
+        entity.isSleeping = false;
         entity.applyAction(action, map);
         // console.log(`new player state: ${JSON.stringify(entity.state)}`);
         if (action.target && action.target.destroy) {
@@ -173,35 +281,6 @@ function doAction(entity, map) {
 }
 
 function entityBusy(entity, map) {
-
-}
-
-/**
- * checks for goals in the this.goals list, and appends the oldest one this.goals[0]
- */
-Person.prototype.checkGoals = function (goap, map) {
-  if (this.goals.length > 0) {
-    let goal = this.goals[0];
-    let goalAction = goap.findAction(goal);
-    console.log(`goal: ${goal}`);
-    if (goalAction) {
-      let goapPlanner = new GoapPlanner();
-      goapPlanner.createPlan(map, this, this.state, goap.actions, goalAction.effects).then((plan) => {
-        if (plan) {
-          this.plan = plan;
-          this.planIndex = 0;
-          this.currentAction = doAction;
-          this.isNearTarget = false;
-        }
-      }).catch(err => {
-        console.error(`an error with creating plan for ${goal} occurred`);
-        console.error(err);
-        this.goals.splice(0, 1);
-      });
-    } else {
-      console.log(`could not find a goal action(s) for: ${goal}`);
-    }
-  }
 
 }
 
@@ -260,12 +339,14 @@ Person.prototype.applyAction = function (action, map) {
       }
       // console.log(JSON.stringify(this.state));
     } else if (effect.type === 'own') {
-      let newItemCondition = Object.assign({}, effect);
-      this.state.push(newItemCondition);
       let index = map.otherSettings.findIndex(x => x.name === effect.name);
       if (index == -1) {
         console.error(`could not find settings for ${effect.name} in otherSettings`);
       } else {
+        let newItemCondition = Object.assign({}, effect);
+        newItemCondition.target = action.target;
+        this.state.push(newItemCondition);
+
         let otherSettings = map.otherSettings[index];
         let v = Math.floor(Math.random() * otherSettings.baseSprites.length);
         let entity = new Entity(effect.name, map.id++, action.target.position.x, action.target.position.y, index, v);
@@ -295,7 +376,7 @@ Person.prototype.applyAction = function (action, map) {
     } else if (effect.type === 'self') {
       if (effect.target === 'base stats') {
         if (effect.effect === 'add') {
-          this.addToBaseStat(effect.name,effect.amount)
+          this.addToBaseStat(effect.name, effect.amount)
         } else if (effect.effect === 'multiply') {
           //TODO: implement multiply
           console.log('multiply not yet implemented');

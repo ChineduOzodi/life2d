@@ -84,6 +84,27 @@
                     "amount": 1
                 }
             ]
+        },
+        {
+            "name": "sleep in wooden shelter",
+            "preconditions": [
+                {
+                    "type": "own",
+                    "name": "wooden shelter",
+                    "amount": 1
+                }
+            ],
+            "cost": 60,
+            "sleeping": true,
+            "effects": [
+                {
+                    "type": "self",
+                    "target": "base stats",
+                    "effect":"add",
+                    "name":"energy",
+                    "amount": 120
+                }
+            ]
         }
     ]
 }
