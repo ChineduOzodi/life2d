@@ -131,6 +131,7 @@ function applyModifier(location, modifier) {
 
 function idleState(entity, map, goap) {
   // console.log('waiting');
+  entity.info = "idling...";
   entity.checkGoals(goap, map);
   if (entity.goals.length === 0) {
     entity.findPotentialGoals(goap, map);
@@ -228,6 +229,7 @@ function doAction(entity, map) {
   if (entity.plan) {
     let action = entity.plan[entity.planIndex];
     // console.log('action: ' + JSON.stringify(action));
+    entity.info = `doing action: ${action.name}`;
     if (action.distanceCost > 0 && !entity.isNearTarget) {
       let aStar = new AStar();
       aStar.findPath(entity.position, action.target.position, map).then((path) => {
@@ -252,6 +254,7 @@ function doAction(entity, map) {
       }
       setTimeout(() => {
         console.log(`${entity.name} finished doing action: ${action.name}`);
+        entity.info = `finished doing action: ${action.name}`;
         entity.isNearTarget = false;
         entity.planIndex++;
         entity.isSleeping = false;
@@ -280,13 +283,14 @@ function doAction(entity, map) {
   }
 }
 
-function entityBusy(entity, map) {
+function entityBusy() {
 
 }
 
-function followPath(entity, map) {
+function followPath(entity) {
   if (entity.path) {
     let distanceLeft = entity.path[entity.pathIndex].moveAgent(entity, 1 / 60);
+    entity.info = `moving to do action: ${entity.plan[entity.planIndex].name}, distance: ${distanceLeft}`;
     if (entity.path.length - 1 == entity.pathIndex && distanceLeft <= 1) {
       //reached target
       entity.isNearTarget = true;
@@ -388,10 +392,6 @@ Person.prototype.applyAction = function (action, map) {
   }
 
   return this.state;
-}
-
-function createVector(x, y) {
-  return { x: x, y: y };
 }
 
 module.exports = Person;
