@@ -35,8 +35,8 @@
                 <h5 class="mb-0">
                   <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseThree"
                     aria-expanded="false" aria-controls="collapseThree">
-                    <ng-container *ngIf="person.plan[entity.planIndex]; else noAction">
-                      {{person.action.name}}
+                    <ng-container *ngIf="person.plan[person.planIndex]; else noAction">
+                      {{person.plan[person.planIndex].name}}
                     </ng-container>
                     <ng-template #noAction>
                       No action
