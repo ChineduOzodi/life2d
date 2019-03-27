@@ -72,7 +72,6 @@ assignClasses = function (location, Class) {
   return assignedList;
 }
 
-
 Map.prototype.generate = function (saveDir) {
   map = this;
   return new Promise((resolve, reject) => {
@@ -83,9 +82,7 @@ Map.prototype.generate = function (saveDir) {
     //get veg settings
 
     map.randomMap().then(() => {
-      console.log('saving to file');
-      fs.writeFileSync('./server/settings/mapgen.json', JSON.stringify(thisMap.settings));
-      console.log('finished saving settings to file');
+      console.log('random map created');
       let promises = [];
       let vegLocation = map.settings.locations.vegLocation;
       let peopleLocation = map.settings.locations.peopleLocation;
