@@ -233,7 +233,7 @@ function doAction(entity, map) {
     if (action.distanceCost > 0 && !entity.isNearTarget) {
       let aStar = new AStar();
       aStar.findPath(entity.position, action.target.position, map).then((path) => {
-        if (path) {
+        if (path && path.length > 0) {
           entity.path = path;
           entity.pathIndex = 0;
           entity.currentAction = followPath;
