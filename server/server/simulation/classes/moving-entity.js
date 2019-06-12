@@ -2,36 +2,27 @@ var Entity = require('./entity');
 var GoapPlanner = require('./goap-planner');
 AStar = require('./a-star');
 
-function Person(id, x, y, settingsIndex, baseSpriteIndex) {
-  Entity.call(this, 'person', id, x, y, settingsIndex, baseSpriteIndex);
+function MovingEntity(entity, id, x, y, settingsIndex, baseSpriteIndex) {
+  Entity.call(this, entity, id, x, y, settingsIndex, baseSpriteIndex);
   this.goals = [];
-  this.state = [
-    {
-      "type": "item",
-      "name": "stone axe",
-      "amount": 1
-    }
-  ];
+  
   this.actionPlan = [];
   this.currentAction = idleState;
-  this.speed = 0;
   this.energy = 0;
   this.maxEnergy = 0;
   this.energyGainRate = 0;
   this.energyLossRate = 0;
-  this.hungerRate = 0;
-  this.stamina = 0;
-  this.maxStamina = 0;
-  this.staminaRecoveryRate = 0;
-  this.fullness = 0;
-  this.maxFullness = 0;
+  this.baseMaxEnergy = 0;      // received from settings
+  this.baseEnergyGainRate = 0; // receieved from settings
+  this.baseEnergyLossRate = 0; // receieved from settings
+  this.traits = [];
   this.modifiers = [];
   this.isSleeping = false;
 }
 
-Person.prototype = Object.create(Entity.prototype);
+MovingEntity.prototype = Object.create(Entity.prototype);
 
-Person.prototype.run = function (map, goap, deltaTime) {
+MovingEntity.prototype.run = function (map, goap, deltaTime) {
   this.resetBaseAttributes();
   this.applyModifiers();
   this.applyBaseRates(deltaTime);
@@ -39,18 +30,13 @@ Person.prototype.run = function (map, goap, deltaTime) {
   // console.log(`energy: ${this.energy}`);
 }
 
-Person.prototype.resetBaseAttributes = function () {
-  this.speed = this.baseSpeed;
+MovingEntity.prototype.resetBaseAttributes = function () {
   this.maxEnergy = this.baseMaxEnergy;
   this.energyGainRate = this.baseEnergyGainRate;
   this.energyLossRate = this.baseEnergyLossRate;
-  this.hungerRate = this.baseHungerRate;
-  this.maxStamina = this.baseMaxStamina;
-  this.staminaRecoveryRate = this.baseStaminaRecoveryRate;
-  this.maxFullness = this.baseMaxFullness;
 }
 
-Person.prototype.addToBaseStat = function (statName, amount) {
+MovingEntity.prototype.addToBaseStat = function (statName, amount) {
   statName = camelize(statName);
   this[statName] += amount;
   let maxName = camelize(`max ${statName}`);
@@ -65,7 +51,7 @@ function camelize(str) {
   }).replace(/\s+/g, '');
 }
 
-Person.prototype.applyBaseRates = function (deltaTime) {
+MovingEntity.prototype.applyBaseRates = function (deltaTime) {
   if (this.isSleeping) {
     // this.energy += this.energyGainRate * deltaTime;
     // this.energy = Math.min(this.energy, this.maxEnergy);
@@ -93,7 +79,7 @@ Person.prototype.applyBaseRates = function (deltaTime) {
   }
 }
 
-Person.prototype.applyModifiers = function () {
+MovingEntity.prototype.applyModifiers = function () {
   for (let modifier of this.modifiers) {
     switch (modifier.name) {
       case 'speed':
@@ -138,7 +124,7 @@ function idleState(entity, map, goap) {
   }
 }
 
-Person.prototype.findPotentialGoals = function (goap, map) {
+MovingEntity.prototype.findPotentialGoals = function (goap, map) {
   let potentionGoals = [];
   let sleep = {
     "name": 'sleep',
@@ -184,7 +170,7 @@ Person.prototype.findPotentialGoals = function (goap, map) {
   }
 }
 
-Person.prototype.createPlan = function (goap, map, goalEffects) {
+MovingEntity.prototype.createPlan = function (goap, map, goalEffects) {
   let goapPlanner = new GoapPlanner();
   console.log('creating plan');
   goapPlanner.createPlan(map, this, this.state, goap.actions, goalEffects).then((plan) => {
@@ -211,7 +197,7 @@ Person.prototype.createPlan = function (goap, map, goalEffects) {
 /**
  * checks for goals in the this.goals list, and appends the oldest one this.goals[0]
  */
-Person.prototype.checkGoals = function (goap, map) {
+MovingEntity.prototype.checkGoals = function (goap, map) {
   if (this.goals.length > 0) {
     let goal = this.goals[0];
     let goalAction = goap.findAction(goal);
@@ -305,7 +291,7 @@ function followPath(entity) {
   }
 }
 
-Person.prototype.applyAction = function (action, map) {
+MovingEntity.prototype.applyAction = function (action, map) {
 
   //remove precondition items
   for (let i in action.preconditions) {
@@ -394,4 +380,4 @@ Person.prototype.applyAction = function (action, map) {
   return this.state;
 }
 
-module.exports = Person;
+module.exports = MovingEntity;

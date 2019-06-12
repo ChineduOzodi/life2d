@@ -8,6 +8,10 @@ function Entity(name, id, x, y, settingsIndex, baseSpriteIndex) {
     this.destroy = false;
 }
 
+Entity.prototype.run = function (map, goap, deltaTime) {
+
+}
+
 function createVector(x,y) {
     return {x:x,y:y};
   }

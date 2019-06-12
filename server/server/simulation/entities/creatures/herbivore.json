@@ -1,24 +1,19 @@
 {
-    "name": "person",
-    "baseSpeed": 10,
+    "name": "herbivore",
+    "type":"herbivore",
     "energy": 1000,
     "baseMaxEnergy": 1000,
     "baseEnergyLossRate": 1,
     "baseEnergyGainRate": 2,
-    "stamina": 100,
-    "baseMaxStamina": 100,
-    "baseStaminaRecoveryRate": 1,
-    "fullness": 500,
-    "baseMaxFullness": 500,
-    "baseHungerRate": 1,
-    "spawnSettings": {
-        "biomes": [
-            {
-                "name": "land",
-                "chance": 0.001
-            }
-        ]
-    },
+    "traits":[
+        {
+            "name":"speed",
+            "base": 10,
+            "randomness": 0.1,
+            "cost": "energy",
+            "costRate": 0.1
+        }
+    ],
     "baseSprites": [
         {
             "url": "/static/simulation/sprites/people/pixelman.png",

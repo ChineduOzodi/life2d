@@ -2,18 +2,16 @@
     "name": "Awesome Map",
     "width": 1000,
     "height": 1000,
-    "scale": 1000,
+    "scale": 1,
     "seed": 16.163116528603627,
     "randomSeed": true,
     "locations": {
-        "vegLocation": "./server/simulation/entities/vegetation",
-        "peopleLocation": "./server/simulation/entities/people",
-        "otherLocation": "./server/simulation/entities/other"
+        "entities": "./server/simulation/entities"
     },
     "noise": {
         "seed": 62.271233314667896,
         "randomSeed": true,
-        "scale": 0.000001,
+        "scale": 0.001,
         "octaves": 12,
         "minNoiseHeight": -1.6723386752659535,
         "maxNoiseHeight": 1.6673714203659595,
@@ -36,26 +34,22 @@
         {
             "width": 1000,
             "height": 1000,
-            "scale": 100,
+            "scale": 1,
             "maxZoom": 1000,
             "minZoom": 0.01,
             "generate": false
+        }
+    ],
+    "spawns": [
+        {
+            "type": "herbivore",
+            "spawnBiomes":["land"],
+            "spawnCount":100
         },
         {
-            "width": 1000,
-            "height": 1000,
-            "scale": 10,
-            "maxZoom": 1000,
-            "minZoom": 0.1,
-            "generate": true
-        },
-        {
-            "width": 1000,
-            "height": 1000,
-            "scale": 1,
-            "maxZoom": 1000,
-            "minZoom": 0.6,
-            "generate": true
+            "type": "vegetation",
+            "spawnBiomes":["land"],
+            "spawnCount":100
         }
     ]
 }
