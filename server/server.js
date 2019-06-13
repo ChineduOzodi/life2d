@@ -51,8 +51,7 @@ if (regenerate) {
   console.log('done reading map settings');
   map = new Map(mapSettings);
   map.generate(saveDir);
-}
-else {
+} else {
   try {
     var saveJson = fs.readFileSync(saveDir + `/save.save`);
     var saveData = JSON.parse(saveJson);
@@ -79,28 +78,20 @@ io.on('connection', function (socket) {
       players[socket.id] = username;
       delete players[users[username].socketId]
       users[username].socketId = socket.id;
-      io.to(socket.id).emit('user', users[username]);
-      io.to(socket.id).emit('map', map);
-      io.to(socket.id).emit('goapActions', goap.actions);
     } else {
       //create player
       console.log(`new user ${username} logged in`);
-      map.newPlayer(username).then(person => {
-        console.log(`person x: ${person.position.x}, y: ${person.position.y}`);
-        // person.goals.push('eat berry');
-        users[username] = new User(socket.id, username, socket.id, new Camera(person.position, 5));
-        players[socket.id] = username;
-        // console.log('has veg settings: ' + JSON.stringify(map.vegetationSettings));
-        io.to(socket.id).emit('user', users[username]);
-        io.to(socket.id).emit('map', map);
-        io.to(socket.id).emit('goapActions', goap.actions);
-        // person.setGoal('build wooden shelter', goap, map);
-      }).catch(err => {
-        console.log(err);
-        io.to(socket.id).emit('error', JSON.stringify(err));
-      });
+      players[socket.id] = username;
+      const x = map.width / 2;
+      const y = map.height / 2;
+      console.log(`x: ${x}, y: ${y}`);
+      users[username] = new User(socket.id, username, socket.id, new Camera({x:x, y:y}, 5));
     }
-    
+
+    io.to(socket.id).emit('user', users[username]);
+    io.to(socket.id).emit('map', map);
+    io.to(socket.id).emit('goapActions', goap.actions);
+
   });
   socket.on('camera', function (camera) {
     // console.log('camera: ' + JSON.stringify(camera));
@@ -141,20 +132,13 @@ io.on('connection', function (socket) {
 });
 
 setInterval(function () {
-  map.run(goap, 1/60);
-  io.sockets.emit('people', map.people);
+  map.run(goap, 1 / 60);
+  io.sockets.emit('entities', map.entities);
   io.sockets.emit('state', players);
-  if (map.updateVegetation) {
-    map.updateVegetation = false;
-    io.sockets.emit('vegetation', map.vegetation);
-  }
+
   if (map.locationReserveChanged) {
     map.locationReserveChanged = false;
     io.sockets.emit('locationReservations', map.locationReservations);
-  }
-  if (map.updateOthers) {
-    map.updateOthers = false;
-    io.sockets.emit('updateOthers', map.others);
   }
 }, 1000 / 60);
 

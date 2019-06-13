@@ -1,7 +1,7 @@
+import { MovingEntity } from './classes/moving-entity';
 import { Map } from './interfaces/map';
 import { Subscription } from 'rxjs';
 import { Vegetation } from './classes/vegetation';
-import { Person } from './classes/person';
 import { SimulationService } from './../simulation.service';
 import { LoginService } from './../login.service';
 import { Camera } from './classes/camera';
@@ -34,14 +34,11 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
   energyPercentString: string;
   staminaPercentString: string;
   fullnessPercentString: string;
-  person: Person;
   mapSub: Subscription;
   mapChunkAddSub: Subscription;
-  mapVegetationSub: Subscription;
-  mapPeopleSub: Subscription;
+  mapEntitiesSub: Subscription;
   locationReservationsSub: Subscription;
   goapActionsSub: Subscription;
-  othersSub: Subscription;
   constructor(
     private loginService: LoginService,
     private simulationService: SimulationService
@@ -59,19 +56,8 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
       this.sMap.chunkData[chunkData.name] = chunkData;
       console.log(chunkData);
     });
-    this.mapVegetationSub = this.simulationService.vegetation.subscribe(veg => {
-      this.sMap.vegetation = veg;
-    });
-    this.mapPeopleSub = this.simulationService.people.subscribe(people => {
-      this.sMap.people = people;
-      this.person = people.find(x => x.id == this.loginService.getUser().username);
-      const energyPercent = Math.floor(this.person.energy / this.person.maxEnergy * 100);
-      this.person.energy = Math.floor(this.person.energy);
-      this.energyPercentString = `${energyPercent}%`;
-      this.staminaPercentString = `${Math.floor(this.person.stamina / this.person.maxStamina * 100)}%`;
-      this.person.stamina = Math.floor(this.person.stamina);
-      this.fullnessPercentString = `${Math.floor(this.person.fullness / this.person.maxFullness * 100)}%`;
-      this.person.fullness = Math.floor(this.person.fullness);
+    this.mapEntitiesSub = this.simulationService.entities.subscribe(entities => {
+      this.sMap.entities = entities;
     });
     this.locationReservationsSub = this.simulationService.locationReservations.subscribe( reservations => {
       this.sMap.locationReservations = reservations;
@@ -81,10 +67,6 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
       console.log('received actions');
       console.log(actions);
       this.actions = actions;
-    });
-    this.othersSub = this.simulationService.others.subscribe( others => {
-      console.log('received others');
-      this.sMap.others = others;
     });
     // this.logger.debug('camera set', this.camera);
   }
@@ -139,22 +121,20 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
                 }
               }
             }
-            if (p.sim.sMap.vegetation) {
-              for (const vegetation of p.sim.sMap.vegetation) {
-                const entity: Vegetation = Object.assign(new Vegetation('', '', new Position(0, 0, 0), 0, 0), vegetation);
-                entity.render(p, p.sim.camera, p.sim.spriteImages, p.sim.sMap.vegetationSettings);
-              }
-            }
-            if (p.sim.sMap.others) {
-              for (const other of p.sim.sMap.others) {
-                const entity: Entity = Object.assign(new Entity('', '', new Position(0, 0, 0), 0, 0), other);
-                entity.render(p, p.sim.camera, p.sim.spriteImages, p.sim.sMap.otherSettings);
-              }
-            }
-            if (p.sim.sMap.people) {
-              for (const person of p.sim.sMap.people) {
-                const entity: Person = Object.assign(new Person('', new Position(0, 0, 0), 0, 0, 0), person);
-                entity.render(p, p.sim.camera, p.sim.spriteImages, p.sim.sMap.peopleSettings);
+            if (p.sim.sMap.entities) {
+              for (const entity of p.sim.sMap.entities) {
+                const spawnIndex = p.sim.sMap.entitySettings.findIndex(x => x.type === entity.type);
+                const spawnSettings = p.sim.sMap.entitySettings[spawnIndex];
+                let entityA = null;
+                if (spawnSettings.type === 'vegetation') {
+                  entityA = Object.assign(new Vegetation('', '', new Position(0, 0, 0), 0, 0), entity);
+                } else if (spawnSettings.type === 'herbivore') {
+                  entityA = Object.assign(new MovingEntity('', new Position(0, 0, 0), 0, 0), entity);
+                } else {
+                  console.error(`Type not sure for: ${entity.name}`);
+                  entityA = Object.assign(new Entity('', '', new Position(0, 0, 0), 0, 0), entity);
+                }
+                entityA.render(p, p.sim.camera, p.sim.spriteImages, p.sim.sMap.entitySettings);
               }
             }
           }

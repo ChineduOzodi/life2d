@@ -5,7 +5,6 @@ AStar = require('./a-star');
 function MovingEntity(entity, id, x, y, settingsIndex, baseSpriteIndex) {
   Entity.call(this, entity, id, x, y, settingsIndex, baseSpriteIndex);
   this.goals = [];
-  
   this.actionPlan = [];
   this.currentAction = idleState;
   this.energy = 0;
@@ -246,9 +245,6 @@ function doAction(entity, map) {
         entity.isSleeping = false;
         entity.applyAction(action, map);
         // console.log(`new player state: ${JSON.stringify(entity.state)}`);
-        if (action.target && action.target.destroy) {
-          map.updateVegetation = true;
-        }
         if (entity.planIndex >= entity.plan.length) {
           entity.currentAction = idleState;
           console.log("plan complete!");
@@ -329,7 +325,7 @@ MovingEntity.prototype.applyAction = function (action, map) {
       }
       // console.log(JSON.stringify(this.state));
     } else if (effect.type === 'own') {
-      let index = map.otherSettings.findIndex(x => x.name === effect.name);
+      let index = map.entitySettings.findIndex(x => x.name === effect.name);
       if (index == -1) {
         console.error(`could not find settings for ${effect.name} in otherSettings`);
       } else {
@@ -337,11 +333,10 @@ MovingEntity.prototype.applyAction = function (action, map) {
         newItemCondition.target = action.target;
         this.state.push(newItemCondition);
 
-        let otherSettings = map.otherSettings[index];
-        let v = Math.floor(Math.random() * otherSettings.baseSprites.length);
+        let entitySettings = map.entitySettings[index];
+        let v = Math.floor(Math.random() * entitySettings.baseSprites.length);
         let entity = new Entity(effect.name, map.id++, action.target.position.x, action.target.position.y, index, v);
-        map.others.push(entity);
-        map.updateOthers = true;
+        map.entities.push(entity);
         for (let x = action.target.position.x; x < action.target.position.x + action.target.width; x++) {
           for (let y = action.target.position.y; y < action.target.position.y + action.target.height; y++) {
             if (map.map[`x:${x},y:${y}`]) {
@@ -351,7 +346,7 @@ MovingEntity.prototype.applyAction = function (action, map) {
               map.map[`x:${x},y:${y}`] = {
                 biome: map.getBiome(x, y),
                 height: map.getHeight(x, y),
-                otherIndex: map.others.length - 1
+                entityIndex: map.entities.length - 1
               };
             }
           }

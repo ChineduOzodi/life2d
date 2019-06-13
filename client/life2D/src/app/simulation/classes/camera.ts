@@ -21,6 +21,8 @@ export class Camera {
         const dx = locationX - screenWidth / 2;
         const dy = locationY - screenHeight / 2;
 
+        // console.log(`x: ${this.position.x}, y: ${this.position.y},
+        // dx: ${dx}, dy: ${dy}, zoomLevel: ${this.zoomLevel}, newZoom: ${newZoom}`);
         this.position.x += dx / this.zoomLevel - dx / newZoom;
         this.position.y += dy / this.zoomLevel - dy / newZoom;
         this.zoomLevel = newZoom;

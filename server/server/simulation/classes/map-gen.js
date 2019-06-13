@@ -94,6 +94,8 @@ Map.prototype.generate = function (saveDir) {
       Promise.all(promises).then(() => {
         map.saveData(saveDir).then(() => {
           console.log("loaded entity settings");
+          map.spawnEntities();
+          console.log("entity spawned");
           resolve();
         }).catch((err) => {
           console.log(`error occured saving map data in map generation`);
@@ -248,59 +250,6 @@ Map.prototype.getSpawnLocation = function (biomes) {
     x: randomX,
     y: randomY
   };
-}
-
-Map.prototype.newPlayer = function (id) {
-  thisMap = this;
-  return new Promise((resolve, reject) => {
-    let count = 0;
-    let found = false;
-    while (count < 1002) {
-      count++;
-      let randomX = Math.floor(Math.random() * thisMap.width * thisMap.scale - thisMap.width * 0.5 * thisMap.scale);
-      let randomY = Math.floor(Math.random() * thisMap.height * thisMap.scale - thisMap.height * 0.5 * thisMap.scale);
-      // console.log(`info: w: ${thisMap.width}, s: ${thisMap.scale}`)
-      // console.log(`random x: ${randomX}, y: ${randomY}`);
-      let shouldBreak = false;
-      // console.log(JSON.stringify(thisMap.vegetationSettings));
-      for (let i = 0; i < thisMap.peopleSettings.length; i++) {
-        const entitySettings = thisMap.peopleSettings[i];
-        for (let b = 0; b < entitySettings.spawnSettings.biomes.length; b++) {
-          const biome = entitySettings.spawnSettings.biomes[b];
-          if (thisMap.getBiome(randomX, randomY)[0] === biome.name) {
-            shouldBreak = true;
-            found = true;
-            let v = Math.floor(Math.random() * entitySettings.baseSprites.length);
-            let person = Object.assign(new MovingEntity(id, randomX, randomY, i, v), entitySettings);
-            thisMap.people.push(person);
-            thisMap.checkMapChunking({
-              x: randomX,
-              y: randomY
-            }, 1).then(() => {
-              resolve(person);
-            }).catch((err) => {
-              reject(err);
-            });
-          } else if (count > 1000) {
-            shouldBreak = true;
-            reject('people creation reached count limit, found person did not find free spot');
-          }
-          if (shouldBreak) {
-            break;
-          }
-        }
-        if (shouldBreak) {
-          break;
-        }
-      }
-      if (shouldBreak) {
-        break;
-      }
-    }
-    if (!found) {
-      reject('people creation reached count limit, did not find person');
-    }
-  })
 }
 
 Map.prototype.checkMapChunking = function (position, zoomLevel) {
