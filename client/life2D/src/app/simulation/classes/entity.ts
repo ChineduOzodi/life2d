@@ -2,6 +2,7 @@ import { Camera } from './camera';
 import { Position } from './position';
 export class Entity {
   name: string;
+  type: string;
   position: Position;
   settingsIndex: number;
   baseSpriteIndex: number;
@@ -11,6 +12,7 @@ export class Entity {
   urlHead = 'http://localhost:5000';
   constructor(name: string, id: string, position: Position, settingsIndex: number, baseSpriteIndex: number) {
     this.name = name;
+    this.type = name;
     this.position = position;
     this.settingsIndex = settingsIndex;
     this.baseSpriteIndex = baseSpriteIndex;

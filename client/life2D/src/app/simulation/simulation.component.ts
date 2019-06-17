@@ -50,6 +50,7 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
     this.mapSub = this.simulationService.map.subscribe(map => {
       console.log(`recieved map`);
       this.sMap = map;
+      console.log(map);
       this.loadImg = true;
     });
     this.mapChunkAddSub = this.simulationService.chunkData.subscribe(chunkData => {
@@ -57,7 +58,9 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
       console.log(chunkData);
     });
     this.mapEntitiesSub = this.simulationService.entities.subscribe(entities => {
-      this.sMap.entities = entities;
+      if (this.sMap) {
+        this.sMap.entities = entities;
+      }
     });
     this.locationReservationsSub = this.simulationService.locationReservations.subscribe( reservations => {
       this.sMap.locationReservations = reservations;
@@ -125,6 +128,8 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
               for (const entity of p.sim.sMap.entities) {
                 const spawnIndex = p.sim.sMap.entitySettings.findIndex(x => x.type === entity.type);
                 const spawnSettings = p.sim.sMap.entitySettings[spawnIndex];
+                // console.log(spawnIndex);
+                // console.log(spawnSettings);
                 let entityA = null;
                 if (spawnSettings.type === 'vegetation') {
                   entityA = Object.assign(new Vegetation('', '', new Position(0, 0, 0), 0, 0), entity);

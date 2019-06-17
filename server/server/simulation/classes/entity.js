@@ -1,5 +1,6 @@
-function Entity(name, id, x, y, settingsIndex, baseSpriteIndex) {
-    this.name = name;
+function Entity(type, id, x, y, settingsIndex, baseSpriteIndex) {
+    this.type = type;
+    this.name = type;
     this.position = createVector(x, y);
     this.settingsIndex = settingsIndex;
     this.baseSpriteIndex = baseSpriteIndex;

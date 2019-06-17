@@ -1,6 +1,5 @@
 var MovingEntity = require('./moving-entity');
 var Vegetation = require('./vegetation');
-var Entity = require('./entity');
 var math = require('mathjs');
 var SimplexNoise = require('simplex-noise');
 var PNGImage = require('pngjs-image');
@@ -224,32 +223,32 @@ Map.prototype.getSpawnLocation = function (biomes) {
   let count = 0;
   while (count < 1002) {
     count++;
-    let randomX = Math.floor(Math.random() * thisMap.width * thisMap.scale - thisMap.width * 0.5 * thisMap.scale);
-    let randomY = Math.floor(Math.random() * thisMap.height * thisMap.scale - thisMap.height * 0.5 * thisMap.scale);
-    // console.log(`info: w: ${thisMap.width}, s: ${thisMap.scale}`)
+    let randomX = Math.floor(Math.random() * this.width * this.scale - this.width * 0.5 * this.scale);
+    let randomY = Math.floor(Math.random() * this.height * this.scale - this.height * 0.5 * this.scale);
+    // console.log(`info: w: ${this.width}, s: ${this.scale}`)
     // console.log(`random x: ${randomX}, y: ${randomY}`);
     let shouldBreak = false;
 
-    for (biome of biomes) {
-      if (thisMap.getBiome(randomX, randomY)[0] === biome) {
+    for (const biome of biomes) {
+      if (this.getBiome(randomX, randomY)[0] === biome) {
         shouldBreak = true;
         found = true;
       } else if (count > 1000) {
         shouldBreak = true;
-        console.error(`Could not find spawn location`);
+        throw new error(`Could not find spawn location`);
       }
       if (shouldBreak) {
         break;
       }
     }
     if (shouldBreak) {
-      break;
+      return {
+        x: randomX,
+        y: randomY
+      };
     }
   }
-  return {
-    x: randomX,
-    y: randomY
-  };
+  throw new error(`Could not find spawn location`);
 }
 
 Map.prototype.checkMapChunking = function (position, zoomLevel) {
