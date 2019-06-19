@@ -82,8 +82,8 @@ io.on('connection', function (socket) {
       //create player
       console.log(`new user ${username} logged in`);
       players[socket.id] = username;
-      const x = map.width / 2;
-      const y = map.height / 2;
+      const x = 0;
+      const y = 0;
       console.log(`x: ${x}, y: ${y}`);
       users[username] = new User(socket.id, username, socket.id, new Camera({x:x, y:y}, 5));
     }

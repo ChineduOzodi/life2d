@@ -11,7 +11,7 @@ function MovingEntity(entity, id, x, y, settingsIndex, baseSpriteIndex) {
   this.maxEnergy = 0;
   this.energyGainRate = 0;
   this.energyLossRate = 0;
-  this.baseMaxEnergy = 0;      // received from settings
+  this.baseMaxEnergy = 0; // received from settings
   this.baseEnergyGainRate = 0; // receieved from settings
   this.baseEnergyLossRate = 0; // receieved from settings
   this.traits = [];
@@ -97,7 +97,7 @@ MovingEntity.prototype.applyModifiers = function () {
         this.fullness = applyModifier(this.fullness, modifier);
         break;
       default:
-      // code block
+        // code block
     }
   }
 }
@@ -125,30 +125,14 @@ function idleState(entity, map, goap) {
 
 MovingEntity.prototype.findPotentialGoals = function (goap, map) {
   let potentionGoals = [];
-  let sleep = {
-    "name": 'sleep',
-    'potential': (this.maxEnergy - this.energy) / this.maxEnergy,
-    'preconditions': [
-      {
-        "type": "self",
-        "target": "base stats",
-        "effect": "add",
-        "name": "energy",
-        "amount": this.maxEnergy - this.energy
-      }
-    ]
-  }
-  potentionGoals.push(sleep);
   let eat = {
-    'name': 'eat',
-    'potential': (this.maxFullness - this.fullness) / this.maxFullness,
-    'preconditions': [
-      {
-        "type": "self",
-        "target": "base stats",
-        "effect": "add",
-        "name": "fullness",
-        "amount": this.maxFullness - this.fullness
+    "name": 'eat',
+    'potential': (this.maxEnergy - this.energy) / this.maxEnergy,
+    'effect': [{
+        "type": "add",
+        "location": [],
+        "property": "energy",
+        "amount": this.maxEnergy - this.energy
       }
     ]
   }
@@ -179,8 +163,7 @@ MovingEntity.prototype.createPlan = function (goap, map, goalEffects) {
       this.planIndex = 0;
       this.currentAction = doAction;
       this.isNearTarget = false;
-    }
-    else {
+    } else {
       console.log('did not find plan');
       this.currentAction = idleState;
     }
@@ -341,8 +324,7 @@ MovingEntity.prototype.applyAction = function (action, map) {
           for (let y = action.target.position.y; y < action.target.position.y + action.target.height; y++) {
             if (map.map[`x:${x},y:${y}`]) {
               console.error(`map of x:${x},y:${y} already exists, can't set owned`);
-            }
-            else {
+            } else {
               map.map[`x:${x},y:${y}`] = {
                 biome: map.getBiome(x, y),
                 height: map.getHeight(x, y),

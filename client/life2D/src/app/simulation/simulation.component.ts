@@ -11,6 +11,9 @@ import { Component, OnInit, ViewChild, AfterViewInit, HostListener, OnDestroy } 
 import * as p5 from 'p5';
 import { Position } from './classes/position';
 import { Entity } from './classes/entity';
+import { RenderTypes } from './classes/constants/render-types';
+
+
 
 @Component({
   selector: 'app-simulation',
@@ -24,6 +27,12 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
   p5: any;
   width: number;
   movement = new Movement();
+
+  render = RenderTypes.SPEED;
+  renderTypes = [
+    RenderTypes.SPRITE,
+    RenderTypes.SPEED
+  ];
   camera: Camera;
   sMap: Map;
   actions: any[];
@@ -46,12 +55,13 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
   ) { }
 
   ngOnInit() {
-    this.camera = Object.assign( new Camera(new Position(0, 0, 0), 1), this.loginService.getUser().camera);
+    this.camera = Object.assign(new Camera(new Position(0, 0, 0), 1), this.loginService.getUser().camera);
     this.mapSub = this.simulationService.map.subscribe(map => {
       console.log(`recieved map`);
       this.sMap = map;
       console.log(map);
       this.loadImg = true;
+      this.setupEntities(map.entities, map.entitySettings);
     });
     this.mapChunkAddSub = this.simulationService.chunkData.subscribe(chunkData => {
       this.sMap.chunkData[chunkData.name] = chunkData;
@@ -59,14 +69,14 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
     });
     this.mapEntitiesSub = this.simulationService.entities.subscribe(entities => {
       if (this.sMap) {
-        this.sMap.entities = entities;
+        this.setupEntities(entities, this.sMap.entitySettings);
       }
     });
-    this.locationReservationsSub = this.simulationService.locationReservations.subscribe( reservations => {
+    this.locationReservationsSub = this.simulationService.locationReservations.subscribe(reservations => {
       this.sMap.locationReservations = reservations;
       console.log('location reservations updated');
     });
-    this.goapActionsSub = this.simulationService.goapActions.subscribe( actions => {
+    this.goapActionsSub = this.simulationService.goapActions.subscribe(actions => {
       console.log('received actions');
       console.log(actions);
       this.actions = actions;
@@ -84,10 +94,37 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
     this.createCanvas();
   }
 
+  setupEntities(entities, entitySettings) {
+    const objectEntities = [];
+    for (const entity of entities) {
+      const spawnIndex = entitySettings.findIndex(x => x.type === entity.type);
+      const spawnSettings = entitySettings[spawnIndex];
+
+      let entityA = null;
+      if (spawnSettings.type === 'vegetation') {
+        entityA = Object.assign(new Vegetation('', '', new Position(0, 0, 0), 0, 0), entity);
+      } else if (spawnSettings.type === 'herbivore') {
+        entityA = Object.assign(new MovingEntity('', new Position(0, 0, 0), 0, 0), entity);
+      } else {
+        console.error(`Type not sure for: ${entity.name}`);
+        entityA = Object.assign(new Entity('', '', new Position(0, 0, 0), 0, 0), entity);
+      }
+      if (entityA) {
+        objectEntities.push(entityA);
+      }
+    }
+    this.sMap.entities = objectEntities;
+  }
+
   createCanvas() {
     this.p5 = new p5(this.sketch);
     this.p5.sim = this;
     // console.log(`create sim: ${this.p5.sim}`);
+  }
+
+  setRender(render: string) {
+    console.log(`set render: ${render}`);
+    this.render = render;
   }
 
   private sketch(p: any) {
@@ -126,20 +163,7 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
             }
             if (p.sim.sMap.entities) {
               for (const entity of p.sim.sMap.entities) {
-                const spawnIndex = p.sim.sMap.entitySettings.findIndex(x => x.type === entity.type);
-                const spawnSettings = p.sim.sMap.entitySettings[spawnIndex];
-                // console.log(spawnIndex);
-                // console.log(spawnSettings);
-                let entityA = null;
-                if (spawnSettings.type === 'vegetation') {
-                  entityA = Object.assign(new Vegetation('', '', new Position(0, 0, 0), 0, 0), entity);
-                } else if (spawnSettings.type === 'herbivore') {
-                  entityA = Object.assign(new MovingEntity('', new Position(0, 0, 0), 0, 0), entity);
-                } else {
-                  console.error(`Type not sure for: ${entity.name}`);
-                  entityA = Object.assign(new Entity('', '', new Position(0, 0, 0), 0, 0), entity);
-                }
-                entityA.render(p, p.sim.camera, p.sim.spriteImages, p.sim.sMap.entitySettings);
+                entity.render(p, p.sim.camera, p.sim.spriteImages, p.sim.sMap.entitySettings);
               }
             }
           }
@@ -180,7 +204,23 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
     p.windowResized = () => {
       p.resizeCanvas(p.windowWidth * 0.8, p.windowHeight);
     };
+
+    // When the user clicks the mouse
+    p.mousePressed = () => {
+      if (p.sim.sMap.entities) {
+        for (const entity of p.sim.sMap.entities) {
+          const entityWindowPosition = entity.getWindowPosition(p.sim.camera);
+          const d = p.dist(p.mouseX, p.mouseY, entityWindowPosition.x, entityWindowPosition.y);
+
+          if (d < 10) {
+            // Pick new random color values
+            console.log(`clicked entity: ${entity.name} at position: (${entity.position.x}, ${entity.position.y})`);
+          }
+        }
+      }
+    };
   }
+
   toggleDebug() {
     this.debug = !this.debug;
   }

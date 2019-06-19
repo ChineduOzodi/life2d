@@ -12,45 +12,25 @@
           Camera position ( x: {{camera.position.x}} y: {{camera.position.y}} zoom: {{camera.zoomLevel}});
         </div>
       </div>
-      <div *ngIf="person">
-        <small>Energy: {{person.energy}} of {{person.maxEnergy}}</small>
-        <div class="progress">
-          <div class="progress-bar bg-info" role="progressbar" [style.width]="energyPercentString"
-            aria-valuenow="person.energy" aria-valuemin="0" aria-valuemax="person.maxEnergy"></div>
-        </div>
-        <small>Stamina: {{person.stamina}} of {{person.maxStamina}}</small>
-        <div class="progress">
-          <div class="progress-bar bg-warning" role="progressbar" [style.width]="staminaPercentString"
-            aria-valuenow="person.stamina" aria-valuemin="0" aria-valuemax="person.maxStamina"></div>
-        </div>
-        <small>Food: {{person.fullness}} of {{person.maxFullness}}</small>
-        <div class="progress">
-          <div class="progress-bar bg-success" role="progressbar" [style.width]="fullnessPercentString"
-            aria-valuenow="person.fullness" aria-valuemin="0" aria-valuemax="person.maxFullness"></div>
-        </div>
-        <div *ngIf="person.info">
-          Info: {{person.info}}
-        </div>
-      </div>
       <div id="accordion">
-        <div class="card" *ngIf="person && person.plan && person.plan.length > 0">
+        <div class="card">
           <div class="card-header" id="headingThree">
             <h5 class="mb-0">
               <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseThree"
                 aria-expanded="false" aria-controls="collapseThree">
-                <ng-container *ngIf="person.plan[person.planIndex]; else noAction">
-                  {{person.plan[person.planIndex].name}}
-                </ng-container>
-                <ng-template #noAction>
-                  No action
-                </ng-template>
+                Display Settings
               </button>
             </h5>
           </div>
           <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">
-            <div class="card-body" *ngIf="person.plan">
-              <div *ngFor="let action of person.plan; let i=index">
-                {{i + 1}}. {{action.name}}
+            <div class="card-body">
+              <div>
+                <div class="form-check" *ngFor="let render of renderTypes; let i=index">
+                  <input class="form-check-input" type="radio" name="gridRadios" id="{{render}}" value="{{render}}" (click)='setRender(render)' checked>
+                  <label class="form-check-label" for="{{render}}">
+                   {{render}}
+                  </label>
+                </div>
               </div>
             </div>
           </div>

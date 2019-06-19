@@ -20,6 +20,12 @@ export class Entity {
     this.reserved = false;
   }
 
+  getWindowPosition(camera: Camera): Position {
+    const wX = this.position.x - camera.position.x * camera.zoomLevel;
+    const wY = this.position.y - camera.position.y * camera.zoomLevel;
+    return new Position(wX, wY, 0);
+  }
+
   render(p: any, camera: Camera, spriteImages: {}, settingsList: []) {
     if (!this.destroy) {
       if (camera.zoomLevel > .15 &&
