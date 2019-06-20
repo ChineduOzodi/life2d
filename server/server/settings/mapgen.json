@@ -44,12 +44,12 @@
         {
             "type": "herbivore",
             "spawnBiomes":["land"],
-            "spawnCount":1000
+            "spawnCount":1
         },
         {
             "type": "vegetation",
             "spawnBiomes":["land"],
-            "spawnCount":1000
+            "spawnCount":100
         }
     ]
 }

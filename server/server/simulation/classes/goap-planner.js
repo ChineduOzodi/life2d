@@ -8,6 +8,7 @@ GoapPlanner.prototype.createPlan = function (map, agent, state, actions, goal) {
     thisPlanner = this;
     return new Promise((resolve, reject) => {
         let usableActions = [];
+        console.log(`total actions: ${actions.length}`)
         for (let i in actions) {
             let action = actions[i];
             if (thisPlanner.isActionUsable(map, agent, action)) {
@@ -22,7 +23,7 @@ GoapPlanner.prototype.createPlan = function (map, agent, state, actions, goal) {
         if (!success) {
             reject('could not find a plan');
         } else {
-            // console.log(`FOUND PLAN(S): ${JSON.stringify(leaves)}`);
+            console.log(`FOUND PLAN(S): ${JSON.stringify(leaves)}`);
             let lowestCost = leaves[0].runningCost + leaves[0].actionCost + leaves[0].distanceCost;
             let selectionNode = leaves[0];
             for (let i in leaves) {
@@ -60,13 +61,16 @@ GoapPlanner.prototype.constructPlan = function (path, node, map) {
 }
 
 GoapPlanner.prototype.isActionUsable = function (map, agent, action) {
+    console.log(action.name);
     for (let i in action.preconditions) {
         let precondition = action.preconditions[i];
         if (precondition.type === 'reserve') {
             if (precondition.reserve === 'entity') {
-                let closestEntity = map.findNearestEntity(precondition.name, map[precondition.location], agent.position);
+                // console.log(`precondition: ${precondition.name}`);
+                let closestEntity = map.findNearestEntity(precondition.name, agent.position);
+                // console.log('done searching for nearest entity');
                 if (closestEntity) {
-                    // console.log(`found closest entity for ${action.name} - ${precondition.name}: ${JSON.stringify(closestEntity)}`);
+                    console.log(`found closest entity for ${action.name} - ${precondition.name}: ${JSON.stringify(closestEntity)}`);
                     action.distanceCost = distanceCost(closestEntity.position, agent.position) / (agent.speed * 10);
                     action.target = closestEntity;
                 } else {
@@ -129,13 +133,13 @@ GoapPlanner.prototype.isActionUsable = function (map, agent, action) {
 GoapPlanner.prototype.buildGraph = function (length, parent, leaves, usableActions, goal, minCost) {
     length++;
     let foundOne = false;
-    // console.log(`graph - usable actions length: ${usableActions.length}`);
-    // console.log(actionList(parent));
+    console.log(`graph - usable actions length: ${usableActions.length}`);
+    console.log(actionList(parent));
     if (length > 20) {
         console.log(`max plan length reached`);
         return false;
     }
-    // console.log(`graph len: ${length}, parent: ${JSON.stringify(parent)}, leaves: ${JSON.stringify(leaves)}, uActions: ${JSON.stringify(usableActions)}, goal: ${JSON.stringify(goal)}`);
+    console.log(`graph len: ${length},\nparent: ${JSON.stringify(parent)}, \nleaves: ${JSON.stringify(leaves)}, \nuActions: ${JSON.stringify(usableActions)}, \ngoal: ${JSON.stringify(goal)}`);
     for (let i in usableActions) {
         let usableAction = usableActions[i];
         if (this.inState(usableAction.preconditions, 1, parent)) {

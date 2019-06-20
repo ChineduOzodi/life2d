@@ -156,9 +156,21 @@ Map.prototype.spawnEntities = function () {
       let spawnSettings = this.entitySettings[spawnIndex];
       let baseSpriteIndex = Math.floor(Math.random() * spawnSettings.baseSprites.length);
       if (spawnSettings.type === 'vegetation') {
-        this.entities.push(new Vegetation(spawnSettings.type, this.id++, position.x, position.y, spawnIndex, baseSpriteIndex));
+        this.entities.push(new Vegetation(spawnSettings.name, this.id++, position.x, position.y, spawnIndex, baseSpriteIndex));
       } else if (spawnSettings.type === 'herbivore') {
-        this.entities.push(new MovingEntity(spawnSettings.type, this.id++, position.x, position.y, spawnIndex, baseSpriteIndex));
+        let entity = new MovingEntity(spawnSettings.name, this.id++, position.x, position.y, spawnIndex, baseSpriteIndex);
+        entity.energy = spawnSettings.energy;
+        entity.baseMaxEnergy = spawnSettings.baseMaxEnergy;
+        entity.baseEnergyGainRate = spawnSettings.baseEnergyGainRate;
+        entity.baseEnergyLossRate = spawnSettings.baseEnergyLossRate;
+        entity.traits = [];
+
+        for(let trait of spawnSettings.traits) {
+          trait.amount = trait.base + (Math.random() - 0.5) * 2 * trait.randomness;
+          entity.traits.push(trait);
+          entity[trait.name] = trait.amount;
+        }
+        this.entities.push(entity);
       }
     }
   }
@@ -462,18 +474,20 @@ Map.prototype.getBiome = function (x, y) {
   return biome(this.getHeight(x, y), this.settings.biomes);
 }
 
-Map.prototype.findNearestEntity = function (entityName, location, position) {
+Map.prototype.findNearestEntity = function (entityName, position) {
   let closestEntity;
   let closestDistance = 100000000000000000000000000000000000;
-
-  for (let i in location) {
-    let entity = location[i];
+  // console.log('looking for nearest entity');
+  for (const entity of this.entities) {
     let entityDistance = distanceCost(entity.position, position);
+    // console.log(`entity: ${entity.name} - distance: ${entityDistance} (looking for ${entityName})`);
     if (!entity.destroy && entityDistance < closestDistance && entityName === entity.name) {
+      // console.log(`chosen entity: ${entity.name} - distance: ${entityDistance}`);
       closestEntity = entity;
       closestDistance = entityDistance;
     }
   }
+  // console.log(`found nearest entity: ${closestEntity.name}`);
   return closestEntity;
 }
 

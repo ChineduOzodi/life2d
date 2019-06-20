@@ -3,6 +3,7 @@ import { Position } from './position';
 export class Entity {
   name: string;
   type: string;
+  info = '';
   position: Position;
   settingsIndex: number;
   baseSpriteIndex: number;
@@ -73,5 +74,13 @@ export class Entity {
         }
       }
     }
+  }
+
+  toString() {
+    return `name: ${this.name}\n
+            type: ${this.type}\n
+            id: ${this.id}\n
+            position: (${this.position.x}, ${this.position.y})\n
+            info: ${this.info}`;
   }
 }

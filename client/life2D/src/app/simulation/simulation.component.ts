@@ -178,11 +178,16 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
         } catch (e) {
           console.error(e);
         }
-        p.noStroke();
-        p.fill(p.color(255, 100, 100, 200));
 
-        const mouseMapPosition = p.sim.mouseToMapPosition(p.mouseX, p.mouseY, p.width, p.height);
-        p.ellipse(mouseMapPosition.x, mouseMapPosition.y, 10 / p.sim.camera.zoomLevel);
+        p.noStroke();
+        if (p.sim.selectedEntity) {
+          p.fill(p.color(255, 100, 100, 50));
+          p.ellipse(p.sim.selectedEntity.position.x, p.sim.selectedEntity.position.y, 20 / p.sim.camera.zoomLevel);
+        } else {
+          p.fill(p.color(255, 100, 100, 200));
+          const mouseMapPosition = p.sim.mouseToMapPosition(p.mouseX, p.mouseY, p.width, p.height);
+          p.ellipse(mouseMapPosition.x, mouseMapPosition.y, 10 / p.sim.camera.zoomLevel);
+        }
 
         if (p.sim.loadImg) {
           p.sim.loadImg = false;
@@ -231,8 +236,17 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
             // Pick new random color values
           }
         }
-        p.sim.selectedEntity = selectedEntity;
-        console.log(`clicked entity: ${selectedEntity.name} at position: (${selectedEntity.position.x}, ${selectedEntity.position.y})`);
+        if (selectedEntity) {
+          if ( p.sim.selectedEntity && p.sim.selectedEntity.id === selectedEntity.id) {
+            p.sim.selectedEntity = null;
+            console.log('unselected entity');
+          } else {
+            p.sim.selectedEntity = selectedEntity;
+            console.log(`clicked entity: ${selectedEntity.name} at position: (${selectedEntity.position.x}, ${selectedEntity.position.y})`);
+          }
+        } else {
+          console.log('nothing clicked');
+        }
       }
     };
   }

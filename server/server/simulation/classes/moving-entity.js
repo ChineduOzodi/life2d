@@ -2,8 +2,8 @@ var Entity = require('./entity');
 var GoapPlanner = require('./goap-planner');
 AStar = require('./a-star');
 
-function MovingEntity(entity, id, x, y, settingsIndex, baseSpriteIndex) {
-  Entity.call(this, entity, id, x, y, settingsIndex, baseSpriteIndex);
+function MovingEntity(name, id, x, y, settingsIndex, baseSpriteIndex) {
+  Entity.call(this, name, 'moving-entity', id, x, y, settingsIndex, baseSpriteIndex);
   this.goals = [];
   this.actionPlan = [];
   this.currentAction = idleState;
@@ -138,18 +138,19 @@ MovingEntity.prototype.findPotentialGoals = function (goap, map) {
   }
   potentionGoals.push(eat);
 
-  let chosenPreconditions;
-  let highestPotential = .2;
+  let chosenEffect;
+  let highestPotential = 0.0;
   for (let potentialGoal of potentionGoals) {
     if (highestPotential < potentialGoal.potential) {
-      console.log(`highest potential ${potentialGoal.name}: ${potentialGoal.potential}`);
+      // console.log(`highest potential ${potentialGoal.name}: ${potentialGoal.potential}`);
       highestPotential = potentialGoal.potential;
-      chosenPreconditions = potentialGoal.preconditions;
+      chosenEffect = potentialGoal.effect;
     }
   }
 
-  if (chosenPreconditions) {
-    this.createPlan(goap, map, chosenPreconditions);
+  if (chosenEffect) {
+    console.log('goal chosen');
+    this.createPlan(goap, map, chosenEffect);
   }
 }
 

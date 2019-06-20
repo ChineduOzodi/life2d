@@ -12,6 +12,11 @@
           Camera position ( x: {{camera.position.x}} y: {{camera.position.y}} zoom: {{camera.zoomLevel}});
         </div>
       </div>
+      <div *ngIf="selectedEntity">
+        <h6>
+          {{selectedEntity.toString()}}
+        </h6>
+      </div>
       <div id="accordion">
         <div class="card">
           <div class="card-header" id="headingThree">

@@ -20,4 +20,17 @@ export class MovingEntity extends Entity {
         super('person', id, position, settingsIndex, baseSpriteIndex);
 
     }
+
+    toString() {
+        let info = `name: ${this.name}\n
+        type: ${this.type}\n
+        id: ${this.id}\n
+        energy: ${this.energy}/${this.maxEnergy}\n
+        position: (${this.position.x}, ${this.position.y})\n
+        info: ${this.info}\n`;
+        for (const trait of this.traits) {
+            info += `trait: ${trait.name} (${trait.amount})\n`;
+        }
+        return info;
+      }
 }
