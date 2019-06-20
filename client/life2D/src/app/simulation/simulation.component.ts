@@ -35,6 +35,7 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
   ];
   camera: Camera;
   sMap: Map;
+  selectedEntity: any;
   actions: any[];
   chunkImages = {};
   spriteImages = {};
@@ -127,6 +128,13 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
     this.render = render;
   }
 
+  mouseToMapPosition(mouseX: number, mouseY: number, width: number, height: number): Position {
+    const mapX = (mouseX - width * 0.5) / this.camera.zoomLevel + this.camera.position.x;
+    const mapY = (mouseY - height * 0.5) / this.camera.zoomLevel + this.camera.position.y;
+
+    return new Position(mapX, mapY, 0);
+  }
+
   private sketch(p: any) {
     p.setup = () => {
       const cnv = p.createCanvas(p.windowWidth * 0.8, p.windowHeight);
@@ -171,8 +179,11 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
           console.error(e);
         }
         p.noStroke();
-        p.fill(p.color(255, 100, 100, 100));
-        p.ellipse(p.sim.camera.position.x, p.sim.camera.position.y, 10 / p.sim.camera.zoomLevel);
+        p.fill(p.color(255, 100, 100, 200));
+
+        const mouseMapPosition = p.sim.mouseToMapPosition(p.mouseX, p.mouseY, p.width, p.height);
+        p.ellipse(mouseMapPosition.x, mouseMapPosition.y, 10 / p.sim.camera.zoomLevel);
+
         if (p.sim.loadImg) {
           p.sim.loadImg = false;
           p.sim.imageMap = p.loadImage(`${p.sim.urlHead}/static/map.png`);
@@ -208,15 +219,20 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
     // When the user clicks the mouse
     p.mousePressed = () => {
       if (p.sim.sMap.entities) {
+        let d = 1000000000;
+        let selectedEntity = null;
+        const mouseMapPosition = p.sim.mouseToMapPosition(p.mouseX, p.mouseY, p.width, p.height);
         for (const entity of p.sim.sMap.entities) {
-          const entityWindowPosition = entity.getWindowPosition(p.sim.camera);
-          const d = p.dist(p.mouseX, p.mouseY, entityWindowPosition.x, entityWindowPosition.y);
+          const newD = p.dist(mouseMapPosition.x, mouseMapPosition.y, entity.position.x, entity.position.y);
 
-          if (d < 10) {
+          if (newD < d) {
+            d = newD;
+            selectedEntity = entity;
             // Pick new random color values
-            console.log(`clicked entity: ${entity.name} at position: (${entity.position.x}, ${entity.position.y})`);
           }
         }
+        p.sim.selectedEntity = selectedEntity;
+        console.log(`clicked entity: ${selectedEntity.name} at position: (${selectedEntity.position.x}, ${selectedEntity.position.y})`);
       }
     };
   }
