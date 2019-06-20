@@ -157,7 +157,7 @@ MovingEntity.prototype.findPotentialGoals = function (goap, map) {
 MovingEntity.prototype.createPlan = function (goap, map, goalEffects) {
   let goapPlanner = new GoapPlanner();
   console.log('creating plan');
-  goapPlanner.createPlan(map, this, this.state, goap.actions, goalEffects).then((plan) => {
+  goapPlanner.createPlan(map, this, this, goap.actions, goalEffects).then((plan) => {
     if (plan) {
       console.log('found plan');
       this.plan = plan;

@@ -45,21 +45,5 @@
             "maxZoom": 8
         }
     ],
-    "goap": [
-        {
-            "name": "sleep on ground",
-            "preconditions": [],
-            "cost": 10,
-            "sleeping":true,
-            "effects": [
-                {
-                    "type": "self",
-                    "target": "base stats",
-                    "effect": "add",
-                    "name": "energy",
-                    "amount": 15
-                }
-            ]
-        }
-    ]
+    "goap": []
 }
