@@ -1,6 +1,15 @@
 {
     "name": "berry bush",
     "type": "vegetation",
+    "traits":[
+        {
+            "name":"health",
+            "base": 100,
+            "randomness": 0.1,
+            "cost": "energy",
+            "costRate": 0.1
+        }
+    ],
     "baseSprites": [
         {
             "url": "/static/simulation/sprites/vegetation/bushes/berry-bush.png",

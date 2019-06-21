@@ -38,7 +38,7 @@ AStar.prototype.findPath = function (startPosition, endPosition, map) {
                 //found node
                 console.log('reached target node, retracing steps...');
                 let path = thisAStar.createPath(currentNode);
-                console.log(`found path: ${JSON.stringify(path)}`);
+                // console.log(`found path: ${JSON.stringify(path)}`);
                 resolve(path);
                 foundPath = true;
                 break;

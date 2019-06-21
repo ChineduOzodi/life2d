@@ -79,10 +79,11 @@ export class Entity {
   }
 
   toString() {
-    return `name: ${this.name}\n
-            type: ${this.type}\n
-            id: ${this.id}\n
-            position: (${this.position.x}, ${this.position.y})\n
-            info: ${this.info}`;
+    const info = [`name: ${this.name}`,
+                  `type: ${this.type}`,
+                  `id: ${this.id}`,
+                  `position: (${this.position.x.toFixed(1)}, ${this.position.y.toFixed(1)})`,
+                  `info: ${this.info}`];
+    return info;
   }
 }

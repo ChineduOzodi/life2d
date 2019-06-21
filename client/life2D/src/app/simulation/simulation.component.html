@@ -13,8 +13,8 @@
         </div>
       </div>
       <div *ngIf="selectedEntity">
-        <h6>
-          {{selectedEntity.toString()}}
+        <h6 *ngFor="let info of selectedEntity.getInfo()">
+          {{info}}<br>
         </h6>
       </div>
       <div id="accordion">

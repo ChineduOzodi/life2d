@@ -129,12 +129,11 @@ MovingEntity.prototype.findPotentialGoals = function (goap, map) {
     "name": 'eat',
     'potential': (this.maxEnergy - this.energy) / this.maxEnergy,
     'effect': [{
-        "type": "min",
-        "location": [],
-        "property": "energy",
-        "amount": this.energy + 1
-      }
-    ]
+      "type": "min",
+      "location": [],
+      "property": "energy",
+      "amount": this.energy + 1
+    }]
   }
   potentionGoals.push(eat);
 
@@ -149,17 +148,17 @@ MovingEntity.prototype.findPotentialGoals = function (goap, map) {
   }
 
   if (chosenEffect) {
-    console.log('goal chosen');
+    // console.log('goal chosen');
     this.createPlan(goap, map, chosenEffect);
   }
 }
 
 MovingEntity.prototype.createPlan = function (goap, map, goalEffects) {
   let goapPlanner = new GoapPlanner();
-  console.log('creating plan');
+  // console.log('creating plan');
   goapPlanner.createPlan(map, this, this, goap.actions, goalEffects).then((plan) => {
     if (plan) {
-      console.log('found plan');
+      // console.log('found plan');
       this.plan = plan;
       this.planIndex = 0;
       this.currentAction = doAction;
@@ -184,7 +183,7 @@ MovingEntity.prototype.checkGoals = function (goap, map) {
   if (this.goals.length > 0) {
     let goal = this.goals[0];
     let goalAction = goap.findAction(goal);
-    console.log(`goal: ${goal}`);
+    // console.log(`goal: ${goal}`);
     if (goalAction) {
       this.createPlan(goap, map, goalAction.effects);
     } else {
@@ -256,7 +255,7 @@ function entityBusy() {
 function followPath(entity) {
   if (entity.path) {
     let distanceLeft = entity.path[entity.pathIndex].moveAgent(entity, 1 / 60);
-    entity.info = `moving to do action: ${entity.plan[entity.planIndex].name}, distance: ${distanceLeft}`;
+    entity.info = `moving to do action: ${entity.plan[entity.planIndex].name}, distance: ${distanceLeft.toFixed(1)}`;
     // console.log(`moving to do action: ${entity.plan[entity.planIndex].name}, distance: ${distanceLeft}`);
     if (entity.path.length - 1 == entity.pathIndex && distanceLeft <= 1) {
       //reached target
@@ -294,48 +293,14 @@ MovingEntity.prototype.applyAction = function (action, map) {
   //add effects items
   for (let i in action.effects) {
     let effect = action.effects[i];
-    if (effect.type == 'item') {
-      let foundStateItem = false;
-      for (let v in this.state) {
-        let condition = this.state[v];
-        if (condition.type === 'item' && effect.name === condition.name) {
-          condition.amount += effect.amount;
-          foundStateItem = true;
-          break;
-        }
-      }
-      if (!foundStateItem) {
-        let newItemCondition = Object.assign({}, effect);
-        this.state.push(newItemCondition);
-      }
-      // console.log(JSON.stringify(this.state));
-    } else if (effect.type === 'own') {
-      let index = map.entitySettings.findIndex(x => x.name === effect.name);
-      if (index == -1) {
-        console.error(`could not find settings for ${effect.name} in otherSettings`);
-      } else {
-        let newItemCondition = Object.assign({}, effect);
-        newItemCondition.target = action.target;
-        this.state.push(newItemCondition);
+    if (effect.type === 'add') {
+      let obj = getFromObject(this, effect.location);
 
-        let entitySettings = map.entitySettings[index];
-        let v = Math.floor(Math.random() * entitySettings.baseSprites.length);
-        let entity = new Entity(effect.name, map.id++, action.target.position.x, action.target.position.y, index, v);
-        map.entities.push(entity);
-        for (let x = action.target.position.x; x < action.target.position.x + action.target.width; x++) {
-          for (let y = action.target.position.y; y < action.target.position.y + action.target.height; y++) {
-            if (map.map[`x:${x},y:${y}`]) {
-              console.error(`map of x:${x},y:${y} already exists, can't set owned`);
-            } else {
-              map.map[`x:${x},y:${y}`] = {
-                biome: map.getBiome(x, y),
-                height: map.getHeight(x, y),
-                entityIndex: map.entities.length - 1
-              };
-            }
-          }
-        }
-      }
+      obj[effect.property] += effect.amount;
+      // saveToObject(newState,effect.location, effect.property, newData);
+      // console.log(`add applied: ${obj[effect.property]} + ${effect.amount}`);
+      //find required reserve precondition location
+      // newState.push(newItemCondition);
     } else if (effect.type === 'destroy') {
       if (action.target) {
         action.target.destroy = true;
@@ -357,6 +322,15 @@ MovingEntity.prototype.applyAction = function (action, map) {
   }
 
   return this.state;
+}
+
+function getFromObject(obj, location) {
+  if (location) {
+      for (const loc of location) {
+          obj = obj[loc];
+      }
+  }
+  return obj;
 }
 
 module.exports = MovingEntity;

@@ -21,15 +21,15 @@ export class MovingEntity extends Entity {
 
     }
 
-    toString() {
-        let info = `name: ${this.name}\n
-        type: ${this.type}\n
-        id: ${this.id}\n
-        energy: ${this.energy}/${this.maxEnergy}\n
-        position: (${this.position.x}, ${this.position.y})\n
-        info: ${this.info}\n`;
+    getInfo() {
+        const info = [`name: ${this.name}`,
+                    `type: ${this.type}`,
+                    `id: ${this.id}`,
+                    `energy: ${this.energy.toFixed(0)}/${this.maxEnergy}`,
+                    `position: (${this.position.x.toFixed(1)}, ${this.position.y.toFixed(1)})`,
+                    `info: ${this.info}`];
         for (const trait of this.traits) {
-            info += `trait: ${trait.name} (${trait.amount})\n`;
+            info.push(`trait: ${trait.name} (${trait.amount.toFixed(3)})`);
         }
         return info;
       }

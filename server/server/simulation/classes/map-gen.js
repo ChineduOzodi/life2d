@@ -152,7 +152,7 @@ Map.prototype.spawnEntities = function () {
   for (spawn of this.settings.spawns) {
     for (let i = 0; i < spawn.spawnCount; i++) {
       let position = this.getSpawnLocation(spawn.spawnBiomes);
-      console.log(`type: ${spawn.type}`);
+      // console.log(`type: ${spawn.type}`);
       let spawnIndex = this.entitySettings.findIndex(x => x.type === spawn.type);
       let spawnSettings = this.entitySettings[spawnIndex];
       let baseSpriteIndex = Math.floor(Math.random() * spawnSettings.baseSprites.length);

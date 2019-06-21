@@ -36,7 +36,7 @@ GoapPlanner.prototype.createPlan = function (map, agent, state, actions, goal) {
                 }
             }
             // console.log(`selected action: ${JSON.stringify(selectedAction)}`);
-            console.log(`selected steps (${(selectionNode.runningCost + selectionNode.actionCost + selectionNode.distanceCost)}): ${actionList(selectionNode)}`);
+            // console.log(`selected steps (${(selectionNode.runningCost + selectionNode.actionCost + selectionNode.distanceCost)}): ${actionList(selectionNode)}`);
             let actionPlan = this.constructPlan([], selectionNode, map);
             resolve(actionPlan);
         }
@@ -61,7 +61,7 @@ GoapPlanner.prototype.constructPlan = function (path, node, map) {
 }
 
 GoapPlanner.prototype.isActionUsable = function (map, agent, action) {
-    console.log(action.name);
+    // console.log(action.name);
     for (let i in action.preconditions) {
         let precondition = action.preconditions[i];
         if (precondition.type === 'reserve') {
@@ -70,7 +70,7 @@ GoapPlanner.prototype.isActionUsable = function (map, agent, action) {
                 let closestEntity = map.findNearestEntity(precondition.name, agent.position);
                 // console.log('done searching for nearest entity');
                 if (closestEntity) {
-                    console.log(`found closest entity for ${action.name} - ${precondition.name}: ${JSON.stringify(closestEntity)}`);
+                    // console.log(`found closest entity for ${action.name} - ${precondition.name}: ${JSON.stringify(closestEntity)}`);
                     action.distanceCost = distanceCost(closestEntity.position, agent.position) / (agent.speed * 10);
                     action.target = closestEntity;
                 } else {
@@ -220,7 +220,7 @@ GoapPlanner.prototype.applyAction = function (state, action, actionRepeat) {
     //add effects items
     for (let i in action.effects) {
         let effect = action.effects[i];
-        console.log(`effect: ${effect.type}`);
+        // console.log(`effect: ${effect.type}`);
 
         if (effect.type == 'item') {
             let foundStateItem = false;
@@ -247,34 +247,9 @@ GoapPlanner.prototype.applyAction = function (state, action, actionRepeat) {
 
             obj[effect.property] += effect.amount;
             // saveToObject(newState,effect.location, effect.property, newData);
-            console.log(`add applied: ${obj[effect.property]} + ${effect.amount}`);
+            // console.log(`add applied: ${obj[effect.property]} + ${effect.amount}`);
             //find required reserve precondition location
             // newState.push(newItemCondition);
-        } else if (effect.type === 'self') {
-            let foundStateItem = false;
-            for (let condition of newState) {
-                if (condition.type === 'self' &&
-                    condition.name === effect.name &&
-                    condition.target === effect.target &&
-                    condition.effect === effect.effect
-                ) {
-                    if (effect.effect === 'add') {
-                        condition.amount += effect.amount * actionRepeat;
-                        foundStateItem = true;
-                    } else if (effect.effect === 'multiply') {
-                        condition.amount *= effect.amount * actionRepeat;
-                    } else {
-                        console.log(`effect type ${effect.effect} not recognised in action ${action.name}`);
-                    }
-                    foundStateItem = true;
-                    break;
-                }
-            }
-            if (!foundStateItem) {
-                let newItemCondition = Object.assign({}, effect);
-                newItemCondition.amount *= actionRepeat;
-                newState.push(newItemCondition);
-            }
         }
     }
 
