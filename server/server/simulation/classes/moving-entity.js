@@ -257,11 +257,12 @@ function followPath(entity) {
   if (entity.path) {
     let distanceLeft = entity.path[entity.pathIndex].moveAgent(entity, 1 / 60);
     entity.info = `moving to do action: ${entity.plan[entity.planIndex].name}, distance: ${distanceLeft}`;
+    // console.log(`moving to do action: ${entity.plan[entity.planIndex].name}, distance: ${distanceLeft}`);
     if (entity.path.length - 1 == entity.pathIndex && distanceLeft <= 1) {
       //reached target
       entity.isNearTarget = true;
       entity.currentAction = doAction;
-    } else if (distanceLeft == 0) {
+    } else if (distanceLeft < 1) {
       //move to next leg of path
       entity.pathIndex++;
     }

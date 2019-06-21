@@ -112,6 +112,9 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
         entityA = Object.assign(new Entity('', '', '', new Position(0, 0, 0), 0, 0), entity);
       }
       if (entityA) {
+        if (this.selectedEntity && this.selectedEntity.id === entityA.id) {
+          this.selectedEntity = entityA;
+        }
         objectEntities.push(entityA);
       }
     }
