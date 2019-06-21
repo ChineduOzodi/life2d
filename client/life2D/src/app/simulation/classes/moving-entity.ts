@@ -11,7 +11,6 @@ export class MovingEntity extends Entity {
     maxEnergy: number;
     energyGainRate: number;
     energyLossRate: number;
-    traits = [];
     modifiers = [];
     isSleeping: boolean;
     goals = [];
@@ -22,12 +21,8 @@ export class MovingEntity extends Entity {
     }
 
     getInfo() {
-        const info = [`name: ${this.name}`,
-                    `type: ${this.type}`,
-                    `id: ${this.id}`,
-                    `energy: ${this.energy.toFixed(0)}/${this.maxEnergy}`,
-                    `position: (${this.position.x.toFixed(1)}, ${this.position.y.toFixed(1)})`,
-                    `info: ${this.info}`];
+        const info = super.getInfo();
+        info.push(`energy: ${this.energy.toFixed(0)}/${this.maxEnergy}`);
         for (const trait of this.traits) {
             info.push(`trait: ${trait.name} (${trait.amount.toFixed(3)})`);
         }

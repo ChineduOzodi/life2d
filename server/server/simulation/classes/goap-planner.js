@@ -74,7 +74,7 @@ GoapPlanner.prototype.isActionUsable = function (map, agent, action) {
                     action.distanceCost = distanceCost(closestEntity.position, agent.position) / (agent.speed * 10);
                     action.target = closestEntity;
                 } else {
-                    console.log(`could not find closest entity for ${action.name} - ${precondition.name}`);
+                    // console.log(`could not find closest entity for ${action.name} - ${precondition.name}`);
                     return false;
                 }
             } else if (precondition.reserve == 'location') {
@@ -134,7 +134,7 @@ GoapPlanner.prototype.buildGraph = function (length, parent, leaves, usableActio
     length++;
     let foundOne = false;
     // console.log(`graph - usable actions length: ${usableActions.length}`);
-    console.log(actionList(parent));
+    // console.log(actionList(parent));
     if (length > 20) {
         console.log(`max plan length reached`);
         return false;
@@ -377,7 +377,7 @@ GoapPlanner.prototype.inState = function (preconditions, preconditionRepeat, goa
             
             if (obj[precondition.property] >= precondition.amount) {
                 //met min requirements
-                console.log(`precondition min met: ${obj[precondition.property]} >= ${precondition.amount}`);
+                // console.log(`precondition min met: ${obj[precondition.property]} >= ${precondition.amount}`);
                 match = true;
             } else {
                 match = false;

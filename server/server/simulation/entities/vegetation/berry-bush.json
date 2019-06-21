@@ -1,15 +1,20 @@
 {
     "name": "berry bush",
     "type": "vegetation",
+    "health": 1000,
+    "baseHealthLossRate": 1,
+    "attrition": 3,
+    "attritionHealthEffect": 1,
     "traits":[
         {
-            "name":"health",
+            "name":"duplicate",
             "base": 100,
-            "randomness": 0.1,
-            "cost": "energy",
+            "randomness": 10,
+            "healthMult": 10,
             "costRate": 0.1
         }
     ],
+    "spawnBiomes":["land"],
     "baseSprites": [
         {
             "url": "/static/simulation/sprites/vegetation/bushes/berry-bush.png",

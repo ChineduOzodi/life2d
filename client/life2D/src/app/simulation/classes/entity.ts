@@ -3,11 +3,13 @@ import { Position } from './position';
 export class Entity {
   name: string;
   type: string;
+  age = 0;
   info = '';
   position: Position;
   settingsIndex: number;
   baseSpriteIndex: number;
   id: string;
+  traits = [];
   reserved = false;
   destroy = false;
   urlHead = 'http://localhost:5000';
@@ -78,10 +80,11 @@ export class Entity {
     }
   }
 
-  toString() {
+  getInfo() {
     const info = [`name: ${this.name}`,
                   `type: ${this.type}`,
                   `id: ${this.id}`,
+                  `age: ${this.age.toFixed(0)}`,
                   `position: (${this.position.x.toFixed(1)}, ${this.position.y.toFixed(1)})`,
                   `info: ${this.info}`];
     return info;

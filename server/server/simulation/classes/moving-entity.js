@@ -22,6 +22,8 @@ function MovingEntity(name, id, x, y, settingsIndex, baseSpriteIndex) {
 MovingEntity.prototype = Object.create(Entity.prototype);
 
 MovingEntity.prototype.run = function (map, goap, deltaTime) {
+  // console.log(`running enity: ${this.name}`);
+  Object.getPrototypeOf(MovingEntity.prototype).run(map, goap, deltaTime);
   this.resetBaseAttributes();
   this.applyModifiers();
   this.applyBaseRates(deltaTime);
@@ -114,6 +116,11 @@ function applyModifier(location, modifier) {
   }
 }
 
+MovingEntity.prototype.birth = function(map, traits) {
+  Object.getPrototypeOf(MovingEntity.prototype).birth(map, traits);
+
+}
+
 function idleState(entity, map, goap) {
   // console.log('waiting');
   entity.info = "idling...";
@@ -168,8 +175,8 @@ MovingEntity.prototype.createPlan = function (goap, map, goalEffects) {
       this.currentAction = idleState;
     }
   }).catch(err => {
-    console.error(`an error with creating plan has occurred`);
-    console.error(err);
+    // console.error(`an error with creating plan has occurred`);
+    // console.error(err);
     this.goals.splice(0, 1);
     this.currentAction = idleState;
   });
