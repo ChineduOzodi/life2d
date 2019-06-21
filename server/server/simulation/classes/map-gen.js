@@ -57,7 +57,7 @@ Map.prototype.correctClasses = function () {
 
     if (spawnSettings.type === 'vegetation') {
       assignedList.push(Object.assign(new Vegetation, entity));
-    } else if (spawnSettings.type === 'herbivore') {
+    } else if (spawnSettings.type === 'moving-entity') {
       assignedList.push(Object.assign(new MovingEntity, entity));
     }
   }
@@ -152,12 +152,13 @@ Map.prototype.spawnEntities = function () {
   for (spawn of this.settings.spawns) {
     for (let i = 0; i < spawn.spawnCount; i++) {
       let position = this.getSpawnLocation(spawn.spawnBiomes);
+      console.log(`type: ${spawn.type}`);
       let spawnIndex = this.entitySettings.findIndex(x => x.type === spawn.type);
       let spawnSettings = this.entitySettings[spawnIndex];
       let baseSpriteIndex = Math.floor(Math.random() * spawnSettings.baseSprites.length);
       if (spawnSettings.type === 'vegetation') {
         this.entities.push(new Vegetation(spawnSettings.name, this.id++, position.x, position.y, spawnIndex, baseSpriteIndex));
-      } else if (spawnSettings.type === 'herbivore') {
+      } else if (spawnSettings.type === 'moving-entity') {
         let entity = new MovingEntity(spawnSettings.name, this.id++, position.x, position.y, spawnIndex, baseSpriteIndex);
         entity.energy = spawnSettings.energy;
         entity.baseMaxEnergy = spawnSettings.baseMaxEnergy;

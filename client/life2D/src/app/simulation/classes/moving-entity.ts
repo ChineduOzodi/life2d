@@ -16,8 +16,8 @@ export class MovingEntity extends Entity {
     isSleeping: boolean;
     goals = [];
 
-    constructor(id: string, position: Position, settingsIndex: number, baseSpriteIndex: number) {
-        super('person', id, position, settingsIndex, baseSpriteIndex);
+    constructor(name: string, id: string, position: Position, settingsIndex: number, baseSpriteIndex: number) {
+        super(name, 'moving-entity', id, position, settingsIndex, baseSpriteIndex);
 
     }
 

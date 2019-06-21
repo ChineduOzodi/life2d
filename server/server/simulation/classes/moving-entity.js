@@ -129,10 +129,10 @@ MovingEntity.prototype.findPotentialGoals = function (goap, map) {
     "name": 'eat',
     'potential': (this.maxEnergy - this.energy) / this.maxEnergy,
     'effect': [{
-        "type": "add",
+        "type": "min",
         "location": [],
         "property": "energy",
-        "amount": this.maxEnergy - this.energy
+        "amount": this.energy + 1
       }
     ]
   }
@@ -169,7 +169,7 @@ MovingEntity.prototype.createPlan = function (goap, map, goalEffects) {
       this.currentAction = idleState;
     }
   }).catch(err => {
-    console.error(`an error with creating plan for ${goal} occurred`);
+    console.error(`an error with creating plan has occurred`);
     console.error(err);
     this.goals.splice(0, 1);
     this.currentAction = idleState;

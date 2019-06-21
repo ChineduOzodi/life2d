@@ -70,6 +70,7 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
     });
     this.mapEntitiesSub = this.simulationService.entities.subscribe(entities => {
       if (this.sMap) {
+        // console.log('recieved entities');
         this.setupEntities(entities, this.sMap.entitySettings);
       }
     });
@@ -104,11 +105,11 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
       let entityA = null;
       if (spawnSettings.type === 'vegetation') {
         entityA = Object.assign(new Vegetation('', '', new Position(0, 0, 0), 0, 0), entity);
-      } else if (spawnSettings.type === 'herbivore') {
-        entityA = Object.assign(new MovingEntity('', new Position(0, 0, 0), 0, 0), entity);
+      } else if (spawnSettings.type === 'moving-entity') {
+        entityA = Object.assign(new MovingEntity('', '', new Position(0, 0, 0), 0, 0), entity);
       } else {
         console.error(`Type not sure for: ${entity.name}`);
-        entityA = Object.assign(new Entity('', '', new Position(0, 0, 0), 0, 0), entity);
+        entityA = Object.assign(new Entity('', '', '', new Position(0, 0, 0), 0, 0), entity);
       }
       if (entityA) {
         objectEntities.push(entityA);
@@ -143,6 +144,7 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
 
     p.draw = () => {
       if (p.sim) {
+        // this.setupEntities(p.sim.sMap.entities, p.sim.sMap.entitySettings);
         p.background('black');
         p.translate(p.width * 0.5, p.height * 0.5);
         // console.log(`sim: ${p.sim}`);

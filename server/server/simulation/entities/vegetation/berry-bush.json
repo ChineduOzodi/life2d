@@ -1,6 +1,6 @@
 {
     "name": "berry bush",
-    "type":"vegetation",
+    "type": "vegetation",
     "baseSprites": [
         {
             "url": "/static/simulation/sprites/vegetation/bushes/berry-bush.png",

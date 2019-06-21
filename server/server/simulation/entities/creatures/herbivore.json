@@ -1,6 +1,6 @@
 {
     "name": "herbivore",
-    "type":"herbivore",
+    "type": "moving-entity",
     "energy": 1000,
     "baseMaxEnergy": 1000,
     "baseEnergyLossRate": 1,
