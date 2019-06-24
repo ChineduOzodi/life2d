@@ -1,3 +1,4 @@
+import { ChartsService } from './../charts.service';
 import { MovingEntity } from './classes/moving-entity';
 import { Map } from './interfaces/map';
 import { Subscription } from 'rxjs';
@@ -23,11 +24,11 @@ import { RenderTypes } from './classes/constants/render-types';
 export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
   debug = false;
   urlHead = 'http://localhost:5000';
-  @ViewChild('simulationConatiner') elementView;
+  @ViewChild('simulationConatiner', { read: true, static: false }) elementView;
   p5: any;
   width: number;
   movement = new Movement();
-
+  vegetationTotal = 0;
   render = RenderTypes.SPEED;
   renderTypes = [
     RenderTypes.SPRITE,
@@ -49,9 +50,11 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
   mapEntitiesSub: Subscription;
   locationReservationsSub: Subscription;
   goapActionsSub: Subscription;
+
   constructor(
     private loginService: LoginService,
-    private simulationService: SimulationService
+    private simulationService: SimulationService,
+    private chartsService: ChartsService
     // private logger: NGXLogger
   ) { }
 
@@ -63,6 +66,8 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
       console.log(map);
       this.loadImg = true;
       this.setupEntities(map.entities, map.entitySettings);
+      console.log(this.sMap.entities[1]);
+      // this.chartsService.updateData(this.sMap);
     });
     this.mapChunkAddSub = this.simulationService.chunkData.subscribe(chunkData => {
       this.sMap.chunkData[chunkData.name] = chunkData;
@@ -72,6 +77,7 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
       if (this.sMap) {
         // console.log('recieved entities');
         this.setupEntities(entities, this.sMap.entitySettings);
+        // this.chartsService.updateData(this.sMap);
       }
     });
     this.locationReservationsSub = this.simulationService.locationReservations.subscribe(reservations => {
@@ -91,8 +97,13 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
-    console.log(this.elementView.nativeElement.clientWidth);
-    this.width = this.elementView.nativeElement.clientWidth;
+    if (this.elementView) {
+      console.log(this.elementView.nativeElement.clientWidth);
+      this.width = this.elementView.nativeElement.clientWidth;
+    } else {
+      console.log('element view null');
+      this.width = 600;
+    }
     this.createCanvas();
   }
 
@@ -147,6 +158,7 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
 
     p.draw = () => {
       if (p.sim) {
+        p.sim.vegetationTotal = 0;
         // this.setupEntities(p.sim.sMap.entities, p.sim.sMap.entitySettings);
         p.background('black');
         p.translate(p.width * 0.5, p.height * 0.5);
@@ -177,6 +189,9 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
             if (p.sim.sMap.entities) {
               for (const entity of p.sim.sMap.entities) {
                 entity.render(p, p.sim.camera, p.sim.spriteImages, p.sim.sMap.entitySettings);
+                if (entity.type === 'vegetation' && !entity.destroy) {
+                  p.sim.vegetationTotal++;
+                }
               }
             }
           }
@@ -233,21 +248,24 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
         let selectedEntity = null;
         const mouseMapPosition = p.sim.mouseToMapPosition(p.mouseX, p.mouseY, p.width, p.height);
         for (const entity of p.sim.sMap.entities) {
-          const newD = p.dist(mouseMapPosition.x, mouseMapPosition.y, entity.position.x, entity.position.y);
-
-          if (newD < d) {
-            d = newD;
-            selectedEntity = entity;
-            // Pick new random color values
+          if (!entity.destroy) {
+            const newD = p.dist(mouseMapPosition.x, mouseMapPosition.y, entity.position.x, entity.position.y);
+            if (newD < d) {
+              d = newD;
+              selectedEntity = entity;
+              // Pick new random color values
+            }
           }
         }
         if (selectedEntity) {
           if ( p.sim.selectedEntity && p.sim.selectedEntity.id === selectedEntity.id) {
             p.sim.selectedEntity = null;
-            console.log('unselected entity');
+            // console.log('unselected entity');
           } else {
             p.sim.selectedEntity = selectedEntity;
-            console.log(`clicked entity: ${selectedEntity.name} at position: (${selectedEntity.position.x}, ${selectedEntity.position.y})`);
+            console.log(selectedEntity);
+            // console.log(`clicked entity: ${selectedEntity.name}
+            // at position: (${selectedEntity.position.x}, ${selectedEntity.position.y})`);
           }
         } else {
           console.log('nothing clicked');

@@ -1,0 +1,11 @@
+<div *ngIf="map" style="display: block;">
+    <canvas baseChart width="800" height="400"
+      [datasets]="map.data"
+      [labels]="map.label"
+      [options]="lineChartOptions"
+      [colors]="lineChartColors"
+      [legend]="lineChartLegend"
+      [chartType]="lineChartType"
+      [plugins]="lineChartPlugins">
+    </canvas>
+  </div>

@@ -51,6 +51,27 @@ if (regenerate) {
   console.log('done reading map settings');
   map = new Map(mapSettings);
   map.generate(saveDir);
+  map.data = [
+    {
+      data: [0],
+      label: 'Vegetation'
+    },
+    {
+      data: [0],
+      label: 'Average Health'
+    },
+    {
+      data: [0],
+      label: 'Average Age'
+    }, {
+      data: [0],
+      label: 'Average Duplication'
+    }
+  ];
+  map.label = ['0'];
+  map.interval = 60;
+  map.currentLatestTime = 60;
+  map.currentIndex = 0;
 } else {
   try {
     var saveJson = fs.readFileSync(saveDir + `/save.save`);
@@ -70,6 +91,57 @@ goap.loadActions(goapActionsPath).then(() => {
   console.log(`goap action loading complete`);
 });
 
+function updateData(map) {
+  let totalEntities = 0;
+  let averageAge = 0;
+  let averageDuplication = 0;
+  let totalVegetation = 0;
+  let averageHealth = 0;
+  for (const entity of map.entities) {
+    if (!entity.destroy) {
+      totalEntities++;
+      if (entity.type === 'vegetation') {
+        totalVegetation++;
+        averageAge += entity.age;
+        let duplicate = entity.getTrait('duplicate')
+        averageDuplication += duplicate.base;
+        averageHealth += entity.health;
+      }
+    }
+  }
+
+  averageAge /= totalVegetation;
+  averageDuplication /= totalVegetation;
+  averageHealth /= totalVegetation;
+
+  // console.log(`average age: ${averageAge}`);
+
+  if (map.time > map.currentLatestTime) {
+    map.currentIndex++;
+    map.currentLatestTime += map.interval;
+    for (let data of map.data) {
+      data.data.push(0);
+    }
+    map.label.push(`${(map.currentLatestTime / 60).toFixed(1)} m`);
+  }
+
+  for (let i in map.data) {
+    let data = map.data[i];
+    // console.log(JSON.stringify(data));
+    // console.log(`i: ${i}`);
+    if (i == 0) {
+      data.data[map.currentIndex] = totalEntities;
+      // console.log(`total entities: ${data.data[map.currentIndex]}`);
+    } else if (i == 1) {
+      data.data[map.currentIndex] = averageHealth;
+    } else if (i == 2) {
+      data.data[map.currentIndex] = averageAge;
+    } else if (i == 3) {
+      data.data[map.currentIndex] = averageDuplication;
+    }
+  }
+}
+
 // Add the WebSocket handlers
 io.on('connection', function (socket) {
   socket.on('login', function (username) {
@@ -85,7 +157,7 @@ io.on('connection', function (socket) {
       const x = 0;
       const y = 0;
       console.log(`x: ${x}, y: ${y}`);
-      users[username] = new User(socket.id, username, socket.id, new Camera({x:x, y:y}, 5));
+      users[username] = new User(socket.id, username, socket.id, new Camera({ x: x, y: y }, 5));
     }
 
     io.to(socket.id).emit('user', users[username]);
@@ -133,9 +205,10 @@ io.on('connection', function (socket) {
 
 setInterval(function () {
   map.run(goap, 1 / 60);
+  updateData(map);
+  // console.log(`sending entity: ${JSON.stringify(map.entities[1])}`);
   io.sockets.emit('entities', map.entities);
   io.sockets.emit('state', players);
-
   if (map.locationReserveChanged) {
     map.locationReserveChanged = false;
     io.sockets.emit('locationReservations', map.locationReservations);
@@ -144,6 +217,7 @@ setInterval(function () {
 
 setInterval(() => {
   map.saveData(saveDir);
+  console.log(JSON.stringify(map.data));
 }, 60 * 1000);
 
 module.exports = io;

@@ -19,17 +19,20 @@ Entity.prototype.run = function (map, goap, deltaTime) {
 }
 
 Entity.prototype.birth = function(map, traits) {
-  // console.log(`traits: ${JSON.stringify(traits)}`);
+  // console.log(`traits (entity class): ${JSON.stringify(traits)}`);
   this.traits = [];
   for (let trait of traits) {
-    trait.amount = trait.base + (Math.random() - 0.5) * 2 * trait.randomness;
-    this.traits.push(trait);
-    this[trait.name] = trait.amount;
+    let traitCopy = JSON.parse(JSON.stringify(trait));
+    traitCopy.amount = trait.base + (Math.random() - 0.5) * 2 * trait.randomness;
+    this.traits.push(traitCopy);
+    this[trait.name] = traitCopy.amount;
   }
+  // console.log(`set traits: ${JSON.stringify(this.traits)}`);
 }
 
 Entity.prototype.getTrait = function(name) {
-  this.traits.find( x => x.name === name);
+  // console.log(`finding name (${name}) in traits: ${JSON.stringify(this.traits)}`);
+  return this.traits.find( x => x.name === name);
 }
 
 function createVector(x,y) {

@@ -23,7 +23,7 @@ MovingEntity.prototype = Object.create(Entity.prototype);
 
 MovingEntity.prototype.run = function (map, goap, deltaTime) {
   // console.log(`running enity: ${this.name}`);
-  Object.getPrototypeOf(MovingEntity.prototype).run(map, goap, deltaTime);
+  Object.getPrototypeOf(MovingEntity.prototype).run.call(this,map, goap, deltaTime);
   this.resetBaseAttributes();
   this.applyModifiers();
   this.applyBaseRates(deltaTime);
@@ -117,8 +117,7 @@ function applyModifier(location, modifier) {
 }
 
 MovingEntity.prototype.birth = function(map, traits) {
-  Object.getPrototypeOf(MovingEntity.prototype).birth(map, traits);
-
+  Object.getPrototypeOf(MovingEntity.prototype).birth.call(this,map, traits);
 }
 
 function idleState(entity, map, goap) {

@@ -62,22 +62,23 @@
             <h5 class="mb-0">
               <button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false"
                 aria-controls="collapseOne">
-                Goals
+                Statistics
               </button>
             </h5>
           </div>
           <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
-            <div class="card-body" *ngIf="actions">
-              <div *ngFor="let action of actions; let i=index">
-                <button class="btn btn-outline-secondary" (click)="setGoal(action.name)">
-                    {{action.name}}
-                </button>
-              </div>
+            <div class="card-body">
+              Vegetation Total: {{vegetationTotal}}
             </div>
           </div>
         </div>
       </div>
       <input type="button" value="Debug" class="btn btn-outline-warning" (click)="toggleDebug()">
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-sm-auto">
+      <app-charts [map]="sMap"></app-charts>
     </div>
   </div>
 </div>

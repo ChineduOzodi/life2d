@@ -21,10 +21,12 @@ function Map(settings) {
   this.chunkData = {};
   this.id = 1;
   this.map = {};
+  this.time = 0;
   this.locationReservations = [];
 }
 
 Map.prototype.run = function (goap, deltaTime) {
+  this.time += deltaTime;
   if (this.entities.length > 0) {
     // console.log(JSON.stringify(this.people));
     for (const entity of this.entities) {
@@ -32,6 +34,29 @@ Map.prototype.run = function (goap, deltaTime) {
     }
   }
 }
+
+Map.prototype.addNewEntity = function(newEntity) {
+  let foundIndex = false;
+  let index = 0;
+  for (let i in this.entities) {
+    let entity = this.entities[i];
+    if (entity.destroy){
+      index = i;
+      foundIndex = true;
+      break;
+    }
+  }
+  if (foundIndex) {
+    this.entities[index] = newEntity;
+  }else {
+    this.entities.push(newEntity);
+  }
+}
+
+Map.prototype.withinBorder = function(x,y) {
+  return x > -this.width * 0.5 && x < this.width * 0.5 && y > -this.height * 0.5 && y < this.height * 0.5;
+}
+
 
 Map.prototype.saveData = function (dir) {
   map = this;
@@ -159,20 +184,26 @@ Map.prototype.spawnEntities = function () {
       let spawnSettings = this.entitySettings[spawnIndex];
       let baseSpriteIndex = Math.floor(Math.random() * spawnSettings.baseSprites.length);
       if (spawnSettings.type === 'vegetation') {
-        console.log(`creating vegetation`);
+        // console.log(`creating vegetation`);
         let entity = new Vegetation(spawnSettings.name, this.id++, position.x, position.y, spawnIndex, baseSpriteIndex);
-        entity.birth(this,spawnSettings.traits);
+        // console.log(`vegetation settings: ${JSON.stringify(spawnSettings)}`);
         entity.spawnBiomes = spawnSettings.spawnBiomes;
-        console.log(`done creating vegetation`);
+        entity.baseHealthLossRate = spawnSettings.baseHealthLossRate;
+        entity.attrition = spawnSettings.attrition;
+        entity.attritionHealthEffect = spawnSettings.attritionHealthEffect;
+        entity.birth(this,spawnSettings.traits);
+        entity.generation = 1;
+        // this.health = spawnSettings.health;
+        // console.log(`done creating vegetation: ${JSON.stringify(entity)}`);
         this.entities.push(entity);
       } else if (spawnSettings.type === 'moving-entity') {
         let entity = new MovingEntity(spawnSettings.name, this.id++, position.x, position.y, spawnIndex, baseSpriteIndex);
-        entity.birth(this,spawnSettings.traits);
         entity.energy = spawnSettings.energy;
         entity.baseMaxEnergy = spawnSettings.baseMaxEnergy;
         entity.baseEnergyGainRate = spawnSettings.baseEnergyGainRate;
         entity.baseEnergyLossRate = spawnSettings.baseEnergyLossRate;
         entity.spawnBiomes = spawnSettings.spawnBiomes;
+        entity.birth(this,spawnSettings.traits);
 
         this.entities.push(entity);
       }

@@ -8,8 +8,8 @@ Vegetation.prototype = Object.create(Entity.prototype);
 
 Vegetation.prototype.birth = function (map, traits) {
   // console.log(`spawning enity: ${this.name}`);
-  Object.getPrototypeOf(Vegetation.prototype).birth(map, traits);
-
+  Object.getPrototypeOf(Vegetation.prototype).birth.call(this, map, traits);
+  // console.log(`set traits (vegetation class): ${JSON.stringify(this.traits)}`);
   // console.log('calculate attrition');
   //calculate attrition
   this.calculateAttrition(map);
@@ -18,79 +18,139 @@ Vegetation.prototype.birth = function (map, traits) {
   this.calculateHealth();
 }
 
+Vegetation.prototype.death = function (map) {
+  this.deathFunctionRun = true;
+  if (this.nearestEntityId) {
+    console.log(`attrition recalculated`);
+    let nearestEntity = map.entities.find(x => x.id === this.nearestEntityId);
+    if (nearestEntity) {
+      nearestEntity.calculateAttrition(map);
+    } else {
+      console.log(`could not find nearest entity`);
+    }
+  }
+}
+
 Vegetation.prototype.run = function (map, goap, deltaTime) {
   // console.log(`running enity: ${this.name}`);
-  Object.getPrototypeOf(Vegetation.prototype).run(map, goap, deltaTime);
-  this.applyRates(deltaTime);
-  this.updateDuplicate(deltaTime);
-  this.checkSpawnEntity(map);
+  Object.getPrototypeOf(Vegetation.prototype).run.call(this, map, goap, deltaTime);
+  if (!this.destroy) {
+    this.applyRates(deltaTime);
+    this.updateDuplicate(deltaTime);
+    this.checkHealth();
+    this.checkSpawnEntity(map);
+  } else if (!this.deathFunctionRun) {
+    this.death(map);
+  }
 }
 
 Vegetation.prototype.applyRates = function (deltaTime) {
   this.health -= this.healthLossRate * deltaTime;
   this.health = Math.max(this.health, 0);
-}
 
-Vegetation.prototype.updateDuplicate = function (deltaTime) {
   this.duplicate -= deltaTime;
   this.duplicate = Math.max(this.duplicate, 0);
   // console.log(`duplicate: ${this.duplicate}`);
+}
+
+Vegetation.prototype.checkHealth = function () {
+  if (this.health === 0) {
+    //death
+    // console.log('death of vegetation');
+    this.health = 0;
+    this.destroy = true;
+  }
+}
+
+Vegetation.prototype.updateDuplicate = function (deltaTime) {
+
 
 }
 
 Vegetation.prototype.checkSpawnEntity = function (map) {
   if (this.duplicate === 0) {
-    console.log('duplicating vegetation');
-    const randomX = (Math.random() - 0.5 * 2) * this.attrition * 3;
-    const randomY = (Math.random() - 0.5 * 2) * this.attrition * 3;
+    // console.log('duplicating vegetation');
+    const randomX = (Math.random() - 0.5) * 2 * this.attrition * 3;
+    const randomY = (Math.random() - 0.5) * 2 * this.attrition * 3;
 
     const spawnX = this.position.x + randomX;
     const spawnY = this.position.y + randomY;
+    if (map.withinBorder(spawnX, spawnY)) {
+      const spawnBiome = map.getBiome(spawnX, spawnY)[0];
 
-    const spawnBiome = map.getBiome(spawnX, spawnY)[0];
-
-
-    if (this.spawnBiomes.find(x => x === spawnBiome)) {
       //found biome match, can spawn entity
-      console.log(`found biome match`);
-    } else {
-      console.log(`biome ${spawnBiome} does not match accepted biomes`);
-    }
+      if (this.spawnBiomes.find(x => x === spawnBiome)) {
+        //create child traits
+        let childTraits = this.createChildTraits();
 
-    const trait = this.getTrait('duplicate');
-    if (trait) {
-      trait.amount = trait.base + (Math.random() - 0.5) * 2 * trait.randomness;
-      this[trait.name] = trait.amount;
-    } else {
-      console.error(`could not find trait duplicate in entity`);
-      this.duplicate = 1000;
+        //create other needed things
+        let spawnSettings = map.entitySettings.find(x => x.name === this.name);
+        let baseSpriteIndex = Math.floor(Math.random() * spawnSettings.baseSprites.length);
+        let entity = new Vegetation(spawnSettings.name, map.id++, spawnX, spawnY, this.spawnIndex, baseSpriteIndex);
+        entity.spawnBiomes = spawnSettings.spawnBiomes;
+        entity.baseHealthLossRate = spawnSettings.baseHealthLossRate;
+        entity.attrition = spawnSettings.attrition;
+        entity.attritionHealthEffect = spawnSettings.attritionHealthEffect;
+        entity.generation = this.generation + 1;
+        entity.birth(map, childTraits);
+        map.addNewEntity(entity);
+      } else {
+        // console.log(`biome ${spawnBiome} does not match accepted biomes`);
+      }
+
+      const trait = this.getTrait('duplicate');
+      if (trait) {
+        trait.amount = trait.base + (Math.random() - 0.5) * 2 * trait.randomness;
+        this[trait.name] = trait.amount;
+      } else {
+        console.error(`could not find trait duplicate in entity: ` + JSON.stringify(this));
+        this.duplicate = 1000;
+      }
     }
   }
+}
+
+Vegetation.prototype.createChildTraits = function () {
+  let childTraits = [];
+  for (const trait of this.traits) {
+    let childTrait = JSON.parse(JSON.stringify(trait));
+    childTrait.base = childTrait.amount;
+    childTraits.push(childTrait);
+  }
+  return childTraits;
 }
 
 Vegetation.prototype.calculateAttrition = function (map) {
-  const nearestEntity = map.findNearestEntityName(this.name, this);
-
-  if (nearestEntity) {
-    console.log(`found nearest entity`);
-    const distCost = distanceCost(this.position, nearestEntity.position) / 10.0;
-    if (distCost === 0) {
-      console.log('distance equals 0');
-      distCost = 0.1;
-    }
-    const attrition = this.attrition / distCost;
-    if (attrition > 1) {
-      this.healthLossRate = this.baseHealthLossRate + (attrition - 1) * attritionHealthEffect;
+  // const nearestEntity = map.findNearestEntityName(this.name, this);
+  this.healthLossRate = this.baseHealthLossRate;
+  for (const entity of map.entities) {
+    if (entity.name === this.name && !entity.destroy) {
+      // console.log(`found nearest entity`);
+      // this.nearestEntityId = nearestEntity.id;
+      let distCost = distanceCost(this.position, entity.position) / 10.0;
+      if (distCost === 0) {
+        console.log('distance equals 0');
+        distCost = 0.1;
+      }
+      const attrition = this.attrition / distCost;
+      if (attrition > 1) {
+        this.healthLossRate += (attrition - 1) * this.attritionHealthEffect;
+        // nearestEntity.healthLossRate = this.healthLossRate;
+        // console.log(`attrition applied: ${this.healthLossRate}`);
+      }
     }
   }
+  
+  // console.log(`health loss rate: ${this.healthLossRate}`);
 }
 
 Vegetation.prototype.calculateHealth = function () {
-  console.log('health calculated');
-  const trait = this.getTrait('duplicate')
+  const trait = this.getTrait('duplicate');
   if (trait) {
     this.health = trait.base * trait.healthMult;
-
+    // console.log('health calculated: ' + this.health);
+  } else {
+    console.log(`could not find trait duplicate`);
   }
 }
 

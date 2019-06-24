@@ -13,6 +13,7 @@ export class Vegetation extends Entity {
 
     getInfo() {
         const info = super.getInfo();
+        // info.push(JSON.stringify(this));
         info.push(`health: ${this.health.toFixed(1)}`);
         info.push(`health loss: ${this.healthLossRate.toFixed(1)}`);
         info.push(`duplicate: ${this.duplicate.toFixed(1)}`);

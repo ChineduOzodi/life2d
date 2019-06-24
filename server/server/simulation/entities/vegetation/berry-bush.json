@@ -1,17 +1,15 @@
 {
     "name": "berry bush",
     "type": "vegetation",
-    "health": 1000,
     "baseHealthLossRate": 1,
-    "attrition": 3,
-    "attritionHealthEffect": 1,
+    "attrition": 10,
+    "attritionHealthEffect": 10,
     "traits":[
         {
             "name":"duplicate",
             "base": 100,
             "randomness": 10,
-            "healthMult": 10,
-            "costRate": 0.1
+            "healthMult": 5
         }
     ],
     "spawnBiomes":["land"],
