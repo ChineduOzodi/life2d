@@ -94,6 +94,10 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy() {
     this.mapSub.unsubscribe();
+    this.mapChunkAddSub.unsubscribe();
+    this.mapEntitiesSub.unsubscribe();
+    this.locationReservationsSub.unsubscribe();
+    this.goapActionsSub.unsubscribe();
   }
 
   ngAfterViewInit() {

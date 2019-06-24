@@ -1,8 +1,8 @@
 import { ChartsService } from './../../charts.service';
 import { Map } from './../interfaces/map';
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, ViewChild } from '@angular/core';
 import { ChartDataSets, ChartOptions } from 'chart.js';
-import { Color, Label } from 'ng2-charts';
+import { Color, Label, BaseChartDirective } from 'ng2-charts';
 
 @Component({
   selector: 'app-charts',
@@ -13,6 +13,9 @@ export class ChartsComponent implements OnInit {
 
   @Input()
   map: Map;
+
+  @ViewChild(BaseChartDirective, { read: true, static: false }) public _chart;
+// this._chart.chart.update();
 
   public lineChartData: ChartDataSets[] = [
     { data: [65, 59, 80, 81, 56, 55, 40], label: 'Series A' },
@@ -34,6 +37,8 @@ export class ChartsComponent implements OnInit {
   constructor(public chartsService: ChartsService) { }
 
   ngOnInit() {
+    const charts = this;
+    setInterval( () => { (charts._chart) ? charts._chart.chart.update() : null;}, 1000);
   }
 
 }
