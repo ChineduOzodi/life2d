@@ -1,11 +1,14 @@
-<div *ngIf="map" style="display: block;">
-    <canvas baseChart width="800" height="400"
-      [datasets]="map.data"
-      [labels]="map.label"
-      [options]="lineChartOptions"
-      [colors]="lineChartColors"
-      [legend]="lineChartLegend"
-      [chartType]="lineChartType"
-      [plugins]="lineChartPlugins" #BaseChartDirective>
-    </canvas>
-  </div>
+<ngx-charts-bar-vertical
+  [view]="view"
+  [scheme]="colorScheme"
+  [results]="single"
+  [gradient]="gradient"
+  [xAxis]="showXAxis"
+  [yAxis]="showYAxis"
+  [legend]="showLegend"
+  [showXAxisLabel]="showXAxisLabel"
+  [showYAxisLabel]="showYAxisLabel"
+  [xAxisLabel]="xAxisLabel"
+  [yAxisLabel]="yAxisLabel"
+  (select)="onSelect($event)">
+</ngx-charts-bar-vertical>

@@ -1,8 +1,6 @@
 import { ChartsService } from './../../charts.service';
 import { Map } from './../interfaces/map';
 import { Component, OnInit, Input, ViewChild } from '@angular/core';
-import { ChartDataSets, ChartOptions } from 'chart.js';
-import { Color, Label, BaseChartDirective } from 'ng2-charts';
 
 @Component({
   selector: 'app-charts',
@@ -14,31 +12,47 @@ export class ChartsComponent implements OnInit {
   @Input()
   map: Map;
 
-  @ViewChild(BaseChartDirective, { read: true, static: false }) public _chart;
-// this._chart.chart.update();
-
-  public lineChartData: ChartDataSets[] = [
-    { data: [65, 59, 80, 81, 56, 55, 40], label: 'Series A' },
-  ];
-  public lineChartLabels: Label[] = ['January', 'February', 'March', 'April', 'May', 'June', 'July'];
-  public lineChartOptions: any = {
-    responsive: true,
-  };
-  public lineChartColors: Color[] = [
+  single = [
     {
-      borderColor: 'black',
-      backgroundColor: 'rgba(255,0,0,0.3)',
+      name: 'Germany',
+      value: 8940000
     },
+    {
+      name: 'USA',
+      value: 5000000
+    },
+    {
+      name: 'France',
+      value: 7200000
+    }
   ];
-  public lineChartLegend = true;
-  public lineChartType = 'line';
-  public lineChartPlugins = [];
+  multi: any[];
 
-  constructor(public chartsService: ChartsService) { }
+  view: any[] = [700, 400];
+
+  // options
+  showXAxis = true;
+  showYAxis = true;
+  gradient = false;
+  showLegend = true;
+  showXAxisLabel = true;
+  xAxisLabel = 'Country';
+  showYAxisLabel = true;
+  yAxisLabel = 'Population';
+
+  colorScheme = {
+    domain: ['#5AA454', '#A10A28', '#C7B42C', '#AAAAAA']
+  };
+
+  constructor() {
+    // Object.assign(this, { single: this.single });
+  }
+
+  onSelect(event) {
+    console.log(event);
+  }
 
   ngOnInit() {
-    const charts = this;
-    setInterval( () => { (charts._chart) ? charts._chart.chart.update() : null;}, 1000);
   }
 
 }
