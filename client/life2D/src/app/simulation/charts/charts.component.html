@@ -1,7 +1,7 @@
-<ngx-charts-bar-vertical
+<ngx-charts-line-chart *ngIf="map"
   [view]="view"
   [scheme]="colorScheme"
-  [results]="single"
+  [results]="map.data"
   [gradient]="gradient"
   [xAxis]="showXAxis"
   [yAxis]="showYAxis"
@@ -10,5 +10,7 @@
   [showYAxisLabel]="showYAxisLabel"
   [xAxisLabel]="xAxisLabel"
   [yAxisLabel]="yAxisLabel"
+  [autoScale]="autoScale"
+  [timeline]="timeline"
   (select)="onSelect($event)">
-</ngx-charts-bar-vertical>
+</ngx-charts-line-chart>

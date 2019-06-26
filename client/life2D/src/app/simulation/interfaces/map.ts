@@ -12,5 +12,6 @@ export interface Map {
     entities: any[];
     chunkData: {};
     map: {};
+    data: any[];
     locationReservations: LocationReserve[];
 }

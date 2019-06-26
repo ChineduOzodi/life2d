@@ -53,22 +53,21 @@ if (regenerate) {
   map.generate(saveDir);
   map.data = [
     {
-      data: [0],
-      label: 'Vegetation'
+      series: [{name: 0, value: 0}],
+      name: 'Vegetation'
     },
     {
-      data: [0],
-      label: 'Average Health'
+      series: [{name: 0, value: 0}],
+      name: 'Average Health'
     },
     {
-      data: [0],
-      label: 'Average Age'
+      series: [{name: 0, value: 0}],
+      name: 'Average Age'
     }, {
-      data: [0],
-      label: 'Average Duplication'
+      series: [{name: 0, value: 0}],
+      name: 'Average Duplication'
     }
   ];
-  map.label = ['0'];
   map.interval = 60;
   map.currentLatestTime = 60;
   map.currentIndex = 0;
@@ -119,10 +118,10 @@ function updateData(map) {
   if (map.time > map.currentLatestTime) {
     map.currentIndex++;
     map.currentLatestTime += map.interval;
-    for (let data of map.data) {
-      data.data.push(0);
+    let name = (map.currentLatestTime / 60);
+    for (const data of map.data) {
+      data.series.push({name: name, value: 0});
     }
-    map.label.push(`${(map.currentLatestTime / 60).toFixed(1)} m`);
   }
 
   for (let i in map.data) {
@@ -130,14 +129,14 @@ function updateData(map) {
     // console.log(JSON.stringify(data));
     // console.log(`i: ${i}`);
     if (i == 0) {
-      data.data[map.currentIndex] = totalEntities;
+      data.series[map.currentIndex].value = totalEntities;
       // console.log(`total entities: ${data.data[map.currentIndex]}`);
     } else if (i == 1) {
-      data.data[map.currentIndex] = averageHealth;
+      data.series[map.currentIndex].value = averageHealth;
     } else if (i == 2) {
-      data.data[map.currentIndex] = averageAge;
+      data.series[map.currentIndex].value = averageAge;
     } else if (i == 3) {
-      data.data[map.currentIndex] = averageDuplication;
+      data.series[map.currentIndex].value = averageDuplication;
     }
   }
 }

@@ -134,6 +134,7 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
     this.sMap.entities = objectEntities;
+    this.sMap.data = JSON.parse(JSON.stringify(this.sMap.data));
   }
 
   createCanvas() {
