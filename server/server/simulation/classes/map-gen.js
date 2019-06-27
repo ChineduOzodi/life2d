@@ -198,11 +198,14 @@ Map.prototype.spawnEntities = function () {
         this.entities.push(entity);
       } else if (spawnSettings.type === 'moving-entity') {
         let entity = new MovingEntity(spawnSettings.name, this.id++, position.x, position.y, spawnIndex, baseSpriteIndex);
+        entity.baseHealthLossRate = spawnSettings.baseHealthLossRate;
+        entity.generation = this.generation + 1;
         entity.energy = spawnSettings.energy;
         entity.baseMaxEnergy = spawnSettings.baseMaxEnergy;
         entity.baseEnergyGainRate = spawnSettings.baseEnergyGainRate;
         entity.baseEnergyLossRate = spawnSettings.baseEnergyLossRate;
         entity.spawnBiomes = spawnSettings.spawnBiomes;
+        entity.generation = 1;
         entity.birth(this,spawnSettings.traits);
 
         this.entities.push(entity);

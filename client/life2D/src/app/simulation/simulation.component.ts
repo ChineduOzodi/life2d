@@ -48,6 +48,7 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
   mapSub: Subscription;
   mapChunkAddSub: Subscription;
   mapEntitiesSub: Subscription;
+  dataSub: Subscription;
   locationReservationsSub: Subscription;
   goapActionsSub: Subscription;
 
@@ -89,6 +90,10 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
       console.log(actions);
       this.actions = actions;
     });
+    this.dataSub = this.chartsService.data.subscribe( data => {
+      // console.log('received data');
+      this.sMap.data = data;
+    })
     // this.logger.debug('camera set', this.camera);
   }
 
@@ -134,7 +139,7 @@ export class SimulationComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
     this.sMap.entities = objectEntities;
-    this.sMap.data = JSON.parse(JSON.stringify(this.sMap.data));
+    // this.sMap.data = JSON.parse(JSON.stringify(this.sMap.data));
   }
 
   createCanvas() {

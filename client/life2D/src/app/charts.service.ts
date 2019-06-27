@@ -1,16 +1,14 @@
 import { Map } from './simulation/interfaces/map';
 import { Injectable } from '@angular/core';
+import { Socket } from 'ngx-socket-io';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ChartsService {
 
-  update;
+  data = this.socket.fromEvent<any[]>('data');
 
-  constructor() { }
+  constructor(private socket: Socket) { }
 
-  callUpdateData() {
-    this.update();
-  }
 }

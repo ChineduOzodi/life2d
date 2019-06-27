@@ -8,6 +8,10 @@ export class Entity {
   position: Position;
   settingsIndex: number;
   baseSpriteIndex: number;
+  generation: number;
+  health: number;
+  healthLossRate: number;
+  baseHealthLossRate: number;
   id: string;
   traits = [];
   reserved = false;
@@ -85,8 +89,12 @@ export class Entity {
                   `type: ${this.type}`,
                   `id: ${this.id}`,
                   `age: ${this.age.toFixed(0)}`,
-                  `position: (${this.position.x.toFixed(1)}, ${this.position.y.toFixed(1)})`,
-                  `info: ${this.info}`];
+                  `health: ${this.health.toFixed(0)}`,
+                  `generation: ${this.generation}`,
+                  `position: (${this.position.x.toFixed(1)}, ${this.position.y.toFixed(1)})`];
+    if (this.info){
+      info.push(`info: ${this.info}`);
+    }
     return info;
   }
 }

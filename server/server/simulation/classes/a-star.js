@@ -14,7 +14,7 @@ AStar.prototype.findPath = function (startPosition, endPosition, map) {
     let nodeMap = {};
     nodeMap[`x:${targetNode.position.x},y:${targetNode.position.y}`] = targetNode;
     nodeMap[`x:${startNode.position.x},y:${startNode.position.y}`] = startNode;
-    console.log(`finding path from: x:${startNode.position.x},y:${startNode.position.y} to x:${targetNode.position.x},y:${targetNode.position.y}`);
+    // console.log(`finding path from: x:${startNode.position.x},y:${startNode.position.y} to x:${targetNode.position.x},y:${targetNode.position.y}`);
     return new Promise((resolve, reject) => {
         let foundPath = false;
         while (openNodes.length > 0) {
@@ -36,7 +36,7 @@ AStar.prototype.findPath = function (startPosition, endPosition, map) {
             //check if node == target
             if (currentNode.position.x == targetNode.position.x && currentNode.position.y == targetNode.position.y) {
                 //found node
-                console.log('reached target node, retracing steps...');
+                // console.log('reached target node, retracing steps...');
                 let path = thisAStar.createPath(currentNode);
                 // console.log(`found path: ${JSON.stringify(path)}`);
                 resolve(path);

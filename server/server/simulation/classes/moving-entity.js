@@ -21,14 +21,53 @@ function MovingEntity(name, id, x, y, settingsIndex, baseSpriteIndex) {
 
 MovingEntity.prototype = Object.create(Entity.prototype);
 
+MovingEntity.prototype.birth = function (map, traits) {
+  // console.log(`spawning enity: ${this.name}`);
+  Object.getPrototypeOf(MovingEntity.prototype).birth.call(this, map, traits);
+
+  //set health
+  this.calculateHealth();
+}
+
+MovingEntity.prototype.death = function (map) {
+  this.deathFunctionRun = true;
+
+}
+
 MovingEntity.prototype.run = function (map, goap, deltaTime) {
   // console.log(`running enity: ${this.name}`);
-  Object.getPrototypeOf(MovingEntity.prototype).run.call(this,map, goap, deltaTime);
-  this.resetBaseAttributes();
-  this.applyModifiers();
-  this.applyBaseRates(deltaTime);
-  this.currentAction(this, map, goap);
+  Object.getPrototypeOf(MovingEntity.prototype).run.call(this, map, goap, deltaTime);
+  if (!this.destroy) {
+    this.resetBaseAttributes();
+    this.applyModifiers();
+    this.applyBaseRates(deltaTime);
+    this.currentAction(this, map, goap);
+    this.checkHealth();
+    this.checkSpawnEntity(map);
+  } else if (!this.deathFunctionRun) {
+    this.death(map);
+  }
+
   // console.log(`energy: ${this.energy}`);
+}
+
+MovingEntity.prototype.calculateHealth = function () {
+  const trait = this.getTrait('duplicate');
+  if (trait) {
+    this.health = trait.base * trait.healthMult;
+    this.healthLossRate = this.baseHealthLossRate;
+    // console.log('health calculated: ' + this.health);
+  } else {
+    console.log(`could not find trait duplicate`);
+  }
+}
+
+MovingEntity.prototype.checkHealth = function () {
+  if (this.health === 0 || this.energy === 0) {
+    //death
+    // console.log('death of vegetation');
+    this.destroy = true;
+  }
 }
 
 MovingEntity.prototype.resetBaseAttributes = function () {
@@ -59,6 +98,10 @@ MovingEntity.prototype.applyBaseRates = function (deltaTime) {
   } else {
     this.energy -= this.energyLossRate * deltaTime;
     this.energy = Math.max(this.energy, 0);
+    this.health -= this.healthLossRate * deltaTime;
+    this.health = Math.max(this.health, 0);
+    this.duplicate -= deltaTime;
+    this.duplicate = Math.max(this.duplicate, 0);
   }
 
   if (this.fullness > 0) {
@@ -116,8 +159,60 @@ function applyModifier(location, modifier) {
   }
 }
 
-MovingEntity.prototype.birth = function(map, traits) {
-  Object.getPrototypeOf(MovingEntity.prototype).birth.call(this,map, traits);
+MovingEntity.prototype.checkSpawnEntity = function (map) {
+  if (this.duplicate === 0) {
+    // console.log('duplicating vegetation');
+    const randomX = (Math.random() - 0.5) * 2 * 3;
+    const randomY = (Math.random() - 0.5) * 2 * 3;
+
+    const spawnX = this.position.x + randomX;
+    const spawnY = this.position.y + randomY;
+    if (map.withinBorder(spawnX, spawnY)) {
+      const spawnBiome = map.getBiome(spawnX, spawnY)[0];
+
+      //found biome match, can spawn entity
+      if (this.spawnBiomes.find(x => x === spawnBiome)) {
+        //create child traits
+        let childTraits = this.createChildTraits();
+
+        //create other needed things
+        let spawnSettings = map.entitySettings.find(x => x.name === this.name);
+        let baseSpriteIndex = Math.floor(Math.random() * spawnSettings.baseSprites.length);
+        // console.log(`this bsi: ${this.baseSpriteIndex}, child bsi: ${baseSpriteIndex}`);
+        let entity = new MovingEntity(spawnSettings.name, map.id++, spawnX, spawnY, this.settingsIndex, baseSpriteIndex);
+        entity.baseHealthLossRate = spawnSettings.baseHealthLossRate;
+        entity.generation = this.generation + 1;
+        entity.energy = spawnSettings.energy;
+        entity.baseMaxEnergy = spawnSettings.baseMaxEnergy;
+        entity.baseEnergyGainRate = spawnSettings.baseEnergyGainRate;
+        entity.baseEnergyLossRate = spawnSettings.baseEnergyLossRate;
+        entity.spawnBiomes = spawnSettings.spawnBiomes;
+        entity.birth(map, childTraits);
+        map.addNewEntity(entity);
+      } else {
+        // console.log(`biome ${spawnBiome} does not match accepted biomes`);
+      }
+
+      const trait = this.getTrait('duplicate');
+      if (trait) {
+        trait.amount = trait.base + (Math.random() - 0.5) * 2 * trait.randomness;
+        this[trait.name] = trait.amount;
+      } else {
+        console.error(`could not find trait duplicate in entity: ` + JSON.stringify(this));
+        this.duplicate = 1000;
+      }
+    }
+  }
+}
+
+MovingEntity.prototype.createChildTraits = function () {
+  let childTraits = [];
+  for (const trait of this.traits) {
+    let childTrait = JSON.parse(JSON.stringify(trait));
+    childTrait.base = childTrait.amount;
+    childTraits.push(childTrait);
+  }
+  return childTraits;
 }
 
 function idleState(entity, map, goap) {
@@ -222,12 +317,12 @@ function doAction(entity, map) {
       })
     } else {
       //do action
-      console.log(entity.name + ' doing action: ' + action.name);
+      // console.log(entity.name + ' doing action: ' + action.name);
       if (action.sleeping) {
         entity.isSleeping = true;
       }
       setTimeout(() => {
-        console.log(`${entity.name} finished doing action: ${action.name}`);
+        // console.log(`${entity.name} finished doing action: ${action.name}`);
         entity.info = `finished doing action: ${action.name}`;
         entity.isNearTarget = false;
         entity.planIndex++;
@@ -236,7 +331,7 @@ function doAction(entity, map) {
         // console.log(`new player state: ${JSON.stringify(entity.state)}`);
         if (entity.planIndex >= entity.plan.length) {
           entity.currentAction = idleState;
-          console.log("plan complete!");
+          // console.log("plan complete!");
           entity.goals.splice(0, 1);
           //TODO: remove entities
         } else {
@@ -332,9 +427,9 @@ MovingEntity.prototype.applyAction = function (action, map) {
 
 function getFromObject(obj, location) {
   if (location) {
-      for (const loc of location) {
-          obj = obj[loc];
-      }
+    for (const loc of location) {
+      obj = obj[loc];
+    }
   }
   return obj;
 }

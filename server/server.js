@@ -66,6 +66,10 @@ if (regenerate) {
     }, {
       series: [{name: 0, value: 0}],
       name: 'Average Duplication'
+    },
+    {
+      series: [{name: 0, value: 0}],
+      name: 'Herbivores'
     }
   ];
   map.interval = 60;
@@ -92,6 +96,7 @@ goap.loadActions(goapActionsPath).then(() => {
 
 function updateData(map) {
   let totalEntities = 0;
+  let totalHerbs = 0;
   let averageAge = 0;
   let averageDuplication = 0;
   let totalVegetation = 0;
@@ -105,6 +110,8 @@ function updateData(map) {
         let duplicate = entity.getTrait('duplicate')
         averageDuplication += duplicate.base;
         averageHealth += entity.health;
+      } else {
+        totalHerbs++;
       }
     }
   }
@@ -137,7 +144,9 @@ function updateData(map) {
       data.series[map.currentIndex].value = averageAge;
     } else if (i == 3) {
       data.series[map.currentIndex].value = averageDuplication;
-    }
+    } else if (i == 4) {
+      data.series[map.currentIndex].value = totalHerbs;
+    } 
   }
 }
 
@@ -204,7 +213,6 @@ io.on('connection', function (socket) {
 
 setInterval(function () {
   map.run(goap, 1 / 60);
-  updateData(map);
   // console.log(`sending entity: ${JSON.stringify(map.entities[1])}`);
   io.sockets.emit('entities', map.entities);
   io.sockets.emit('state', players);
@@ -213,6 +221,11 @@ setInterval(function () {
     io.sockets.emit('locationReservations', map.locationReservations);
   }
 }, 1000 / 60);
+
+setInterval(function () {
+  updateData(map);
+  io.sockets.emit('data', map.data);
+}, 1000);
 
 setInterval(() => {
   map.saveData(saveDir);

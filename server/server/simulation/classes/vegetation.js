@@ -36,7 +36,6 @@ Vegetation.prototype.run = function (map, goap, deltaTime) {
   Object.getPrototypeOf(Vegetation.prototype).run.call(this, map, goap, deltaTime);
   if (!this.destroy) {
     this.applyRates(deltaTime);
-    this.updateDuplicate(deltaTime);
     this.checkHealth();
     this.checkSpawnEntity(map);
   } else if (!this.deathFunctionRun) {
@@ -62,11 +61,6 @@ Vegetation.prototype.checkHealth = function () {
   }
 }
 
-Vegetation.prototype.updateDuplicate = function (deltaTime) {
-
-
-}
-
 Vegetation.prototype.checkSpawnEntity = function (map) {
   if (this.duplicate === 0) {
     // console.log('duplicating vegetation');
@@ -86,7 +80,8 @@ Vegetation.prototype.checkSpawnEntity = function (map) {
         //create other needed things
         let spawnSettings = map.entitySettings.find(x => x.name === this.name);
         let baseSpriteIndex = Math.floor(Math.random() * spawnSettings.baseSprites.length);
-        let entity = new Vegetation(spawnSettings.name, map.id++, spawnX, spawnY, this.spawnIndex, baseSpriteIndex);
+        // console.log(`this bsi: ${this.baseSpriteIndex}, child bsi: ${baseSpriteIndex}`);
+        let entity = new Vegetation(spawnSettings.name, map.id++, spawnX, spawnY, this.settingsIndex, baseSpriteIndex);
         entity.spawnBiomes = spawnSettings.spawnBiomes;
         entity.baseHealthLossRate = spawnSettings.baseHealthLossRate;
         entity.attrition = spawnSettings.attrition;

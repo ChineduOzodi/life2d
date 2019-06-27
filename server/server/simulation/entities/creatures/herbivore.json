@@ -1,10 +1,11 @@
 {
     "name": "herbivore",
     "type": "moving-entity",
-    "energy": 1000,
-    "baseMaxEnergy": 1000,
+    "energy": 100,
+    "baseMaxEnergy": 100,
     "baseEnergyLossRate": 1,
     "baseEnergyGainRate": 2,
+    "baseHealthLossRate": 1,
     "traits":[
         {
             "name":"speed",
@@ -12,6 +13,12 @@
             "randomness": 0.1,
             "cost": "energy",
             "costRate": 0.1
+        },
+        {
+            "name":"duplicate",
+            "base": 120,
+            "randomness": 10,
+            "healthMult": 5
         }
     ],
     "spawnBiomes":["land"],
