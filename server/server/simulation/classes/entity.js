@@ -11,7 +11,7 @@ function Entity(name, type, id, x, y, settingsIndex, baseSpriteIndex) {
     this.destroy = false;
 }
 
-Entity.prototype.run = function (map, goap, deltaTime) {
+Entity.prototype.run = function (map, goapPlanner, deltaTime) {
   // console.log(`running enity: ${this.name}`);
   if (!this.destroy) {
     this.age += deltaTime;

@@ -1,5 +1,4 @@
 var Entity = require('./entity');
-var GoapPlanner = require('./goap-planner');
 AStar = require('./a-star');
 
 function MovingEntity(name, id, x, y, settingsIndex, baseSpriteIndex) {
@@ -34,14 +33,14 @@ MovingEntity.prototype.death = function (map) {
 
 }
 
-MovingEntity.prototype.run = function (map, goap, deltaTime) {
+MovingEntity.prototype.run = function (map, goapPlanner, deltaTime) {
   // console.log(`running enity: ${this.name}`);
-  Object.getPrototypeOf(MovingEntity.prototype).run.call(this, map, goap, deltaTime);
+  Object.getPrototypeOf(MovingEntity.prototype).run.call(this, map, goapPlanner, deltaTime);
   if (!this.destroy) {
     this.resetBaseAttributes();
     this.applyModifiers();
     this.applyBaseRates(deltaTime);
-    this.currentAction(this, map, goap);
+    this.currentAction(this, map, goapPlanner);
     this.checkHealth();
     this.checkSpawnEntity(map);
   } else if (!this.deathFunctionRun) {
@@ -215,16 +214,16 @@ MovingEntity.prototype.createChildTraits = function () {
   return childTraits;
 }
 
-function idleState(entity, map, goap) {
+function idleState(entity, map, goapPlanner) {
   // console.log('waiting');
   entity.info = "idling...";
-  entity.checkGoals(goap, map);
+  entity.checkGoals(goapPlanner, map);
   if (entity.goals.length === 0) {
-    entity.findPotentialGoals(goap, map);
+    entity.findPotentialGoals(goapPlanner, map);
   }
 }
 
-MovingEntity.prototype.findPotentialGoals = function (goap, map) {
+MovingEntity.prototype.findPotentialGoals = function (goapPlanner, map) {
   let potentionGoals = [];
   let eat = {
     "name": 'eat',
@@ -250,14 +249,14 @@ MovingEntity.prototype.findPotentialGoals = function (goap, map) {
 
   if (chosenEffect) {
     // console.log('goal chosen');
-    this.createPlan(goap, map, chosenEffect);
+    this.createPlan(goapPlanner, map, chosenEffect);
   }
 }
 
-MovingEntity.prototype.createPlan = function (goap, map, goalEffects) {
-  let goapPlanner = new GoapPlanner();
+MovingEntity.prototype.createPlan = function (goapPlanner, map, goalEffects) {
+  
   // console.log('creating plan');
-  goapPlanner.createPlan(map, this, this, goap.actions, goalEffects).then((plan) => {
+  goapPlanner.createPlan(map, this, this, goapPlanner.goap.actions, goalEffects).then((plan) => {
     if (plan) {
       // console.log('found plan');
       this.plan = plan;
@@ -280,13 +279,13 @@ MovingEntity.prototype.createPlan = function (goap, map, goalEffects) {
 /**
  * checks for goals in the this.goals list, and appends the oldest one this.goals[0]
  */
-MovingEntity.prototype.checkGoals = function (goap, map) {
+MovingEntity.prototype.checkGoals = function (goapPlanner, map) {
   if (this.goals.length > 0) {
     let goal = this.goals[0];
-    let goalAction = goap.findAction(goal);
+    let goalAction = goapPlanner.goap.findAction(goal);
     // console.log(`goal: ${goal}`);
     if (goalAction) {
-      this.createPlan(goap, map, goalAction.effects);
+      this.createPlan(goapPlanner, map, goalAction.effects);
     } else {
       console.log(`could not find a goal action(s) for: ${goal}`);
     }

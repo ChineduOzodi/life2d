@@ -12,6 +12,7 @@ var Map = require('./server/simulation/classes/map-gen');
 var Goap = require('./server/simulation/classes/goap');
 var Camera = require('./server/simulation/classes/camera');
 var User = require('./server/simulation/classes/user');
+var GoapPlanner = require('./server/simulation/classes/goap-planner');
 
 //global variables
 var saveDir = `./server/simulation/save`;
@@ -21,7 +22,7 @@ var regenerate = true;
 var players = {};
 var users = {};
 var map;
-
+var goapPlanner = new GoapPlanner();
 //=========================================
 
 //server setup
@@ -87,9 +88,9 @@ if (regenerate) {
 }
 
 //GOAP setup
-var goap = new Goap();
+goapPlanner.goap = new Goap();
 console.log('laoding goap actions');
-goap.loadActions(goapActionsPath).then(() => {
+goapPlanner.goap.loadActions(goapActionsPath).then(() => {
   // console.log(JSON.stringify(goap.actions));
   console.log(`goap action loading complete`);
 });
@@ -170,7 +171,7 @@ io.on('connection', function (socket) {
 
     io.to(socket.id).emit('user', users[username]);
     io.to(socket.id).emit('map', map);
-    io.to(socket.id).emit('goapActions', goap.actions);
+    io.to(socket.id).emit('goapActions', goapPlanner.goap.actions);
 
   });
   socket.on('camera', function (camera) {
@@ -212,7 +213,7 @@ io.on('connection', function (socket) {
 });
 
 setInterval(function () {
-  map.run(goap, 1 / 60);
+  map.run(goapPlanner, 1 / 60);
   // console.log(`sending entity: ${JSON.stringify(map.entities[1])}`);
   io.sockets.emit('entities', map.entities);
   io.sockets.emit('state', players);

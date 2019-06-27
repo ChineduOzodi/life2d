@@ -2,6 +2,7 @@ AStar = require('./a-star');
 LocationReserve = require('./location-reserve');
 
 function GoapPlanner() {
+    //TODO: create queue
 }
 
 GoapPlanner.prototype.createPlan = function (map, agent, state, actions, goal) {
