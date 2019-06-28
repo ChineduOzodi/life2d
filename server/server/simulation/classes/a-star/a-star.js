@@ -1,14 +1,45 @@
 math = require('mathjs');
 AStarNode = require('./a-star-node');
 AStarPath = require('./a-star-path');
+AStarTask = require('./a-star-task');
+Queue = require('../Queue');
+
 function AStar() {
+    this.queue = new Queue();
+    this.currentTask;
 }
 
-AStar.prototype.findPath = function (startPosition, endPosition, map) {
+AStar.prototype.startTasks = function() {
+    if (!this.currentTask && !this.queue.isEmpty()) {
+        this.currentTask = this.queue.dequeue();
+    }
+
+    if (this.currentTask) {
+        this.findPath().then( path => {
+            this.currentTask.callBackFunction(path);
+            this.currentTask = null;
+            this.startTasks();
+        }).catch( err => {
+            console.error(err);
+            this.currentTask.callBackFunction();
+            this.currentTask = null;
+            this.startTasks();
+        });
+    }
+}
+AStar.prototype.requestPath = function (startPosition, endPosition, map, callBackFunction) {
+    this.queue.enqueue(new AStarTask(startPosition, endPosition, map, callBackFunction));
+    if (!this.currentTask) {
+        this.startTasks();
+    }
+}
+
+AStar.prototype.findPath = function () {
     let closedNodes = [];
     let openNodes = [];
-    let startNode = new AStarNode(Math.round(startPosition.x), Math.round(startPosition.y), map, 0, distanceCost(startPosition, endPosition));
-    let targetNode = new AStarNode(Math.round(endPosition.x), Math.round(endPosition.y), map);
+    let startNode = new AStarNode(Math.round(this.currentTask.startPosition.x), Math.round(this.currentTask.startPosition.y),
+        this.currentTask.map, 0, distanceCost(this.currentTask.startPosition, this.currentTask.endPosition));
+    let targetNode = new AStarNode(Math.round(this.currentTask.endPosition.x), Math.round(this.currentTask.endPosition.y), this.currentTask.map);
     openNodes.push(startNode);
     thisAStar = this;
     let nodeMap = {};
@@ -60,7 +91,7 @@ AStar.prototype.findPath = function (startPosition, endPosition, map) {
                         nNode = nodeMap[`x:${nx},y:${ny}`];
                     } else {
                         //create new nNode
-                        nNode = new AStarNode(nx, ny, map,currentNode.gCost + distanceCost(currentNode.position, nPosition), distanceCost(nPosition, targetNode.position),currentNode);
+                        nNode = new AStarNode(nx, ny, thisAStar.currentTask.map,currentNode.gCost + distanceCost(currentNode.position, nPosition), distanceCost(nPosition, targetNode.position),currentNode);
                         nodeMap[`x:${nx},y:${ny}`] = nNode;
                     }
 

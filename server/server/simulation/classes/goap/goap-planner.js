@@ -5,31 +5,31 @@ GoapPlan = require('./goap-plan');
 
 function GoapPlanner() {
     this.queue = new Queue();
-    this.currentPlan;
+    this.currentTask;
 }
 
-GoapPlanner.prototype.startPlanner = function() {
-    if (!this.currentPlan && !this.queue.isEmpty()) {
-        this.currentPlan = this.queue.dequeue();
+GoapPlanner.prototype.startTasks = function() {
+    if (!this.currentTask && !this.queue.isEmpty()) {
+        this.currentTask = this.queue.dequeue();
     }
 
-    if (this.currentPlan) {
+    if (this.currentTask) {
         this.createPlan().then( actionPlan => {
-            this.currentPlan.callBackFunction(actionPlan);
-            this.currentPlan = null;
-            this.startPlanner();
+            this.currentTask.callBackFunction(actionPlan);
+            this.currentTask = null;
+            this.startTasks();
         }).catch( err => {
             console.error(err);
-            this.currentPlan.callBackFunction();
-            this.currentPlan = null;
-            this.startPlanner();
+            this.currentTask.callBackFunction();
+            this.currentTask = null;
+            this.startTasks();
         });
     }
 }
 GoapPlanner.prototype.requestPlan = function(map, agent, state, actions, goal, callBackFunction) {
     this.queue.enqueue(new GoapPlan(map,agent,state,actions,goal,callBackFunction));
-    if (!this.currentPlan) {
-        this.startPlanner();
+    if (!this.currentTask) {
+        this.startTasks();
     }
 }
 
@@ -38,16 +38,16 @@ GoapPlanner.prototype.createPlan = function () {
     return new Promise((resolve, reject) => {
         let usableActions = [];
         // console.log(`total actions: ${actions.length}`);
-        for (let action of this.currentPlan.actions) {
-            if (thisPlanner.isActionUsable(this.currentPlan.map, this.currentPlan.agent, action)) {
+        for (let action of this.currentTask.actions) {
+            if (thisPlanner.isActionUsable(this.currentTask.map, this.currentTask.agent, action)) {
                 usableActions.push(action);
             }
         }
         // console.log(`usable actions length: ${usableActions.length}`);
         // console.log(`usable actions: ${JSON.stringify(usableActions)}`);
-        let start = new GoapNode(null, 0, 0, this.currentPlan.state, null);
+        let start = new GoapNode(null, 0, 0, this.currentTask.state, null);
         let leaves = [];
-        let success = thisPlanner.buildGraph(0, start, leaves, usableActions, this.currentPlan.goal, 10000000000);
+        let success = thisPlanner.buildGraph(0, start, leaves, usableActions, this.currentTask.goal, 10000000000);
         if (!success) {
             reject('could not find a plan');
         } else {
@@ -65,7 +65,7 @@ GoapPlanner.prototype.createPlan = function () {
             }
             // console.log(`selected action: ${JSON.stringify(selectedAction)}`);
             // console.log(`selected steps (${(selectionNode.runningCost + selectionNode.actionCost + selectionNode.distanceCost)}): ${actionList(selectionNode)}`);
-            let actionPlan = this.constructPlan([], selectionNode, this.currentPlan.map);
+            let actionPlan = this.constructPlan([], selectionNode, this.currentTask.map);
             resolve(actionPlan);
         }
     })

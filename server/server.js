@@ -13,6 +13,7 @@ var Goap = require('./server/simulation/classes/goap/goap');
 var Camera = require('./server/simulation/classes/camera');
 var User = require('./server/simulation/classes/user');
 var GoapPlanner = require('./server/simulation/classes/goap/goap-planner');
+var AStar = require('./server/simulation/classes/a-star/a-star');
 
 //global variables
 var saveDir = `./server/simulation/save`;
@@ -23,6 +24,7 @@ var players = {};
 var users = {};
 var map;
 var goapPlanner = new GoapPlanner();
+var aStar = new AStar();
 //=========================================
 
 //server setup
@@ -213,7 +215,7 @@ io.on('connection', function (socket) {
 });
 
 setInterval(function () {
-  map.run(goapPlanner, 1 / 60);
+  map.run(goapPlanner, 1 / 60, aStar);
   // console.log(`sending entity: ${JSON.stringify(map.entities[1])}`);
   io.sockets.emit('entities', map.entities);
   io.sockets.emit('state', players);

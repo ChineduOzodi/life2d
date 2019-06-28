@@ -1,5 +1,4 @@
 var Entity = require('./entity');
-AStar = require('./a-star/a-star');
 
 function MovingEntity(name, id, x, y, settingsIndex, baseSpriteIndex) {
   Entity.call(this, name, 'moving-entity', id, x, y, settingsIndex, baseSpriteIndex);
@@ -33,14 +32,14 @@ MovingEntity.prototype.death = function (map) {
 
 }
 
-MovingEntity.prototype.run = function (map, goapPlanner, deltaTime) {
+MovingEntity.prototype.run = function (map, goapPlanner, deltaTime, aStar) {
   // console.log(`running enity: ${this.name}`);
   Object.getPrototypeOf(MovingEntity.prototype).run.call(this, map, goapPlanner, deltaTime);
   if (!this.destroy) {
     this.resetBaseAttributes();
     this.applyModifiers();
     this.applyBaseRates(deltaTime);
-    this.currentAction(this, map, goapPlanner);
+    this.currentAction(this, map, goapPlanner, aStar);
     this.checkHealth();
     this.checkSpawnEntity(map);
   } else if (!this.deathFunctionRun) {
@@ -289,27 +288,30 @@ MovingEntity.prototype.checkGoals = function (goapPlanner, map) {
 
 }
 
-function doAction(entity, map) {
+function doAction(entity, map, goapPlanner, aStar) {
   if (entity.plan) {
     let action = entity.plan[entity.planIndex];
     // console.log('action: ' + JSON.stringify(action));
     entity.info = `doing action: ${action.name}`;
     if (action.distanceCost > 0 && !entity.isNearTarget) {
-      let aStar = new AStar();
-      aStar.findPath(entity.position, action.target.position, map).then((path) => {
-        if (path && path.length > 0) {
-          entity.path = path;
-          entity.pathIndex = 0;
-          entity.currentAction = followPath;
+      
+      aStar.requestPath(entity.position, action.target.position, map, (path) => {
+        if (path) {
+          if (path && path.length > 0) {
+            entity.path = path;
+            entity.pathIndex = 0;
+            entity.currentAction = followPath;
+          } else {
+            console.log('already there');
+            entity.isNearTarget = true;
+            entity.currentAction = doAction;
+          }
         } else {
-          console.log('already there');
+          console.log('an error occured with doAction requestPath, skipping to do action');
           entity.isNearTarget = true;
           entity.currentAction = doAction;
         }
-      }).catch((err) => {
-        console.log('an error occured with doAction findPath');
-        console.error(err);
-      })
+      });
     } else {
       //do action
       // console.log(entity.name + ' doing action: ' + action.name);
