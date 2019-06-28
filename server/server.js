@@ -9,10 +9,10 @@ var io = socketIO(server);
 var fs = require("fs");
 //simulation classes
 var Map = require('./server/simulation/classes/map-gen');
-var Goap = require('./server/simulation/classes/goap');
+var Goap = require('./server/simulation/classes/goap/goap');
 var Camera = require('./server/simulation/classes/camera');
 var User = require('./server/simulation/classes/user');
-var GoapPlanner = require('./server/simulation/classes/goap-planner');
+var GoapPlanner = require('./server/simulation/classes/goap/goap-planner');
 
 //global variables
 var saveDir = `./server/simulation/save`;

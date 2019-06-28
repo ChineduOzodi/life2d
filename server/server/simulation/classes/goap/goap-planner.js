@@ -1,26 +1,53 @@
-AStar = require('./a-star');
-LocationReserve = require('./location-reserve');
+AStar = require('../a-star/a-star');
+LocationReserve = require('../location-reserve');
+Queue = require('../Queue');
+GoapPlan = require('./goap-plan');
 
 function GoapPlanner() {
-    //TODO: create queue
+    this.queue = new Queue();
+    this.currentPlan;
 }
 
-GoapPlanner.prototype.createPlan = function (map, agent, state, actions, goal) {
+GoapPlanner.prototype.startPlanner = function() {
+    if (!this.currentPlan && !this.queue.isEmpty()) {
+        this.currentPlan = this.queue.dequeue();
+    }
+
+    if (this.currentPlan) {
+        this.createPlan().then( actionPlan => {
+            this.currentPlan.callBackFunction(actionPlan);
+            this.currentPlan = null;
+            this.startPlanner();
+        }).catch( err => {
+            console.error(err);
+            this.currentPlan.callBackFunction();
+            this.currentPlan = null;
+            this.startPlanner();
+        });
+    }
+}
+GoapPlanner.prototype.requestPlan = function(map, agent, state, actions, goal, callBackFunction) {
+    this.queue.enqueue(new GoapPlan(map,agent,state,actions,goal,callBackFunction));
+    if (!this.currentPlan) {
+        this.startPlanner();
+    }
+}
+
+GoapPlanner.prototype.createPlan = function () {
     thisPlanner = this;
     return new Promise((resolve, reject) => {
         let usableActions = [];
         // console.log(`total actions: ${actions.length}`);
-        for (let i in actions) {
-            let action = actions[i];
-            if (thisPlanner.isActionUsable(map, agent, action)) {
+        for (let action of this.currentPlan.actions) {
+            if (thisPlanner.isActionUsable(this.currentPlan.map, this.currentPlan.agent, action)) {
                 usableActions.push(action);
             }
         }
         // console.log(`usable actions length: ${usableActions.length}`);
         // console.log(`usable actions: ${JSON.stringify(usableActions)}`);
-        let start = new GoapNode(null, 0, 0, state, null);
+        let start = new GoapNode(null, 0, 0, this.currentPlan.state, null);
         let leaves = [];
-        let success = thisPlanner.buildGraph(0, start, leaves, usableActions, goal, 10000000000);
+        let success = thisPlanner.buildGraph(0, start, leaves, usableActions, this.currentPlan.goal, 10000000000);
         if (!success) {
             reject('could not find a plan');
         } else {
@@ -38,7 +65,7 @@ GoapPlanner.prototype.createPlan = function (map, agent, state, actions, goal) {
             }
             // console.log(`selected action: ${JSON.stringify(selectedAction)}`);
             // console.log(`selected steps (${(selectionNode.runningCost + selectionNode.actionCost + selectionNode.distanceCost)}): ${actionList(selectionNode)}`);
-            let actionPlan = this.constructPlan([], selectionNode, map);
+            let actionPlan = this.constructPlan([], selectionNode, this.currentPlan.map);
             resolve(actionPlan);
         }
     })

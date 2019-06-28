@@ -1,5 +1,5 @@
 var Entity = require('./entity');
-AStar = require('./a-star');
+AStar = require('./a-star/a-star');
 
 function MovingEntity(name, id, x, y, settingsIndex, baseSpriteIndex) {
   Entity.call(this, name, 'moving-entity', id, x, y, settingsIndex, baseSpriteIndex);
@@ -254,24 +254,20 @@ MovingEntity.prototype.findPotentialGoals = function (goapPlanner, map) {
 }
 
 MovingEntity.prototype.createPlan = function (goapPlanner, map, goalEffects) {
-  
+  let entity = this;
   // console.log('creating plan');
-  goapPlanner.createPlan(map, this, this, goapPlanner.goap.actions, goalEffects).then((plan) => {
+  goapPlanner.requestPlan(map, this, this, goapPlanner.goap.actions, goalEffects, (plan) => {
     if (plan) {
       // console.log('found plan');
-      this.plan = plan;
-      this.planIndex = 0;
-      this.currentAction = doAction;
-      this.isNearTarget = false;
+      entity.plan = plan;
+      entity.planIndex = 0;
+      entity.currentAction = doAction;
+      entity.isNearTarget = false;
     } else {
       console.log('did not find plan');
-      this.currentAction = idleState;
+      entity.goals.splice(0, 1);
+      entity.currentAction = idleState;
     }
-  }).catch(err => {
-    // console.error(`an error with creating plan has occurred`);
-    // console.error(err);
-    this.goals.splice(0, 1);
-    this.currentAction = idleState;
   });
   this.currentAction = entityBusy;
 }
