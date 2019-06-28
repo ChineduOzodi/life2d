@@ -19,6 +19,13 @@
             "base": 120,
             "randomness": 10,
             "healthMult": 5
+        },
+        {
+            "name":"sight",
+            "base": 12,
+            "randomness": 4,
+            "cost": "energy",
+            "costRate": 0.1
         }
     ],
     "spawnBiomes":["land"],

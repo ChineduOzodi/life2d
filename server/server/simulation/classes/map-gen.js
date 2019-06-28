@@ -511,17 +511,24 @@ Map.prototype.getBiome = function (x, y) {
   return biome(this.getHeight(x, y), this.settings.biomes);
 }
 
-Map.prototype.findNearestEntity = function (entityName, position) {
+Map.prototype.findEntityById = function (id) {
+  return this.entities.find( x => x.id === id);
+  
+}
+
+Map.prototype.findNearestEntity = function (entityName, position, maxDistance) {
   let closestEntity;
   let closestDistance = 100000000000000000000000000000000000;
   // console.log('looking for nearest entity');
   for (const entity of this.entities) {
     let entityDistance = distanceCost(entity.position, position);
     // console.log(`entity: ${entity.name} - distance: ${entityDistance} (looking for ${entityName})`);
-    if (!entity.destroy && entityDistance < closestDistance && entityName === entity.name) {
-      // console.log(`chosen entity: ${entity.name} - distance: ${entityDistance}`);
-      closestEntity = entity;
-      closestDistance = entityDistance;
+    if ((maxDistance && entityDistance < maxDistance) || !maxDistance) {
+      if (!entity.destroy && !entity.isReserved && entityDistance < closestDistance && entityName === entity.name) {
+        // console.log(`chosen entity: ${entity.name} - distance: ${entityDistance}`);
+        closestEntity = entity;
+        closestDistance = entityDistance;
+      }
     }
   }
   // console.log(`found nearest entity: ${closestEntity.name}`);

@@ -8,6 +8,7 @@ export class Entity {
   position: Position;
   settingsIndex: number;
   baseSpriteIndex: number;
+  isReserved: number;
   generation: number;
   health: number;
   healthLossRate: number;
@@ -92,6 +93,9 @@ export class Entity {
                   `health: ${this.health.toFixed(0)}`,
                   `generation: ${this.generation}`,
                   `position: (${this.position.x.toFixed(1)}, ${this.position.y.toFixed(1)})`];
+    if (this.isReserved) {
+      info.push(`Reserved`);
+    }
     if (this.info){
       info.push(`info: ${this.info}`);
     }

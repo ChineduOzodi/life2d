@@ -318,6 +318,17 @@ function doAction(entity, map, goapPlanner, aStar) {
       if (action.sleeping) {
         entity.isSleeping = true;
       }
+      if (action.target) {
+        if (action.target.isReserved) {
+          console.log('entity already reserved apon attempt at action');
+          entity.currentAction = idleState;
+          entity.goals.splice(0, 1);
+          return;
+        } else {
+          action.target.isReserved = true;
+          console.log('reserving target');
+        }
+      }
       setTimeout(() => {
         // console.log(`${entity.name} finished doing action: ${action.name}`);
         entity.info = `finished doing action: ${action.name}`;
@@ -325,6 +336,9 @@ function doAction(entity, map, goapPlanner, aStar) {
         entity.planIndex++;
         entity.isSleeping = false;
         entity.applyAction(action, map);
+        if (action.target) {
+          action.target.isReserved = false;
+        }
         // console.log(`new player state: ${JSON.stringify(entity.state)}`);
         if (entity.planIndex >= entity.plan.length) {
           entity.currentAction = idleState;
