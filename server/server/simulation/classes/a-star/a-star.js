@@ -79,9 +79,9 @@ AStar.prototype.findPath = function () {
             for (let nx = currentNode.position.x - 1; nx < currentNode.position.x + 2; nx++) {
                 for (let ny = currentNode.position.y - 1; ny < currentNode.position.y + 2; ny++) {
                     //continue if out of bounds
-                    // if (nx < 0 || ny < 0 || nx >= map.width || ny >= map.height) {
-                    //     continue;
-                    // }
+                    if (!thisAStar.currentTask.map.withinBorder(nx,ny)) {
+                        continue;
+                    }
 
                     let nNode;
                     let nPosition = { x: nx, y: ny };
@@ -95,7 +95,7 @@ AStar.prototype.findPath = function () {
                         nodeMap[`x:${nx},y:${ny}`] = nNode;
                     }
 
-                    //continure if nNode in closedNodes or water biome
+                    //continue if nNode in closedNodes or water biome
                     if (nNode.biome[0] == 'water' || closedNodes.includes(nNode)) {
                         continue;
                     }

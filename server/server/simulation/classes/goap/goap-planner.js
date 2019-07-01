@@ -19,7 +19,7 @@ GoapPlanner.prototype.startTasks = function() {
             this.currentTask = null;
             this.startTasks();
         }).catch( err => {
-            console.error(err);
+            // console.error(err);
             this.currentTask.callBackFunction();
             this.currentTask = null;
             this.startTasks();
@@ -27,7 +27,7 @@ GoapPlanner.prototype.startTasks = function() {
     }
 }
 GoapPlanner.prototype.requestPlan = function(map, agent, state, actions, goal, callBackFunction) {
-    this.queue.enqueue(new GoapPlan(map,agent,state,actions,goal,callBackFunction));
+    this.queue.enqueue(new GoapPlan(map,agent,state,JSON.parse(JSON.stringify(actions)),goal,callBackFunction));
     if (!this.currentTask) {
         this.startTasks();
     }
@@ -95,7 +95,7 @@ GoapPlanner.prototype.isActionUsable = function (map, agent, action) {
         if (precondition.type === 'reserve') {
             if (precondition.reserve === 'entity') {
                 // console.log(`precondition: ${precondition.name}`);
-                let closestEntity = map.findNearestEntity(precondition.name, agent.position);
+                let closestEntity = map.findNearestEntity(precondition.name, agent.position, agent.sight);
                 // console.log('done searching for nearest entity');
                 if (closestEntity) {
                     // console.log(`found closest entity for ${action.name} - ${precondition.name}: ${JSON.stringify(closestEntity)}`);

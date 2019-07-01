@@ -11,7 +11,8 @@
             "name":"speed",
             "base": 10,
             "randomness": 0.1,
-            "cost": "energy",
+            "cost": "energyLossRate",
+            "modifier":"multiply",
             "costRate": 0.1
         },
         {
@@ -22,10 +23,11 @@
         },
         {
             "name":"sight",
-            "base": 12,
-            "randomness": 4,
-            "cost": "energy",
-            "costRate": 0.1
+            "base": 20,
+            "randomness": 5,
+            "cost": "energyLossRate",
+            "modifier":"multiply",
+            "costRate": 0.05
         }
     ],
     "spawnBiomes":["land"],

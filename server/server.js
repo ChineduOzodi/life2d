@@ -214,7 +214,7 @@ io.on('connection', function (socket) {
   });
 });
 
-setInterval(function () {
+function run () {
   map.run(goapPlanner, 1 / 60, aStar);
   // console.log(`sending entity: ${JSON.stringify(map.entities[1])}`);
   io.sockets.emit('entities', map.entities);
@@ -223,7 +223,8 @@ setInterval(function () {
     map.locationReserveChanged = false;
     io.sockets.emit('locationReservations', map.locationReservations);
   }
-}, 1000 / 60);
+  setTimeout( run, 1000/60);
+}
 
 setInterval(function () {
   updateData(map);
@@ -232,7 +233,8 @@ setInterval(function () {
 
 setInterval(() => {
   map.saveData(saveDir);
-  console.log(JSON.stringify(map.data));
+  // console.log(JSON.stringify(map.data));
 }, 60 * 1000);
 
+run();
 module.exports = io;

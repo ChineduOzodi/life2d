@@ -8,6 +8,7 @@ function Entity(name, type, id, x, y, settingsIndex, baseSpriteIndex) {
     this.id = id;
     this.traits = [];
     this.reserved = false;
+    this.isReserved = false;
     this.destroy = false;
 }
 

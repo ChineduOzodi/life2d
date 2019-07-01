@@ -23,8 +23,11 @@ MovingEntity.prototype.birth = function (map, traits) {
   // console.log(`spawning enity: ${this.name}`);
   Object.getPrototypeOf(MovingEntity.prototype).birth.call(this, map, traits);
 
+  this.createModifiers();
+
   //set health
   this.calculateHealth();
+
 }
 
 MovingEntity.prototype.death = function (map) {
@@ -47,6 +50,19 @@ MovingEntity.prototype.run = function (map, goapPlanner, deltaTime, aStar) {
   }
 
   // console.log(`energy: ${this.energy}`);
+}
+
+MovingEntity.prototype.createModifiers = function () {
+  for (let trait of this.traits) {
+    if (trait.cost) {
+      // console.log(`trait ${trait.name} has cost`);
+      this.modifiers.push( {
+        name: trait.cost,
+        type: trait.modifier,
+        amount: trait.amount * trait.costRate
+      });
+    }
+  }
 }
 
 MovingEntity.prototype.calculateHealth = function () {
@@ -123,25 +139,7 @@ MovingEntity.prototype.applyBaseRates = function (deltaTime) {
 
 MovingEntity.prototype.applyModifiers = function () {
   for (let modifier of this.modifiers) {
-    switch (modifier.name) {
-      case 'speed':
-        this.speed = applyModifier(this.speed, modifier);
-        break;
-      case 'sleepRate':
-        this.energyGainRate = applyModifier(this.energyGainRate, modifier);
-        break;
-      case 'stamina':
-        this.stamina = applyModifier(this.stamina, modifier);
-        break;
-      case 'staminaRecoveryRate':
-        this.staminaRecoveryRate = applyModifier(this.staminaRecoveryRate, modifier);
-        break;
-      case 'fullness':
-        this.fullness = applyModifier(this.fullness, modifier);
-        break;
-      default:
-        // code block
-    }
+    this[modifier.name] = applyModifier(this[modifier.name], modifier);
   }
 }
 
@@ -150,6 +148,7 @@ function applyModifier(location, modifier) {
     case 'add':
       return location + modifier.amount;
     case 'multiply':
+      // console.log(`multiplier modifier applied to ${modifier.name}: ${location * modifier.amount}`);
       return location * modifier.amount;
     default:
       console.debug(`modifier type ${modifier.type} not recognized`);
@@ -199,6 +198,27 @@ MovingEntity.prototype.checkSpawnEntity = function (map) {
         console.error(`could not find trait duplicate in entity: ` + JSON.stringify(this));
         this.duplicate = 1000;
       }
+    }
+  }
+}
+
+MovingEntity.prototype.idleForTime = function (map, duration) {
+  this.idle = true;
+  this.idleUntilTime = map.time + duration;
+  this.currentAction = idleState;
+}
+
+function idleState(entity, map, goapPlanner) {
+  // console.log('waiting');
+  if (entity.idle) {
+    if (entity.idleUntilTime <= map.time) {
+      entity.idle = false;
+    }
+  } else {
+    entity.info = "idling...";
+    entity.checkGoals(goapPlanner, map);
+    if (entity.goals.length === 0) {
+      entity.findPotentialGoals(goapPlanner, map);
     }
   }
 }
@@ -263,9 +283,9 @@ MovingEntity.prototype.createPlan = function (goapPlanner, map, goalEffects) {
       entity.currentAction = doAction;
       entity.isNearTarget = false;
     } else {
-      console.log('did not find plan');
+      // console.log('did not find plan');
       entity.goals.splice(0, 1);
-      entity.currentAction = idleState;
+      entity.idleForTime(map, 1);
     }
   });
   this.currentAction = entityBusy;
@@ -289,75 +309,88 @@ MovingEntity.prototype.checkGoals = function (goapPlanner, map) {
 }
 
 function doAction(entity, map, goapPlanner, aStar) {
-  if (entity.plan) {
-    let action = entity.plan[entity.planIndex];
-    // console.log('action: ' + JSON.stringify(action));
-    entity.info = `doing action: ${action.name}`;
-    if (action.distanceCost > 0 && !entity.isNearTarget) {
-      
-      aStar.requestPath(entity.position, action.target.position, map, (path) => {
-        if (path) {
-          if (path && path.length > 0) {
-            entity.path = path;
-            entity.pathIndex = 0;
-            entity.currentAction = followPath;
-          } else {
-            console.log('already there');
-            entity.isNearTarget = true;
-            entity.currentAction = doAction;
-          }
-        } else {
-          console.log('an error occured with doAction requestPath, skipping to do action');
-          entity.isNearTarget = true;
-          entity.currentAction = doAction;
-        }
-      });
-    } else {
-      //do action
-      // console.log(entity.name + ' doing action: ' + action.name);
-      if (action.sleeping) {
-        entity.isSleeping = true;
-      }
+  if (entity.doingAction) {
+    if (entity.actionCompletionTime <= map.time) {
+      entity.doingAction = false;
+      let action = entity.plan[entity.planIndex];
       if (action.target) {
-        if (action.target.isReserved) {
-          console.log('entity already reserved apon attempt at action');
-          entity.currentAction = idleState;
-          entity.goals.splice(0, 1);
-          return;
-        } else {
-          action.target.isReserved = true;
-          console.log('reserving target');
+        // console.log(`${this.id} unreserved entity ${action.target.id}`);
+        action.target.isReserved = false;
+      }
+      // console.log(`${entity.name} finished doing action: ${action.name}`);
+      entity.info = `${this.id} finished doing action: ${action.name}`;
+      entity.isNearTarget = false;
+      entity.planIndex++;
+      entity.isSleeping = false;
+      entity.applyAction(action, map);
+
+      // console.log(`new player state: ${JSON.stringify(entity.state)}`);
+      if (entity.planIndex >= entity.plan.length) {
+        entity.currentAction = idleState;
+        // console.log("plan complete!");
+        entity.goals.splice(0, 1);
+        //TODO: remove entities
+      } else {
+        //continue doing actions
+        entity.currentAction = doAction;
+        if (entity.plan[entity.planIndex].name == action.name) {
+          entity.isNearTarget = true;
         }
       }
-      setTimeout(() => {
-        // console.log(`${entity.name} finished doing action: ${action.name}`);
-        entity.info = `finished doing action: ${action.name}`;
-        entity.isNearTarget = false;
-        entity.planIndex++;
-        entity.isSleeping = false;
-        entity.applyAction(action, map);
-        if (action.target) {
-          action.target.isReserved = false;
-        }
-        // console.log(`new player state: ${JSON.stringify(entity.state)}`);
-        if (entity.planIndex >= entity.plan.length) {
-          entity.currentAction = idleState;
-          // console.log("plan complete!");
-          entity.goals.splice(0, 1);
-          //TODO: remove entities
-        } else {
-          entity.currentAction = doAction;
-          if (entity.plan[entity.planIndex].name == action.name) {
-            entity.isNearTarget = true;
-          }
-        }
-      }, (action.cost * 1000));
-      entity.currentAction = entityBusy;
     }
   } else {
-    console.log('no plan to do');
-    entity.currentAction = idleState;
+    if (entity.plan) {
+      let action = entity.plan[entity.planIndex];
+      // console.log('action: ' + JSON.stringify(action));
+      entity.info = `doing action: ${action.name}`;
+      if (action.distanceCost > 0 && !entity.isNearTarget) {
+        aStar.requestPath(entity.position, action.target.position, map, (path) => {
+          if (path) {
+            if (path && path.length > 0) {
+              entity.path = path;
+              entity.pathIndex = 0;
+              entity.currentAction = followPath;
+            } else {
+              console.log('already there');
+              entity.isNearTarget = true;
+              entity.currentAction = doAction;
+            }
+          } else {
+            // console.log('an error occured with doAction requestPath, skipping to do action');
+            // entity.isNearTarget = true;
+            entity.goals.splice(0, 1);
+            entity.idleForTime(map, 1);
+          }
+        });
+        entity.currentAction = entityBusy;
+        return;
+      } else {
+        //do action
+        // console.log(entity.name + ' doing action: ' + action.name);
+        if (action.sleeping) {
+          entity.isSleeping = true;
+        }
+        if (action.target) {
+          if (action.target.isReserved || action.target.destroy) {
+            // console.log(`${entity.id} target ${action.target.id} already reserved or dead upon attempt at action`);
+            entity.currentAction = idleState;
+            entity.goals.splice(0, 1);
+            return;
+          } else {
+            action.target.isReserved = true;
+            // console.log(`${this.id} reserving target: ${action.target.id}`);
+          }
+        }
+        entity.doingAction = true;
+        entity.actionCompletionTime = map.time + action.cost;
+
+      }
+    } else {
+      console.log('no plan to do');
+      entity.currentAction = idleState;
+    }
   }
+
 }
 
 function entityBusy() {

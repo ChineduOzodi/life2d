@@ -523,7 +523,7 @@ Map.prototype.findNearestEntity = function (entityName, position, maxDistance) {
   for (const entity of this.entities) {
     let entityDistance = distanceCost(entity.position, position);
     // console.log(`entity: ${entity.name} - distance: ${entityDistance} (looking for ${entityName})`);
-    if ((maxDistance && entityDistance < maxDistance) || !maxDistance) {
+    if ((maxDistance && entityDistance < maxDistance * 10) || !maxDistance) {
       if (!entity.destroy && !entity.isReserved && entityDistance < closestDistance && entityName === entity.name) {
         // console.log(`chosen entity: ${entity.name} - distance: ${entityDistance}`);
         closestEntity = entity;

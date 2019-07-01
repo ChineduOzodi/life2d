@@ -44,12 +44,12 @@
         {
             "type": "moving-entity",
             "spawnBiomes":["land"],
-            "spawnCount":1
+            "spawnCount":10
         },
         {
             "type": "vegetation",
             "spawnBiomes":["land"],
-            "spawnCount":100
+            "spawnCount":300
         }
     ]
 }
