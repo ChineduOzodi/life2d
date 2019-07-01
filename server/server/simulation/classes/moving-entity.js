@@ -213,6 +213,8 @@ function idleState(entity, map, goapPlanner) {
   if (entity.idle) {
     if (entity.idleUntilTime <= map.time) {
       entity.idle = false;
+    }else{
+      entity.info = `idling for a bit`;
     }
   } else {
     entity.info = "idling...";
@@ -285,7 +287,7 @@ MovingEntity.prototype.createPlan = function (goapPlanner, map, goalEffects) {
     } else {
       // console.log('did not find plan');
       entity.goals.splice(0, 1);
-      entity.idleForTime(map, 1);
+      entity.idleForTime(map, 10);
     }
   });
   this.currentAction = entityBusy;
@@ -359,7 +361,7 @@ function doAction(entity, map, goapPlanner, aStar) {
             // console.log('an error occured with doAction requestPath, skipping to do action');
             // entity.isNearTarget = true;
             entity.goals.splice(0, 1);
-            entity.idleForTime(map, 1);
+            entity.idleForTime(map, 10);
           }
         });
         entity.currentAction = entityBusy;

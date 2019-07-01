@@ -20,7 +20,7 @@ AStar.prototype.startTasks = function() {
             this.currentTask = null;
             this.startTasks();
         }).catch( err => {
-            console.error(err);
+            // console.error(err);
             this.currentTask.callBackFunction();
             this.currentTask = null;
             this.startTasks();
@@ -114,7 +114,7 @@ AStar.prototype.findPath = function () {
             }
         }
         if(!foundPath){
-            console.log(`did not find path`);
+            // console.log(`did not find path`);
             reject('did not find path');
         }
     });
