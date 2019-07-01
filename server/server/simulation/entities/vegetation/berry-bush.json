@@ -46,7 +46,7 @@
                     "type": "add",
                     "location": [],
                     "property":"energy",
-                    "amount": 20
+                    "amount": 30
                 },
                 {
                     "type": "destroy"

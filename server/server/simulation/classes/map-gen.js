@@ -27,6 +27,8 @@ function Map(settings) {
 
 Map.prototype.run = function (goapPlanner, deltaTime, aStar) {
   this.time += deltaTime;
+  let fps = 1/deltaTime;
+  console.log(`fps: ${fps.toFixed(1)}`);
   if (this.entities.length > 0) {
     // console.log(JSON.stringify(this.people));
     for (const entity of this.entities) {

@@ -25,7 +25,9 @@ var users = {};
 var map;
 var goapPlanner = new GoapPlanner();
 var aStar = new AStar();
-//=========================================
+var oldTime = Date.now();
+var newTime = oldTime + 100/6;
+ //=========================================
 
 //server setup
 app.set('port', 5000);
@@ -54,30 +56,6 @@ if (regenerate) {
   console.log('done reading map settings');
   map = new Map(mapSettings);
   map.generate(saveDir);
-  map.data = [
-    {
-      series: [{name: 0, value: 0}],
-      name: 'Vegetation'
-    },
-    {
-      series: [{name: 0, value: 0}],
-      name: 'Average Health'
-    },
-    {
-      series: [{name: 0, value: 0}],
-      name: 'Average Age'
-    }, {
-      series: [{name: 0, value: 0}],
-      name: 'Average Duplication'
-    },
-    {
-      series: [{name: 0, value: 0}],
-      name: 'Herbivores'
-    }
-  ];
-  map.interval = 60;
-  map.currentLatestTime = 60;
-  map.currentIndex = 0;
 } else {
   try {
     var saveJson = fs.readFileSync(saveDir + `/save.save`);
@@ -97,31 +75,52 @@ goapPlanner.goap.loadActions(goapActionsPath).then(() => {
   console.log(`goap action loading complete`);
 });
 
+function createData(map) {
+  map.data = [];
+  map.interval = 60;
+  map.currentLatestTime = 60;
+  map.currentIndex = 0;
+
+  for (const entitySetting of map.entitySettings) {
+    if (!map.data.find( x => x.name === entitySetting.name)) {
+      map.data.push({
+        series: [{name: 0, value: 0}],
+        name: entitySetting.name
+      });
+
+      for (const trait of entitySetting.traits) {
+        map.data.push({
+          series: [{name: 0, value: 0}],
+          name: `${entitySetting.name} Average ${trait.name}`
+        });
+      }
+    }
+  }
+}
+
 function updateData(map) {
-  let totalEntities = 0;
-  let totalHerbs = 0;
-  let averageAge = 0;
-  let averageDuplication = 0;
-  let totalVegetation = 0;
-  let averageHealth = 0;
-  for (const entity of map.entities) {
-    if (!entity.destroy) {
-      totalEntities++;
-      if (entity.type === 'vegetation') {
-        totalVegetation++;
-        averageAge += entity.age;
-        let duplicate = entity.getTrait('duplicate')
-        averageDuplication += duplicate.base;
-        averageHealth += entity.health;
-      } else {
-        totalHerbs++;
+  let totals = {};
+  for (const entitySetting of map.entitySettings) {
+    if (!totals[entitySetting.name]) {
+      totals[entitySetting.name] = {
+        total: 0,
+        averages: {}
+      };
+
+      for (const trait of entitySetting.traits) {
+        totals[entitySetting.name].averages[trait.name] = 0;
       }
     }
   }
 
-  averageAge /= totalVegetation;
-  averageDuplication /= totalVegetation;
-  averageHealth /= totalVegetation;
+  for (const entity of map.entities) {
+    if (!entity.destroy) {
+      totals[entity.name].total++;
+      for (const trait of entity.traits) {
+        totals[entity.name].averages[trait.name] += trait.amount;
+      }
+    }
+  }
 
   // console.log(`average age: ${averageAge}`);
 
@@ -134,22 +133,13 @@ function updateData(map) {
     }
   }
 
-  for (let i in map.data) {
-    let data = map.data[i];
-    // console.log(JSON.stringify(data));
-    // console.log(`i: ${i}`);
-    if (i == 0) {
-      data.series[map.currentIndex].value = totalEntities;
-      // console.log(`total entities: ${data.data[map.currentIndex]}`);
-    } else if (i == 1) {
-      data.series[map.currentIndex].value = averageHealth;
-    } else if (i == 2) {
-      data.series[map.currentIndex].value = averageAge;
-    } else if (i == 3) {
-      data.series[map.currentIndex].value = averageDuplication;
-    } else if (i == 4) {
-      data.series[map.currentIndex].value = totalHerbs;
-    } 
+  for (const entitySetting of map.entitySettings) {
+    map.data.find( x => x.name === entitySetting.name).series[map.currentIndex].value = totals[entitySetting.name].total;
+
+    for (const trait of entitySetting.traits) {
+      map.data.find( x => x.name === `${entitySetting.name} Average ${trait.name}`).series[map.currentIndex].value 
+        = totals[entitySetting.name].averages[trait.name] / totals[entitySetting.name].total;
+    }
   }
 }
 
@@ -215,7 +205,11 @@ io.on('connection', function (socket) {
 });
 
 function run () {
-  map.run(goapPlanner, 1 / 60, aStar);
+  newTime = Date.now();
+  let deltaTime = newTime - oldTime;
+  oldTime = newTime;
+  deltaTime /= 1000;
+  map.run(goapPlanner, deltaTime, aStar);
   // console.log(`sending entity: ${JSON.stringify(map.entities[1])}`);
   io.sockets.emit('entities', map.entities);
   io.sockets.emit('state', players);
@@ -227,14 +221,17 @@ function run () {
 }
 
 setInterval(function () {
+  if (!map.data) {
+    createData(map);
+  }
   updateData(map);
   io.sockets.emit('data', map.data);
 }, 1000);
 
-setInterval(() => {
-  map.saveData(saveDir);
-  // console.log(JSON.stringify(map.data));
-}, 60 * 1000);
+// setInterval(() => {
+//   map.saveData(saveDir);
+//   // console.log(JSON.stringify(map.data));
+// }, 60 * 1000);
 
 run();
 module.exports = io;
