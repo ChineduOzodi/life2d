@@ -8,6 +8,7 @@ Vegetation.prototype = Object.create(Entity.prototype);
 
 Vegetation.prototype.birth = function (map, traits) {
   // console.log(`spawning enity: ${this.name}`);
+  let startTime = Date.now();
   Object.getPrototypeOf(Vegetation.prototype).birth.call(this, map, traits);
   // console.log(`set traits (vegetation class): ${JSON.stringify(this.traits)}`);
   // console.log('calculate attrition');
@@ -16,6 +17,12 @@ Vegetation.prototype.birth = function (map, traits) {
 
   //set health
   this.calculateHealth();
+
+  let runtime = Date.now() - startTime;
+  if (runtime > 10){
+    console.log(`vegetation birth ${this.id} runtime: ${runtime} ms`);
+  }
+
 }
 
 Vegetation.prototype.death = function (map) {
@@ -33,6 +40,8 @@ Vegetation.prototype.death = function (map) {
 
 Vegetation.prototype.run = function (map, goap, deltaTime) {
   // console.log(`running enity: ${this.name}`);
+  let startTime = Date.now();
+
   Object.getPrototypeOf(Vegetation.prototype).run.call(this, map, goap, deltaTime);
   if (!this.destroy) {
     this.applyRates(deltaTime);
@@ -40,6 +49,11 @@ Vegetation.prototype.run = function (map, goap, deltaTime) {
     this.checkSpawnEntity(map);
   } else if (!this.deathFunctionRun) {
     this.death(map);
+  }
+
+  let runtime = Date.now() - startTime;
+  if (runtime > 10){
+    console.log(`vegetation ${this.id} runtime: ${runtime} ms`);
   }
 }
 

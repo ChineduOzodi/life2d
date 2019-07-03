@@ -20,7 +20,7 @@ AStar.prototype.startTasks = function() {
             this.currentTask = null;
             this.startTasks();
         }).catch( err => {
-            // console.error(err);
+            console.error(err);
             this.currentTask.callBackFunction();
             this.currentTask = null;
             this.startTasks();
@@ -72,6 +72,11 @@ AStar.prototype.findPath = function () {
                 // console.log(`found path: ${JSON.stringify(path)}`);
                 resolve(path);
                 foundPath = true;
+                break;
+            }
+
+            if (closedNodes.length > 10000){
+                console.log('closedNodes limit reached');
                 break;
             }
 

@@ -185,6 +185,7 @@ io.on('connection', function (socket) {
       });
     } else {
       io.to(socket.id).emit('logout');
+      console.log('unrecognised socket id, sent logout to ' + socket.id);
     }
 
     //console.log(`x: ${player.x}, y: ${player.y}, zoom: ${player.z}`)
@@ -197,6 +198,7 @@ io.on('connection', function (socket) {
       let person = map.people.find(x => x.id == user.username);
       person.goals.push(goal);
     } else {
+      console.log('sent logout to ' + user.username);
       io.to(socket.id).emit('logout');
     }
 
@@ -209,6 +211,7 @@ function run () {
   let deltaTime = newTime - oldTime;
   oldTime = newTime;
   deltaTime /= 1000;
+  goapPlanner.run();
   map.run(goapPlanner, deltaTime, aStar);
   // console.log(`sending entity: ${JSON.stringify(map.entities[1])}`);
   io.sockets.emit('entities', map.entities);

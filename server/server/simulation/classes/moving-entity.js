@@ -20,6 +20,7 @@ function MovingEntity(name, id, x, y, settingsIndex, baseSpriteIndex) {
 MovingEntity.prototype = Object.create(Entity.prototype);
 
 MovingEntity.prototype.birth = function (map, traits) {
+  let startTime = Date.now();
   // console.log(`spawning enity: ${this.name}`);
   Object.getPrototypeOf(MovingEntity.prototype).birth.call(this, map, traits);
 
@@ -27,7 +28,10 @@ MovingEntity.prototype.birth = function (map, traits) {
 
   //set health
   this.calculateHealth();
-
+  let runtime = Date.now() - startTime;
+  if (runtime > 10) {
+    console.log(`moving-entity birth ${this.id} runtime: ${runtime} ms`);
+  }
 }
 
 MovingEntity.prototype.death = function (map) {
@@ -37,6 +41,7 @@ MovingEntity.prototype.death = function (map) {
 
 MovingEntity.prototype.run = function (map, goapPlanner, deltaTime, aStar) {
   // console.log(`running enity: ${this.name}`);
+  let startTime = Date.now();
   Object.getPrototypeOf(MovingEntity.prototype).run.call(this, map, goapPlanner, deltaTime);
   if (!this.destroy) {
     this.resetBaseAttributes();
@@ -48,7 +53,10 @@ MovingEntity.prototype.run = function (map, goapPlanner, deltaTime, aStar) {
   } else if (!this.deathFunctionRun) {
     this.death(map);
   }
-
+  let runtime = Date.now() - startTime;
+  if (runtime > 10) {
+    console.log(`moving-entity ${this.id} runtime: ${runtime} ms`);
+  }
   // console.log(`energy: ${this.energy}`);
 }
 
@@ -56,7 +64,7 @@ MovingEntity.prototype.createModifiers = function () {
   for (let trait of this.traits) {
     if (trait.cost) {
       // console.log(`trait ${trait.name} has cost`);
-      this.modifiers.push( {
+      this.modifiers.push({
         name: trait.cost,
         type: trait.modifier,
         amount: trait.amount * trait.costRate
@@ -205,16 +213,20 @@ MovingEntity.prototype.checkSpawnEntity = function (map) {
 MovingEntity.prototype.idleForTime = function (map, duration) {
   this.idle = true;
   this.idleUntilTime = map.time + duration;
+  // console.log('idle time set to until ' + this.idleUntilTime.toFixed(2));
   this.currentAction = idleState;
 }
 
 function idleState(entity, map, goapPlanner) {
-  // console.log('waiting');
+  // console.log(entity.id + ' waiting');
   if (entity.idle) {
+    // console.log(`${entity.id} should idle`);
     if (entity.idleUntilTime <= map.time) {
+      // console.log(`${entity.id} done idling`);
       entity.idle = false;
-    }else{
+    } else {
       entity.info = `idling for a bit`;
+      // console.log(`${entity.id} idling for a bit`);
     }
   } else {
     entity.info = "idling...";
@@ -233,15 +245,6 @@ MovingEntity.prototype.createChildTraits = function () {
     childTraits.push(childTrait);
   }
   return childTraits;
-}
-
-function idleState(entity, map, goapPlanner) {
-  // console.log('waiting');
-  entity.info = "idling...";
-  entity.checkGoals(goapPlanner, map);
-  if (entity.goals.length === 0) {
-    entity.findPotentialGoals(goapPlanner, map);
-  }
 }
 
 MovingEntity.prototype.findPotentialGoals = function (goapPlanner, map) {
@@ -346,6 +349,7 @@ function doAction(entity, map, goapPlanner, aStar) {
       // console.log('action: ' + JSON.stringify(action));
       entity.info = `doing action: ${action.name}`;
       if (action.distanceCost > 0 && !entity.isNearTarget) {
+        console.log(`${entity.id} path request, queue length: ${aStar.queue.getLength()}----------`);
         aStar.requestPath(entity.position, action.target.position, map, (path) => {
           if (path) {
             if (path && path.length > 0) {
@@ -360,6 +364,7 @@ function doAction(entity, map, goapPlanner, aStar) {
           } else {
             // console.log('an error occured with doAction requestPath, skipping to do action');
             // entity.isNearTarget = true;
+            console.log(`${entity.id} did not find path`);
             entity.goals.splice(0, 1);
             entity.idleForTime(map, 10);
           }

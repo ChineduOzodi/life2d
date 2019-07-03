@@ -7,7 +7,11 @@ function GoapPlanner() {
     this.queue = new Queue();
     this.currentTask;
 }
-
+GoapPlanner.prototype.run = function() {
+    if (!this.currentTask) {
+        this.startTasks();
+    }
+}
 GoapPlanner.prototype.startTasks = function() {
     if (!this.currentTask && !this.queue.isEmpty()) {
         this.currentTask = this.queue.dequeue();
@@ -17,17 +21,18 @@ GoapPlanner.prototype.startTasks = function() {
         this.createPlan().then( actionPlan => {
             this.currentTask.callBackFunction(actionPlan);
             this.currentTask = null;
-            this.startTasks();
+            // this.startTasks();
         }).catch( err => {
             // console.error(err);
             this.currentTask.callBackFunction();
             this.currentTask = null;
-            this.startTasks();
+            // this.startTasks();
         });
     }
 }
 GoapPlanner.prototype.requestPlan = function(map, agent, state, actions, goal, callBackFunction) {
     this.queue.enqueue(new GoapPlan(map,agent,state,JSON.parse(JSON.stringify(actions)),goal,callBackFunction));
+    console.log(`${agent.id} goap request, queue length: ${this.queue.getLength()}`);
     if (!this.currentTask) {
         this.startTasks();
     }
