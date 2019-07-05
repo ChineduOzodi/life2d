@@ -10,7 +10,7 @@
         {
             "name":"speed",
             "base": 10,
-            "randomness": 0.1,
+            "randomness": 3,
             "cost": "energyLossRate",
             "modifier":"multiply",
             "costRate": 0.1
@@ -18,7 +18,7 @@
         {
             "name":"duplicate",
             "base": 120,
-            "randomness": 10,
+            "randomness": 20,
             "healthMult": 5
         },
         {

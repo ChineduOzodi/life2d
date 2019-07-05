@@ -165,7 +165,7 @@ function applyModifier(location, modifier) {
 }
 
 MovingEntity.prototype.checkSpawnEntity = function (map) {
-  if (this.duplicate === 0) {
+  if (this.duplicate === 0 && this.energy / this.baseMaxEnergy >= .5) {
     // console.log('duplicating vegetation');
     const randomX = (Math.random() - 0.5) * 2 * 3;
     const randomY = (Math.random() - 0.5) * 2 * 3;
@@ -187,7 +187,7 @@ MovingEntity.prototype.checkSpawnEntity = function (map) {
         let entity = new MovingEntity(spawnSettings.name, map.id++, spawnX, spawnY, this.settingsIndex, baseSpriteIndex);
         entity.baseHealthLossRate = spawnSettings.baseHealthLossRate;
         entity.generation = this.generation + 1;
-        entity.energy = spawnSettings.energy;
+        entity.energy = this.energy;
         entity.baseMaxEnergy = spawnSettings.baseMaxEnergy;
         entity.baseEnergyGainRate = spawnSettings.baseEnergyGainRate;
         entity.baseEnergyLossRate = spawnSettings.baseEnergyLossRate;
@@ -217,7 +217,29 @@ MovingEntity.prototype.idleForTime = function (map, duration) {
   this.currentAction = idleState;
 }
 
-function idleState(entity, map, goapPlanner) {
+MovingEntity.prototype.wander = function (map, aStar) {
+  let x = (Math.random() - 0.5) * 2 * this.sight + this.position.x;
+  let y = (Math.random() - 0.5) * 2 * this.sight + this.position.y;
+  let entity = this;
+  aStar.requestPath(this.position, {x:x,y:y}, map, (path) => {
+    if (path) {
+      if (path && path.length > 0) {
+        entity.path = path;
+        entity.pathIndex = 0;
+        entity.currentAction = followPath;
+        entity.wandering = true;
+        entity.info = 'wandering';
+      } else {
+        entity.idleForTime(map, 5);
+      }
+    } else {
+      entity.idleForTime(map, 5);
+    }
+  });
+  entity.currentAction = entityBusy;
+}
+
+function idleState(entity, map, goapPlanner, aStar) {
   // console.log(entity.id + ' waiting');
   if (entity.idle) {
     // console.log(`${entity.id} should idle`);
@@ -232,7 +254,7 @@ function idleState(entity, map, goapPlanner) {
     entity.info = "idling...";
     entity.checkGoals(goapPlanner, map);
     if (entity.goals.length === 0) {
-      entity.findPotentialGoals(goapPlanner, map);
+      entity.findPotentialGoals(goapPlanner, map, aStar);
     }
   }
 }
@@ -247,7 +269,7 @@ MovingEntity.prototype.createChildTraits = function () {
   return childTraits;
 }
 
-MovingEntity.prototype.findPotentialGoals = function (goapPlanner, map) {
+MovingEntity.prototype.findPotentialGoals = function (goapPlanner, map, aStar) {
   let potentionGoals = [];
   let eat = {
     "name": 'eat',
@@ -273,11 +295,11 @@ MovingEntity.prototype.findPotentialGoals = function (goapPlanner, map) {
 
   if (chosenEffect) {
     // console.log('goal chosen');
-    this.createPlan(goapPlanner, map, chosenEffect);
+    this.createPlan(goapPlanner, map, chosenEffect, aStar);
   }
 }
 
-MovingEntity.prototype.createPlan = function (goapPlanner, map, goalEffects) {
+MovingEntity.prototype.createPlan = function (goapPlanner, map, goalEffects, aStar) {
   let entity = this;
   // console.log('creating plan');
   goapPlanner.requestPlan(map, this, this, goapPlanner.goap.actions, goalEffects, (plan) => {
@@ -290,7 +312,7 @@ MovingEntity.prototype.createPlan = function (goapPlanner, map, goalEffects) {
     } else {
       // console.log('did not find plan');
       entity.goals.splice(0, 1);
-      entity.idleForTime(map, 10);
+      entity.wander(map, aStar);
     }
   });
   this.currentAction = entityBusy;
@@ -366,7 +388,7 @@ function doAction(entity, map, goapPlanner, aStar) {
             // entity.isNearTarget = true;
             console.log(`${entity.id} did not find path`);
             entity.goals.splice(0, 1);
-            entity.idleForTime(map, 10);
+            entity.idleForTime(map, 5);
           }
         });
         entity.currentAction = entityBusy;
@@ -407,12 +429,19 @@ function entityBusy() {
 function followPath(entity) {
   if (entity.path) {
     let distanceLeft = entity.path[entity.pathIndex].moveAgent(entity, 1 / 60);
-    entity.info = `moving to do action: ${entity.plan[entity.planIndex].name}, distance: ${distanceLeft.toFixed(1)}`;
+    if (entity.plan && entity.plan[entity.planIndex]){
+      entity.info = `moving to do action: ${entity.plan[entity.planIndex].name}, distance: ${distanceLeft.toFixed(1)}`;
+    }
     // console.log(`moving to do action: ${entity.plan[entity.planIndex].name}, distance: ${distanceLeft}`);
     if (entity.path.length - 1 == entity.pathIndex && distanceLeft <= 1) {
       //reached target
-      entity.isNearTarget = true;
-      entity.currentAction = doAction;
+      if (entity.wandering){
+        entity.wandering = false;
+        entity.currentAction = idleState;
+      } else {
+        entity.isNearTarget = true;
+        entity.currentAction = doAction;
+      }
     } else if (distanceLeft < 1) {
       //move to next leg of path
       entity.pathIndex++;

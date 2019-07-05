@@ -8,7 +8,7 @@
         {
             "name":"duplicate",
             "base": 100,
-            "randomness": 10,
+            "randomness": 20,
             "healthMult": 5
         }
     ],
@@ -46,7 +46,7 @@
                     "type": "add",
                     "location": [],
                     "property":"energy",
-                    "amount": 30
+                    "amount": 50
                 },
                 {
                     "type": "destroy"
