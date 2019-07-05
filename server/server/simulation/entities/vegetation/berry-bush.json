@@ -46,10 +46,10 @@
                     "type": "add",
                     "location": [],
                     "property":"energy",
-                    "amount": 50
+                    "amount": 30
                 },
                 {
-                    "type": "destroy"
+                    "type": "removeItem"
                 }
             ]
         }

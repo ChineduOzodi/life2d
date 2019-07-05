@@ -8,7 +8,7 @@ Vegetation.prototype = Object.create(Entity.prototype);
 
 Vegetation.prototype.birth = function (map, traits) {
   // console.log(`spawning enity: ${this.name}`);
-  let startTime = Date.now();
+  // let startTime = Date.now();
   Object.getPrototypeOf(Vegetation.prototype).birth.call(this, map, traits);
   // console.log(`set traits (vegetation class): ${JSON.stringify(this.traits)}`);
   // console.log('calculate attrition');
@@ -18,11 +18,12 @@ Vegetation.prototype.birth = function (map, traits) {
   //set health
   this.calculateHealth();
 
-  let runtime = Date.now() - startTime;
-  if (runtime > 10){
-    console.log(`vegetation birth ${this.id} runtime: ${runtime} ms`);
-  }
+  // let runtime = Date.now() - startTime;
+  // if (runtime > 10){
+  //   console.log(`vegetation birth ${this.id} runtime: ${runtime} ms`);
+  // }
 
+  
 }
 
 Vegetation.prototype.death = function (map) {
@@ -40,21 +41,22 @@ Vegetation.prototype.death = function (map) {
 
 Vegetation.prototype.run = function (map, goap, deltaTime) {
   // console.log(`running enity: ${this.name}`);
-  let startTime = Date.now();
+  // let startTime = Date.now();
 
   Object.getPrototypeOf(Vegetation.prototype).run.call(this, map, goap, deltaTime);
   if (!this.destroy) {
     this.applyRates(deltaTime);
     this.checkHealth();
     this.checkSpawnEntity(map);
+    this.checkBerries(map);
   } else if (!this.deathFunctionRun) {
     this.death(map);
   }
 
-  let runtime = Date.now() - startTime;
-  if (runtime > 10){
-    console.log(`vegetation ${this.id} runtime: ${runtime} ms`);
-  }
+  // let runtime = Date.now() - startTime;
+  // if (runtime > 10){
+  //   console.log(`vegetation ${this.id} runtime: ${runtime} ms`);
+  // }
 }
 
 Vegetation.prototype.applyRates = function (deltaTime) {
@@ -72,6 +74,23 @@ Vegetation.prototype.checkHealth = function () {
     // console.log('death of vegetation');
     this.health = 0;
     this.destroy = true;
+  }
+}
+
+Vegetation.prototype.removeBerries = function (map) {
+  console.log(`${this.id} berries removed`);
+  this.noBerries = true;
+  this.addBerriesTime = map.time + 60;
+  this.health - 10;
+  if (this.health < 0) {
+    this.health = 0;
+  }
+}
+
+Vegetation.prototype.checkBerries = function (map) {
+  if (this.noBerries && this.addBerriesTime <= map.time) {
+    console.log(`${this.id} berries grown`);
+    this.noBerries = false;
   }
 }
 

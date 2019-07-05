@@ -32,7 +32,7 @@ GoapPlanner.prototype.startTasks = function() {
 }
 GoapPlanner.prototype.requestPlan = function(map, agent, state, actions, goal, callBackFunction) {
     this.queue.enqueue(new GoapPlan(map,agent,state,JSON.parse(JSON.stringify(actions)),goal,callBackFunction));
-    console.log(`${agent.id} goap request, queue length: ${this.queue.getLength()}`);
+    // console.log(`${agent.id} goap request, queue length: ${this.queue.getLength()}`);
     if (!this.currentTask) {
         this.startTasks();
     }

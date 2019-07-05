@@ -28,7 +28,7 @@ function Map(settings) {
 Map.prototype.run = function (goapPlanner, deltaTime, aStar) {
   this.time += deltaTime;
   let fps = 1/deltaTime;
-  console.log(`fps: ${fps.toFixed(1)}`);
+  // console.log(`fps: ${fps.toFixed(1)}`);
   if (this.entities.length > 0) {
     // console.log(JSON.stringify(this.people));
     for (const entity of this.entities) {
@@ -526,7 +526,7 @@ Map.prototype.findNearestEntity = function (entityName, position, maxDistance) {
     let entityDistance = distanceCost(entity.position, position);
     // console.log(`entity: ${entity.name} - distance: ${entityDistance} (looking for ${entityName})`);
     if ((maxDistance && entityDistance < maxDistance * 10) || !maxDistance) {
-      if (!entity.destroy && !entity.isReserved && entityDistance < closestDistance && entityName === entity.name) {
+      if (!entity.destroy && !entity.isReserved && !entity.noBerries && entityDistance < closestDistance && entityName === entity.name) {
         // console.log(`chosen entity: ${entity.name} - distance: ${entityDistance}`);
         closestEntity = entity;
         closestDistance = entityDistance;

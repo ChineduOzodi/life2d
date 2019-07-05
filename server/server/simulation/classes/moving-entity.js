@@ -20,7 +20,7 @@ function MovingEntity(name, id, x, y, settingsIndex, baseSpriteIndex) {
 MovingEntity.prototype = Object.create(Entity.prototype);
 
 MovingEntity.prototype.birth = function (map, traits) {
-  let startTime = Date.now();
+  // let startTime = Date.now();
   // console.log(`spawning enity: ${this.name}`);
   Object.getPrototypeOf(MovingEntity.prototype).birth.call(this, map, traits);
 
@@ -28,10 +28,10 @@ MovingEntity.prototype.birth = function (map, traits) {
 
   //set health
   this.calculateHealth();
-  let runtime = Date.now() - startTime;
-  if (runtime > 10) {
-    console.log(`moving-entity birth ${this.id} runtime: ${runtime} ms`);
-  }
+  // let runtime = Date.now() - startTime;
+  // if (runtime > 10) {
+  //   console.log(`moving-entity birth ${this.id} runtime: ${runtime} ms`);
+  // }
 }
 
 MovingEntity.prototype.death = function (map) {
@@ -41,7 +41,7 @@ MovingEntity.prototype.death = function (map) {
 
 MovingEntity.prototype.run = function (map, goapPlanner, deltaTime, aStar) {
   // console.log(`running enity: ${this.name}`);
-  let startTime = Date.now();
+  // let startTime = Date.now();
   Object.getPrototypeOf(MovingEntity.prototype).run.call(this, map, goapPlanner, deltaTime);
   if (!this.destroy) {
     this.resetBaseAttributes();
@@ -53,10 +53,10 @@ MovingEntity.prototype.run = function (map, goapPlanner, deltaTime, aStar) {
   } else if (!this.deathFunctionRun) {
     this.death(map);
   }
-  let runtime = Date.now() - startTime;
-  if (runtime > 10) {
-    console.log(`moving-entity ${this.id} runtime: ${runtime} ms`);
-  }
+  // let runtime = Date.now() - startTime;
+  // if (runtime > 10) {
+  //   console.log(`moving-entity ${this.id} runtime: ${runtime} ms`);
+  // }
   // console.log(`energy: ${this.energy}`);
 }
 
@@ -371,7 +371,7 @@ function doAction(entity, map, goapPlanner, aStar) {
       // console.log('action: ' + JSON.stringify(action));
       entity.info = `doing action: ${action.name}`;
       if (action.distanceCost > 0 && !entity.isNearTarget) {
-        console.log(`${entity.id} path request, queue length: ${aStar.queue.getLength()}----------`);
+        // console.log(`${entity.id} path request, queue length: ${aStar.queue.getLength()}----------`);
         aStar.requestPath(entity.position, action.target.position, map, (path) => {
           if (path) {
             if (path && path.length > 0) {
@@ -400,7 +400,7 @@ function doAction(entity, map, goapPlanner, aStar) {
           entity.isSleeping = true;
         }
         if (action.target) {
-          if (action.target.isReserved || action.target.destroy) {
+          if (action.target.isReserved || action.target.destroy || action.noBerries) {
             // console.log(`${entity.id} target ${action.target.id} already reserved or dead upon attempt at action`);
             entity.currentAction = idleState;
             entity.goals.splice(0, 1);
@@ -488,7 +488,14 @@ MovingEntity.prototype.applyAction = function (action, map) {
       } else {
         console.error('did not find target to destroy');
       }
-    } else if (effect.type === 'self') {
+    } else if (effect.type === 'removeItem') {
+      if (action.target) {
+        console.log('removing berries');
+        action.target.removeBerries(map);
+      } else {
+        console.error('did not find target to destroy');
+      }
+    }  else if (effect.type === 'self') {
       if (effect.target === 'base stats') {
         if (effect.effect === 'add') {
           this.addToBaseStat(effect.name, effect.amount)
