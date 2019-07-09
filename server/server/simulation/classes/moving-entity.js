@@ -39,14 +39,14 @@ MovingEntity.prototype.death = function (map) {
 
 }
 
-MovingEntity.prototype.run = function (map, goapPlanner, deltaTime, aStar) {
+MovingEntity.prototype.run = function (map, goapPlanner, aStar) {
   // console.log(`running enity: ${this.name}`);
   // let startTime = Date.now();
-  Object.getPrototypeOf(MovingEntity.prototype).run.call(this, map, goapPlanner, deltaTime);
+  Object.getPrototypeOf(MovingEntity.prototype).run.call(this, map, goapPlanner);
   if (!this.destroy) {
     this.resetBaseAttributes();
     this.applyModifiers();
-    this.applyBaseRates(deltaTime);
+    this.applyBaseRates();
     this.currentAction(this, map, goapPlanner, aStar);
     this.checkHealth();
     this.checkSpawnEntity(map);
@@ -113,33 +113,33 @@ function camelize(str) {
   }).replace(/\s+/g, '');
 }
 
-MovingEntity.prototype.applyBaseRates = function (deltaTime) {
+MovingEntity.prototype.applyBaseRates = function () {
   if (this.isSleeping) {
-    // this.energy += this.energyGainRate * deltaTime;
+    // this.energy += this.energyGainRate * this.deltaTime;
     // this.energy = Math.min(this.energy, this.maxEnergy);
   } else {
-    this.energy -= this.energyLossRate * deltaTime;
+    this.energy -= this.energyLossRate * this.deltaTime;
     this.energy = Math.max(this.energy, 0);
-    this.health -= this.healthLossRate * deltaTime;
+    this.health -= this.healthLossRate * this.deltaTime;
     this.health = Math.max(this.health, 0);
-    this.duplicate -= deltaTime;
+    this.duplicate -= this.deltaTime;
     this.duplicate = Math.max(this.duplicate, 0);
   }
 
   if (this.fullness > 0) {
     if (this.isSleeping) {
-      this.fullness -= this.hungerRate * deltaTime * 0.5;
+      this.fullness -= this.hungerRate * this.deltaTime * 0.5;
     } else {
-      this.fullness -= this.hungerRate * deltaTime;
+      this.fullness -= this.hungerRate * this.deltaTime;
     }
     this.fullness = Math.max(this.fullness, 0);
   }
 
   if (this.stamina < this.maxStamina) {
     if (this.isSleeping) {
-      this.stamina += this.staminaRecoveryRate * deltaTime * 2;
+      this.stamina += this.staminaRecoveryRate * this.deltaTime * 2;
     } else {
-      this.stamina += this.staminaRecoveryRate * deltaTime;
+      this.stamina += this.staminaRecoveryRate * this.deltaTime;
     }
     this.stamina = Math.min(this.maxStamina, this.stamina);
   }
@@ -166,7 +166,7 @@ function applyModifier(location, modifier) {
 
 MovingEntity.prototype.checkSpawnEntity = function (map) {
   if (this.duplicate === 0 && this.energy / this.baseMaxEnergy >= .5) {
-    // console.log('duplicating vegetation');
+    // console.log('duplicating moving entity');
     const randomX = (Math.random() - 0.5) * 2 * 3;
     const randomY = (Math.random() - 0.5) * 2 * 3;
 
@@ -174,12 +174,12 @@ MovingEntity.prototype.checkSpawnEntity = function (map) {
     const spawnY = this.position.y + randomY;
     if (map.withinBorder(spawnX, spawnY)) {
       const spawnBiome = map.getBiome(spawnX, spawnY)[0];
-
+      // console.log('duplicating moving entity - within border');
       //found biome match, can spawn entity
       if (this.spawnBiomes.find(x => x === spawnBiome)) {
         //create child traits
         let childTraits = this.createChildTraits();
-
+        // console.log('duplicating moving entity - acceptable biome');
         //create other needed things
         let spawnSettings = map.entitySettings.find(x => x.name === this.name);
         let baseSpriteIndex = Math.floor(Math.random() * spawnSettings.baseSprites.length);
@@ -426,9 +426,9 @@ function entityBusy() {
 
 }
 
-function followPath(entity) {
+function followPath(entity, map, goapPlanner, aStar) {
   if (entity.path) {
-    let distanceLeft = entity.path[entity.pathIndex].moveAgent(entity, 1 / 60);
+    let distanceLeft = entity.path[entity.pathIndex].moveAgent(entity, entity.deltaTime);
     if (entity.plan && entity.plan[entity.planIndex]){
       entity.info = `moving to do action: ${entity.plan[entity.planIndex].name}, distance: ${distanceLeft.toFixed(1)}`;
     }
@@ -490,7 +490,7 @@ MovingEntity.prototype.applyAction = function (action, map) {
       }
     } else if (effect.type === 'removeItem') {
       if (action.target) {
-        console.log('removing berries');
+        // console.log('removing berries');
         action.target.removeBerries(map);
       } else {
         console.error('did not find target to destroy');

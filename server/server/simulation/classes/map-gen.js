@@ -23,16 +23,29 @@ function Map(settings) {
   this.map = {};
   this.time = 0;
   this.locationReservations = [];
+  this.entityIndex = 0;
 }
 
-Map.prototype.run = function (goapPlanner, deltaTime, aStar) {
+Map.prototype.run = function (goapPlanner, deltaTime, aStar, maxEntitiesPerFrame) {
   this.time += deltaTime;
   let fps = 1/deltaTime;
-  // console.log(`fps: ${fps.toFixed(1)}`);
+  console.log(`fps: ${fps.toFixed(1)}`);
+  
   if (this.entities.length > 0) {
     // console.log(JSON.stringify(this.people));
-    for (const entity of this.entities) {
-      entity.run(this, goapPlanner, deltaTime, aStar);
+    if (this.entities.length > maxEntitiesPerFrame) {
+      for (let i = 0; i < maxEntitiesPerFrame; i++) {
+        let entity = this.entities[this.entityIndex];
+        this.entityIndex++;
+        if (this.entityIndex >= this.entities.length) {
+          this.entityIndex = 0;
+        }
+        entity.run(this, goapPlanner, aStar);
+      }
+    } else {
+      for (const entity of this.entities) {
+        entity.run(this, goapPlanner, aStar);
+      }
     }
   }
 }

@@ -39,13 +39,13 @@ Vegetation.prototype.death = function (map) {
   }
 }
 
-Vegetation.prototype.run = function (map, goap, deltaTime) {
+Vegetation.prototype.run = function (map, goap) {
   // console.log(`running enity: ${this.name}`);
   // let startTime = Date.now();
 
-  Object.getPrototypeOf(Vegetation.prototype).run.call(this, map, goap, deltaTime);
+  Object.getPrototypeOf(Vegetation.prototype).run.call(this, map, goap);
   if (!this.destroy) {
-    this.applyRates(deltaTime);
+    this.applyRates(this.deltaTime);
     this.checkHealth();
     this.checkSpawnEntity(map);
     this.checkBerries(map);
@@ -59,11 +59,11 @@ Vegetation.prototype.run = function (map, goap, deltaTime) {
   // }
 }
 
-Vegetation.prototype.applyRates = function (deltaTime) {
-  this.health -= this.healthLossRate * deltaTime;
+Vegetation.prototype.applyRates = function () {
+  this.health -= this.healthLossRate * this.deltaTime;
   this.health = Math.max(this.health, 0);
 
-  this.duplicate -= deltaTime;
+  this.duplicate -= this.deltaTime;
   this.duplicate = Math.max(this.duplicate, 0);
   // console.log(`duplicate: ${this.duplicate}`);
 }
@@ -78,7 +78,7 @@ Vegetation.prototype.checkHealth = function () {
 }
 
 Vegetation.prototype.removeBerries = function (map) {
-  console.log(`${this.id} berries removed`);
+  // console.log(`${this.id} berries removed`);
   this.noBerries = true;
   this.addBerriesTime = map.time + 60;
   this.health - 10;
@@ -89,7 +89,7 @@ Vegetation.prototype.removeBerries = function (map) {
 
 Vegetation.prototype.checkBerries = function (map) {
   if (this.noBerries && this.addBerriesTime <= map.time) {
-    console.log(`${this.id} berries grown`);
+    // console.log(`${this.id} berries grown`);
     this.noBerries = false;
   }
 }

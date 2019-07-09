@@ -26,8 +26,10 @@ var map;
 var goapPlanner = new GoapPlanner();
 var aStar = new AStar();
 var oldTime = Date.now();
-var newTime = oldTime + 100/6;
- //=========================================
+var newTime = oldTime + 100 / 6;
+//=========================================
+//Settings
+var maxEntityPerFrame = 100;
 
 //server setup
 app.set('port', 5000);
@@ -82,15 +84,15 @@ function createData(map) {
   map.currentIndex = 0;
 
   for (const entitySetting of map.entitySettings) {
-    if (!map.data.find( x => x.name === entitySetting.name)) {
+    if (!map.data.find(x => x.name === entitySetting.name)) {
       map.data.push({
-        series: [{name: 0, value: 0}],
+        series: [{ name: 0, value: 0 }],
         name: entitySetting.name
       });
 
       for (const trait of entitySetting.traits) {
         map.data.push({
-          series: [{name: 0, value: 0}],
+          series: [{ name: 0, value: 0 }],
           name: `${entitySetting.name} Average ${trait.name}`
         });
       }
@@ -129,15 +131,15 @@ function updateData(map) {
     map.currentLatestTime += map.interval;
     let name = (map.currentLatestTime / 60);
     for (const data of map.data) {
-      data.series.push({name: name, value: 0});
+      data.series.push({ name: name, value: 0 });
     }
   }
 
   for (const entitySetting of map.entitySettings) {
-    map.data.find( x => x.name === entitySetting.name).series[map.currentIndex].value = totals[entitySetting.name].total;
+    map.data.find(x => x.name === entitySetting.name).series[map.currentIndex].value = totals[entitySetting.name].total;
 
     for (const trait of entitySetting.traits) {
-      map.data.find( x => x.name === `${entitySetting.name} Average ${trait.name}`).series[map.currentIndex].value 
+      map.data.find(x => x.name === `${entitySetting.name} Average ${trait.name}`).series[map.currentIndex].value
         = totals[entitySetting.name].averages[trait.name] / totals[entitySetting.name].total;
     }
   }
@@ -184,8 +186,20 @@ io.on('connection', function (socket) {
         }
       });
     } else {
-      io.to(socket.id).emit('logout');
-      console.log('unrecognised socket id, sent logout to ' + socket.id);
+      // io.to(socket.id).emit('logout');
+      // console.log('unrecognised socket id, sent logout to ' + socket.id);
+      let username = 'default';
+      // delete players[users[username].socketId]
+      players[socket.id] = username;
+      console.log(`${username} logged in`);
+      if (!users[username]) {
+        users[username] = new User(socket.id, username, socket.id, new Camera({ x: 0, y: 0 }, 5));
+      }
+      users[username].socketId = socket.id;
+
+      io.to(socket.id).emit('user', users[username]);
+      io.to(socket.id).emit('map', map);
+      io.to(socket.id).emit('goapActions', goapPlanner.goap.actions);
     }
 
     //console.log(`x: ${player.x}, y: ${player.y}, zoom: ${player.z}`)
@@ -198,21 +212,21 @@ io.on('connection', function (socket) {
       let person = map.people.find(x => x.id == user.username);
       person.goals.push(goal);
     } else {
-      console.log('sent logout to ' + user.username);
-      io.to(socket.id).emit('logout');
+      // console.log('sent logout to ' + user.username);
+      // io.to(socket.id).emit('logout');
     }
 
     //console.log(`x: ${player.x}, y: ${player.y}, zoom: ${player.z}`)
   });
 });
 
-function run () {
+function run() {
   newTime = Date.now();
   let deltaTime = newTime - oldTime;
   oldTime = newTime;
   deltaTime /= 1000;
   goapPlanner.run();
-  map.run(goapPlanner, deltaTime, aStar);
+  map.run(goapPlanner, deltaTime, aStar, maxEntityPerFrame);
   // console.log(`sending entity: ${JSON.stringify(map.entities[1])}`);
   io.sockets.emit('entities', map.entities);
   io.sockets.emit('state', players);
@@ -220,7 +234,7 @@ function run () {
     map.locationReserveChanged = false;
     io.sockets.emit('locationReservations', map.locationReservations);
   }
-  setTimeout( run, 1000/60);
+  setTimeout(run, 1000 / 60);
 }
 
 setInterval(function () {

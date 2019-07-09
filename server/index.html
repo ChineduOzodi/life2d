@@ -1,17 +1,41 @@
 <html>
-  <head>
-    <title>A Multiplayer Game</title>
-    <style>
-      canvas {
-        width: 800px;
-        height: 600px;
-        border: 5px solid black;
-      }
-    </style>
-    <script src="/socket.io/socket.io.js"></script>
-  </head>
-  <body>
-    <canvas id="canvas"></canvas>
-  </body>
-  <script src="/static/test.js"></script>
+
+<head>
+  <title>A Multiplayer Game</title>
+  <style>
+    canvas {
+      width: 800px;
+      height: 600px;
+      border: 5px solid black;
+    }
+  </style>
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+
+<body>
+  <canvas id="canvas"></canvas>
+
+</body>
+<!-- The core Firebase JS SDK is always required and must be listed first -->
+<script src="https://www.gstatic.com/firebasejs/6.2.4/firebase-app.js"></script>
+
+<!-- TODO: Add SDKs for Firebase products that you want to use
+     https://firebase.google.com/docs/web/setup#config-web-app -->
+
+<script>
+  // Your web app's Firebase configuration
+  var firebaseConfig = {
+    apiKey: "AIzaSyAQw8aTBKxATZuJTLiL0uQuMD0XonDLRmA",
+    authDomain: "life2d-c9542.firebaseapp.com",
+    databaseURL: "https://life2d-c9542.firebaseio.com",
+    projectId: "life2d-c9542",
+    storageBucket: "",
+    messagingSenderId: "180836729768",
+    appId: "1:180836729768:web:25e7de0100ded061"
+  };
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+</script>
+<script src="/static/test.js"></script>
+
 </html>

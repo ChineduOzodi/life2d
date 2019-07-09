@@ -13,6 +13,7 @@ export class MovingEntity extends Entity {
     energyLossRate: number;
     modifiers = [];
     isSleeping: boolean;
+    duplicate: number;
     goals = [];
 
     constructor(name: string, id: string, position: Position, settingsIndex: number, baseSpriteIndex: number) {
@@ -23,6 +24,7 @@ export class MovingEntity extends Entity {
     getInfo() {
         const info = super.getInfo();
         info.push(`energy: ${this.energy.toFixed(0)}/${this.maxEnergy}`);
+        info.push(`duplicate: ${this.duplicate.toFixed(1)}`);
         for (const trait of this.traits) {
             info.push(`trait: ${trait.name} (${trait.amount.toFixed(3)})`);
         }
