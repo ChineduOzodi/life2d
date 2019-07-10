@@ -1,66 +1,230 @@
 {
     "name": "herbivore",
     "type": "moving-entity",
+    "species": "bunny",
     "energy": 50,
     "baseMaxEnergy": 50,
     "baseEnergyLossRate": 1,
     "baseEnergyGainRate": 2,
     "baseHealthLossRate": 1,
-    "traits":[
+    "traits": [
         {
-            "name":"speed",
+            "name": "body",
+            "geneType": "numerical",
+            "type": "external",
+            "base": 1,
+            "count": 1,
+            "randomness": 0.1,
+            "cost": "energyLossRate",
+            "modifier": "add",
+            "costRate": 0.1,
+            "speciationPercent": 0.5,
+            "mutationChance": 0.0001
+        },
+        {
+            "name": "head",
+            "attachedTo":"body",
+            "geneType": "numerical",
+            "type": "external",
+            "base": 0.5,
+            "count": 1,
+            "randomness": 0.1,
+            "cost": "energyLossRate",
+            "modifier": "add",
+            "costRate": 0.1,
+            "speciationPercent": 0.5,
+            "mutationChance": 0.0001
+        },
+        {
+            "name": "brain",
+            "attachedTo":"head",
+            "geneType": "numerical",
+            "type": "internal",
+            "base": 0.5,
+            "count": 1,
+            "randomness": 0.1,
+            "cost": "energyLossRate",
+            "modifier": "add",
+            "costRate": 0.3,
+            "speciationPercent": 0.5,
+            "mutationChance": 0.0001
+        },
+        {
+            "name": "mouth",
+            "type": "external",
+            "attachedTo":"head",
+            "geneType": "boolean",
+            "count": 1,
+            "mutationChance": 0.0001
+        },
+        {
+            "name": "herbivore teeth",
+            "attachedTo":"mouth",
+            "geneType": "boolean",
+            "type": "internal",
+            "count": 1,
+            "amount": 0.1,
+            "cost": "energyLossRate",
+            "modifier": "add",
+            "costRate": 0.1,
+            "mutationChance": 0.0001
+        },
+        {
+            "name": "lungs",
+            "attachedTo":"body",
+            "geneType": "boolean",
+            "type": "internal",
+            "count": 2,
+            "amount": 1,
+            "cost": "energyLossRate",
+            "modifier": "add",
+            "costRate": 0.1,
+            "mutationChance": 0.0001
+        },
+        {
+            "name": "stomach",
+            "attachedTo":"body",
+            "geneType": "boolean",
+            "type": "internal",
+            "count": 1,
+            "amount": 1,
+            "cost": "energyLossRate",
+            "modifier": "add",
+            "costRate": 0.1,
+            "mutationChance": 0.0001
+        },
+        {
+            "name": "fruit processing",
+            "attachedTo":"stomach",
+            "geneType": "numerical",
+            "type": "protien",
+            "base": 1,
+            "count": 1,
+            "randomness": 0.1,
+            "cost": "energyLossRate",
+            "modifier": "add",
+            "costRate": 0.1,
+            "speciationPercent": 0.5,
+            "mutationChance": 0.0001
+        },
+        {
+            "name": "eyes",
+            "attachedTo":"head",
+            "type": "external",
+            "geneType": "numerical",
+            "base": 10,
+            "count": 2,
+            "randomness": 0.3,
+            "cost": "energyLossRate",
+            "modifier": "add",
+            "costRate": 0.1,
+            "speciationPercent": 0.5,
+            "mutationChance": 0.0001
+        },
+        {
+            "name": "legs",
+            "attachedTo":"body",
+            "type": "external",
+            "geneType": "numerical",
+            "base": 10,
+            "count": 2,
+            "randomness": 0.3,
+            "cost": "energyLossRate",
+            "modifier": "add",
+            "costRate": 0.1,
+            "speciationPercent": 0.5,
+            "mutationChance": 0.0001
+        },
+        {
+            "name": "legs",
+            "attachedTo":"body",
+            "type": "external",
+            "geneType": "numerical",
+            "base": 7,
+            "count": 2,
+            "randomness": 0.3,
+            "cost": "energyLossRate",
+            "modifier": "add",
+            "costRate": 0.1,
+            "speciationPercent": 0.5,
+            "mutationChance": 0.0001
+        },
+        {
+            "name": "tail",
+            "attachedTo":"body",
+            "type": "external",
+            "geneType": "numerical",
+            "base": 2,
+            "count": 1,
+            "randomness": 0.3,
+            "cost": "energyLossRate",
+            "modifier": "add",
+            "costRate": 0.1,
+            "speciationPercent": 0.5,
+            "mutationChance": 0.0001
+        },
+        {
+            "name": "gender",
+            "attachedTo":"body",
+            "geneType": "allele",
+            "type": "other",
+            "defenition": ["XY", "XX"],
+            "map": {
+                "XY": "male",
+                "XX": "female"
+            },
+            "mutationChance": 0.0001
+        },
+        {
+            "name": "speed",
             "base": 10,
             "randomness": 3,
             "cost": "energyLossRate",
-            "modifier":"add",
+            "modifier": "add",
             "costRate": 0.1
         },
         {
-            "name":"duplicate",
+            "name": "duplicate",
             "base": 120,
             "randomness": 20,
             "healthMult": 5
         },
         {
-            "name":"sight",
+            "name": "sight",
             "base": 20,
             "randomness": 5,
             "cost": "energyLossRate",
-            "modifier":"add",
+            "modifier": "add",
             "costRate": 0.05
         }
     ],
-    "spawnBiomes":["land"],
-    "baseSprites": [
-        {
-            "url": "/static/simulation/sprites/people/pixelman.png",
-            "offsets": {
-                "x": 0.5,
-                "y": 0.9
-            },
-            "width": 300,
-            "height": 570,
-            "scale": 1,
-            "minZoom": 8,
-            "maxZoom": 1000,
-            "otherSpritesIndex": [
-                0
-            ]
-        }
-    ],
-    "otherSprites": [
-        {
-            "url": "http://2.bp.blogspot.com/-XG9Pgfu6xJ8/Us_Wal0voUI/AAAAAAAAAwg/WR9NeIP4J10/s1600/spr_plant.png",
-            "offsets": {
-                "x": 0.5,
-                "y": 0.5
-            },
-            "width": 16,
-            "height": 16,
-            "scale": 3,
-            "minZoom": 0.1,
-            "maxZoom": 8
-        }
-    ],
+    "spawnBiomes": ["land"],
+    "baseSprites": [{
+        "url": "/static/simulation/sprites/people/pixelman.png",
+        "offsets": {
+            "x": 0.5,
+            "y": 0.9
+        },
+        "width": 300,
+        "height": 570,
+        "scale": 1,
+        "minZoom": 8,
+        "maxZoom": 1000,
+        "otherSpritesIndex": [
+            0
+        ]
+    }],
+    "otherSprites": [{
+        "url": "http://2.bp.blogspot.com/-XG9Pgfu6xJ8/Us_Wal0voUI/AAAAAAAAAwg/WR9NeIP4J10/s1600/spr_plant.png",
+        "offsets": {
+            "x": 0.5,
+            "y": 0.5
+        },
+        "width": 16,
+        "height": 16,
+        "scale": 3,
+        "minZoom": 0.1,
+        "maxZoom": 8
+    }],
     "goap": []
 }

@@ -3,55 +3,164 @@
     "type": "vegetation",
     "baseHealthLossRate": 1,
     "attrition": 10,
+    "maturityAge": 60,
     "attritionHealthEffect": 10,
-    "traits":[
+    "traits": [{
+            "name": "trunk",
+            "geneType": "numerical",
+            "type": "external",
+
+            "description": "main body of entity",
+            "speciationPercent": 0.5,
+            "mutationChance": 0.0001,
+            "count": 1,
+            "countMutate": false,
+            "effectsRandomness": 0.1,
+            "effects": [{
+                    "name": "energyLossRate",
+                    "base": 2,
+                    "modifier": "add",
+                    "costRate": 0.1
+                },
+                {
+                    "name": "maturityAge",
+                    "base": 10,
+                    "modifier": "add",
+                    "costRate": 0.1
+                }
+            ]
+        },
         {
-            "name":"duplicate",
+            "name": "roots",
+            "geneType": "numerical",
+            "type": "ground",
+            "attachedTo": "trunk",
+            "description": "controls how much energy from ground entity gets, more roots increases ability to get nutrients from ground at the cost of attrition radius",
+            "speciationPercent": 0.5,
+            "mutationChance": 0.0001,
+            "count": 10,
+            "countMutate": true,
+            "countMutateChance": 0.1,
+            "countMutateMinAmount": 1,
+            "countMutateMaxAmount": 5,
+            "effectsRandomness": 0.1,
+            "effects": [{
+                    "name": "attrition",
+                    "base": 1,
+                    "modifier": "add",
+                    "costRate": 0.1
+                },
+                {
+                    "name": "energyGainRate",
+                    "base": 1,
+                    "modifier": "add",
+                    "costRate": 0.1
+                }
+            ]
+        },
+        {
+            "name": "branches",
+            "geneType": "numerical",
+            "attachedTo": "trunk",
+            "type": "external",
+            "description": "mainly holds leaves, fruits, berries, etc",
+            "speciationPercent": 0.5,
+            "mutationChance": 0.0001,
+            "count": 10,
+            "countMutate": true,
+            "countMutateChance": 0.1,
+            "countMutateMinAmount": 1,
+            "countMutateMaxAmount": 5,
+            "effectsRandomness": 0.1,
+            "effects": [{
+                "name": "energyLossRate",
+                "base": 1,
+                "modifier": "add",
+                "costRate": 0.1
+            }]
+        },
+        {
+            "name": "leaves",
+            "geneType": "numerical",
+            "attachedTo": "branches",
+            "type": "external",
+            "description": "used for breathing and nutrients",
+            "speciationPercent": 0.5,
+            "mutationChance": 0.0001,
+            "count": 10,
+            "countMutate": true,
+            "countMutateChance": 0.1,
+            "countMutateMinAmount": 1,
+            "countMutateMaxAmount": 5,
+            "effectsRandomness": 0.1,
+            "effects": [{
+                    "name": "maturityAge",
+                    "base": 1,
+                    "modifier": "add",
+                    "costRate": 0.1
+                },
+                {
+                    "name": "energyGainRate",
+                    "base": 1,
+                    "modifier": "add",
+                    "costRate": 0.1
+                }
+            ]
+        },
+        {
+            "name": "berry",
+            "geneType": "item",
+            "attachedTo": "branches",
+            "type": "external",
+            "base": 1,
+            "count": 30,
+            "randomness": 0.1,
+            "cost": "energyLossRate",
+            "modifier": "add",
+            "costRate": 0.1,
+            "speciationPercent": 0.5,
+            "mutationChance": 0.0001
+        },
+        {
+            "name": "duplicate",
             "base": 100,
             "randomness": 20,
             "healthMult": 5
         }
     ],
-    "spawnBiomes":["land"],
-    "baseSprites": [
-        {
-            "url": "/static/simulation/sprites/vegetation/bushes/berry-bush.png",
-            "offsets": {
-                "x": 0.5,
-                "y": 0.6
-            },
-            "width": 234,
-            "height": 210,
-            "scale": 1,
-            "minZoom": 8,
-            "maxZoom": 1000,
-            "otherSpritesIndex": []
-        }
-    ],
+    "spawnBiomes": ["land"],
+    "baseSprites": [{
+        "url": "/static/simulation/sprites/vegetation/bushes/berry-bush.png",
+        "offsets": {
+            "x": 0.5,
+            "y": 0.6
+        },
+        "width": 234,
+        "height": 210,
+        "scale": 1,
+        "minZoom": 8,
+        "maxZoom": 1000,
+        "otherSpritesIndex": []
+    }],
     "otherSprites": [],
-    "goap": [
-        {
-            "name": "eat berry",
-            "preconditions": [
-                {
-                    "type": "reserve",
-                    "reserve": "entity",
-                    "name": "berry bush",
-                    "amount": 1
-                }
-            ],
-            "cost": 5,
-            "effects": [
-                {
-                    "type": "add",
-                    "location": [],
-                    "property":"energy",
-                    "amount": 30
-                },
-                {
-                    "type": "removeItem"
-                }
-            ]
-        }
-    ]
+    "goap": [{
+        "name": "eat berry",
+        "preconditions": [{
+            "type": "reserve",
+            "reserve": "entity",
+            "name": "berry bush",
+            "amount": 1
+        }],
+        "cost": 5,
+        "effects": [{
+                "type": "add",
+                "location": [],
+                "property": "energy",
+                "amount": 30
+            },
+            {
+                "type": "removeItem"
+            }
+        ]
+    }]
 }
