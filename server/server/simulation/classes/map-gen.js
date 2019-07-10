@@ -4,6 +4,7 @@ var math = require('mathjs');
 var SimplexNoise = require('simplex-noise');
 var PNGImage = require('pngjs-image');
 var fs = require("fs");
+var simplex;
 
 function Map(settings) {
   if (settings) {
@@ -13,23 +14,64 @@ function Map(settings) {
     this.scale = settings.scale;
     this.settings = settings;
   }
+  simplex = new SimplexNoise(this.settings.noise.seed);
   this.entitySettings = [];
   this.pendingChunks = [];
   this.entities = [];
   this.chunkData = {};
   this.id = 1;
   this.map = {};
+  this.time = 0;
   this.locationReservations = [];
+  this.entityIndex = 0;
 }
 
-Map.prototype.run = function (goap, deltaTime) {
+Map.prototype.run = function (goapPlanner, deltaTime, aStar, maxEntitiesPerFrame) {
+  this.time += deltaTime;
+  let fps = 1/deltaTime;
+  console.log(`fps: ${fps.toFixed(1)}`);
+  
   if (this.entities.length > 0) {
     // console.log(JSON.stringify(this.people));
-    for (const entity of this.entities) {
-      entity.run(this, goap, deltaTime);
+    if (this.entities.length > maxEntitiesPerFrame) {
+      for (let i = 0; i < maxEntitiesPerFrame; i++) {
+        let entity = this.entities[this.entityIndex];
+        this.entityIndex++;
+        if (this.entityIndex >= this.entities.length) {
+          this.entityIndex = 0;
+        }
+        entity.run(this, goapPlanner, aStar);
+      }
+    } else {
+      for (const entity of this.entities) {
+        entity.run(this, goapPlanner, aStar);
+      }
     }
   }
 }
+
+Map.prototype.addNewEntity = function(newEntity) {
+  let foundIndex = false;
+  let index = 0;
+  for (let i in this.entities) {
+    let entity = this.entities[i];
+    if (entity.destroy){
+      index = i;
+      foundIndex = true;
+      break;
+    }
+  }
+  if (foundIndex) {
+    this.entities[index] = newEntity;
+  }else {
+    this.entities.push(newEntity);
+  }
+}
+
+Map.prototype.withinBorder = function(x,y) {
+  return x > -this.width * 0.5 && x < this.width * 0.5 && y > -this.height * 0.5 && y < this.height * 0.5;
+}
+
 
 Map.prototype.saveData = function (dir) {
   map = this;
@@ -51,13 +93,13 @@ Map.prototype.saveData = function (dir) {
 
 Map.prototype.correctClasses = function () {
   let assignedList = [];
-  for (const entity of this.entities){
+  for (const entity of this.entities) {
     const spawnIndex = this.entitySettings.findIndex(x => x.type === entity.type);
     const spawnSettings = this.entitySettings[spawnIndex];
 
     if (spawnSettings.type === 'vegetation') {
       assignedList.push(Object.assign(new Vegetation, entity));
-    } else if (spawnSettings.type === 'herbivore') {
+    } else if (spawnSettings.type === 'moving-entity') {
       assignedList.push(Object.assign(new MovingEntity, entity));
     }
   }
@@ -152,13 +194,36 @@ Map.prototype.spawnEntities = function () {
   for (spawn of this.settings.spawns) {
     for (let i = 0; i < spawn.spawnCount; i++) {
       let position = this.getSpawnLocation(spawn.spawnBiomes);
+      // console.log(`type: ${spawn.type}`);
       let spawnIndex = this.entitySettings.findIndex(x => x.type === spawn.type);
       let spawnSettings = this.entitySettings[spawnIndex];
       let baseSpriteIndex = Math.floor(Math.random() * spawnSettings.baseSprites.length);
       if (spawnSettings.type === 'vegetation') {
-        this.entities.push(new Vegetation(spawnSettings.type, this.id++, position.x, position.y, spawnIndex, baseSpriteIndex));
-      } else if (spawnSettings.type === 'herbivore') {
-        this.entities.push(new MovingEntity(spawnSettings.type, this.id++, position.x, position.y, spawnIndex, baseSpriteIndex));
+        // console.log(`creating vegetation`);
+        let entity = new Vegetation(spawnSettings.name, this.id++, position.x, position.y, spawnIndex, baseSpriteIndex);
+        // console.log(`vegetation settings: ${JSON.stringify(spawnSettings)}`);
+        entity.spawnBiomes = spawnSettings.spawnBiomes;
+        entity.baseHealthLossRate = spawnSettings.baseHealthLossRate;
+        entity.attrition = spawnSettings.attrition;
+        entity.attritionHealthEffect = spawnSettings.attritionHealthEffect;
+        entity.birth(this,spawnSettings.traits);
+        entity.generation = 1;
+        // this.health = spawnSettings.health;
+        // console.log(`done creating vegetation: ${JSON.stringify(entity)}`);
+        this.entities.push(entity);
+      } else if (spawnSettings.type === 'moving-entity') {
+        let entity = new MovingEntity(spawnSettings.name, this.id++, position.x, position.y, spawnIndex, baseSpriteIndex);
+        entity.baseHealthLossRate = spawnSettings.baseHealthLossRate;
+        entity.generation = this.generation + 1;
+        entity.energy = spawnSettings.energy;
+        entity.baseMaxEnergy = spawnSettings.baseMaxEnergy;
+        entity.baseEnergyGainRate = spawnSettings.baseEnergyGainRate;
+        entity.baseEnergyLossRate = spawnSettings.baseEnergyLossRate;
+        entity.spawnBiomes = spawnSettings.spawnBiomes;
+        entity.generation = 1;
+        entity.birth(this,spawnSettings.traits);
+
+        this.entities.push(entity);
       }
     }
   }
@@ -308,7 +373,6 @@ Map.prototype.generateMap = function () {
 
   this.cities = [];
   map = [];
-  var simplex = new SimplexNoise(this.settings.noise.seed);
   console.log("Generating map...");
 
   let iX = 0;
@@ -462,18 +526,46 @@ Map.prototype.getBiome = function (x, y) {
   return biome(this.getHeight(x, y), this.settings.biomes);
 }
 
-Map.prototype.findNearestEntity = function (entityName, location, position) {
+Map.prototype.findEntityById = function (id) {
+  return this.entities.find( x => x.id === id);
+  
+}
+
+Map.prototype.findNearestEntity = function (entityName, position, maxDistance) {
   let closestEntity;
   let closestDistance = 100000000000000000000000000000000000;
-
-  for (let i in location) {
-    let entity = location[i];
+  // console.log('looking for nearest entity');
+  for (const entity of this.entities) {
     let entityDistance = distanceCost(entity.position, position);
-    if (!entity.destroy && entityDistance < closestDistance && entityName === entity.name) {
-      closestEntity = entity;
-      closestDistance = entityDistance;
+    // console.log(`entity: ${entity.name} - distance: ${entityDistance} (looking for ${entityName})`);
+    if ((maxDistance && entityDistance < maxDistance * 10) || !maxDistance) {
+      if (!entity.destroy && !entity.isReserved && !entity.noBerries && entityDistance < closestDistance && entityName === entity.name) {
+        // console.log(`chosen entity: ${entity.name} - distance: ${entityDistance}`);
+        closestEntity = entity;
+        closestDistance = entityDistance;
+      }
     }
   }
+  // console.log(`found nearest entity: ${closestEntity.name}`);
+  return closestEntity;
+}
+
+Map.prototype.findNearestEntityName = function (entityName, searchEntity) {
+  let closestEntity;
+  let closestDistance = 100000000000000000000000000000000000;
+  // console.log('looking for nearest entity');
+  for (const entity of this.entities) {
+    if (entity.id != searchEntity.id) {
+      let entityDistance = distanceCost(entity.position, searchEntity.position);
+      if (!entity.destroy && entityDistance < closestDistance && entityName === entity.name) {
+        closestEntity = entity;
+        closestDistance = entityDistance;
+        // console.log(`chosen entity: ${entity.name} - distance: ${entityDistance}`);
+        // console.log(`entity: ${entity.name} - distance: ${entityDistance} (looking for ${entityName})`);
+      }
+    }
+  }
+  // console.log(`found nearest entity: ${closestEntity.name}`);
   return closestEntity;
 }
 

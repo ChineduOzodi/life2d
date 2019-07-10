@@ -1,7 +1,7 @@
 {
     "name": "Awesome Map",
-    "width": 1000,
-    "height": 1000,
+    "width": 500,
+    "height": 500,
     "scale": 1,
     "seed": 16.163116528603627,
     "randomSeed": true,
@@ -32,8 +32,8 @@
     ],
     "mapChunks": [
         {
-            "width": 1000,
-            "height": 1000,
+            "width": 500,
+            "height": 500,
             "scale": 1,
             "maxZoom": 1000,
             "minZoom": 0.01,
@@ -42,14 +42,14 @@
     ],
     "spawns": [
         {
-            "type": "herbivore",
+            "type": "moving-entity",
             "spawnBiomes":["land"],
-            "spawnCount":5000
+            "spawnCount":10
         },
         {
             "type": "vegetation",
             "spawnBiomes":["land"],
-            "spawnCount":5000
+            "spawnCount":300
         }
     ]
 }

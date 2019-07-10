@@ -9,7 +9,9 @@ import {SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
 import { fromEventPattern } from 'rxjs';
 import { SimulationComponent } from './simulation/simulation.component';
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
-
+import { ChartsComponent } from './simulation/charts/charts.component';
+import { NgxChartsModule } from '@swimlane/ngx-charts';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 const config: SocketIoConfig = {url: 'http://localhost:5000', options: {}};
 
 @NgModule({
@@ -18,12 +20,15 @@ const config: SocketIoConfig = {url: 'http://localhost:5000', options: {}};
     NavbarComponent,
     MainComponent,
     LoginComponent,
-    SimulationComponent
+    SimulationComponent,
+    ChartsComponent
   ],
   imports: [
     BrowserModule,
     FormsModule,
     SocketIoModule.forRoot(config),
+    NgxChartsModule,
+    BrowserAnimationsModule
     // LoggerModule.forRoot({serverLoggingUrl: '/api/logs', level: NgxLoggerLevel.DEBUG, serverLogLevel: NgxLoggerLevel.OFF}),
   ],
   providers: [],

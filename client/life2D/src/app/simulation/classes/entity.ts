@@ -3,16 +3,24 @@ import { Position } from './position';
 export class Entity {
   name: string;
   type: string;
+  age = 0;
+  info = '';
   position: Position;
   settingsIndex: number;
   baseSpriteIndex: number;
+  isReserved: number;
+  generation: number;
+  health: number;
+  healthLossRate: number;
+  baseHealthLossRate: number;
   id: string;
+  traits = [];
   reserved = false;
   destroy = false;
   urlHead = 'http://localhost:5000';
-  constructor(name: string, id: string, position: Position, settingsIndex: number, baseSpriteIndex: number) {
+  constructor(name: string, type: string, id: string, position: Position, settingsIndex: number, baseSpriteIndex: number) {
     this.name = name;
-    this.type = name;
+    this.type = type;
     this.position = position;
     this.settingsIndex = settingsIndex;
     this.baseSpriteIndex = baseSpriteIndex;
@@ -20,8 +28,15 @@ export class Entity {
     this.reserved = false;
   }
 
+  getWindowPosition(camera: Camera): Position {
+    const wX = this.position.x - camera.position.x * camera.zoomLevel;
+    const wY = this.position.y - camera.position.y * camera.zoomLevel;
+    return new Position(wX, wY, 0);
+  }
+
   render(p: any, camera: Camera, spriteImages: {}, settingsList: []) {
     if (!this.destroy) {
+      // console.log('rendering entity');
       if (camera.zoomLevel > .15 &&
         camera.position.x + p.width * 0.5 / camera.zoomLevel > this.position.x &&
         camera.position.x - p.width * 0.5 / camera.zoomLevel < this.position.x &&
@@ -33,6 +48,7 @@ export class Entity {
         if (!spriteImages[`${baseSprite.url}`]) {
           // console.log(`baseSprite: ${baseSprite.url[0]}`);
           const url = (baseSprite.url[0] === '/') ? this.urlHead + baseSprite.url : baseSprite.url;
+          // console.log(`url: ${url}, baseSpriteUrl: ${baseSprite.url}, urlHead: ${this.urlHead}`);
           spriteImages[`${baseSprite.url}`] = p.loadImage(url);
         }
         if (camera.zoomLevel >= baseSprite.minZoom && camera.zoomLevel < baseSprite.maxZoom) {
@@ -67,5 +83,22 @@ export class Entity {
         }
       }
     }
+  }
+
+  getInfo() {
+    const info = [`name: ${this.name}`,
+                  `type: ${this.type}`,
+                  `id: ${this.id}`,
+                  `age: ${this.age.toFixed(0)}`,
+                  `health: ${this.health.toFixed(0)}`,
+                  `generation: ${this.generation}`,
+                  `position: (${this.position.x.toFixed(1)}, ${this.position.y.toFixed(1)})`];
+    if (this.isReserved) {
+      info.push(`Reserved`);
+    }
+    if (this.info){
+      info.push(`info: ${this.info}`);
+    }
+    return info;
   }
 }

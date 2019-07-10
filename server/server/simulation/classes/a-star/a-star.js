@@ -1,20 +1,51 @@
 math = require('mathjs');
 AStarNode = require('./a-star-node');
 AStarPath = require('./a-star-path');
+AStarTask = require('./a-star-task');
+Queue = require('../Queue');
+
 function AStar() {
+    this.queue = new Queue();
+    this.currentTask;
 }
 
-AStar.prototype.findPath = function (startPosition, endPosition, map) {
+AStar.prototype.startTasks = function() {
+    if (!this.currentTask && !this.queue.isEmpty()) {
+        this.currentTask = this.queue.dequeue();
+    }
+
+    if (this.currentTask) {
+        this.findPath().then( path => {
+            this.currentTask.callBackFunction(path);
+            this.currentTask = null;
+            this.startTasks();
+        }).catch( err => {
+            console.error(err);
+            this.currentTask.callBackFunction();
+            this.currentTask = null;
+            this.startTasks();
+        });
+    }
+}
+AStar.prototype.requestPath = function (startPosition, endPosition, map, callBackFunction) {
+    this.queue.enqueue(new AStarTask(startPosition, endPosition, map, callBackFunction));
+    if (!this.currentTask) {
+        this.startTasks();
+    }
+}
+
+AStar.prototype.findPath = function () {
     let closedNodes = [];
     let openNodes = [];
-    let startNode = new AStarNode(Math.round(startPosition.x), Math.round(startPosition.y), map, 0, distanceCost(startPosition, endPosition));
-    let targetNode = new AStarNode(Math.round(endPosition.x), Math.round(endPosition.y), map);
+    let startNode = new AStarNode(Math.round(this.currentTask.startPosition.x), Math.round(this.currentTask.startPosition.y),
+        this.currentTask.map, 0, distanceCost(this.currentTask.startPosition, this.currentTask.endPosition));
+    let targetNode = new AStarNode(Math.round(this.currentTask.endPosition.x), Math.round(this.currentTask.endPosition.y), this.currentTask.map);
     openNodes.push(startNode);
     thisAStar = this;
     let nodeMap = {};
     nodeMap[`x:${targetNode.position.x},y:${targetNode.position.y}`] = targetNode;
     nodeMap[`x:${startNode.position.x},y:${startNode.position.y}`] = startNode;
-    console.log(`finding path from: x:${startNode.position.x},y:${startNode.position.y} to x:${targetNode.position.x},y:${targetNode.position.y}`);
+    // console.log(`finding path from: x:${startNode.position.x},y:${startNode.position.y} to x:${targetNode.position.x},y:${targetNode.position.y}`);
     return new Promise((resolve, reject) => {
         let foundPath = false;
         while (openNodes.length > 0) {
@@ -36,11 +67,16 @@ AStar.prototype.findPath = function (startPosition, endPosition, map) {
             //check if node == target
             if (currentNode.position.x == targetNode.position.x && currentNode.position.y == targetNode.position.y) {
                 //found node
-                console.log('reached target node, retracing steps...');
+                // console.log('reached target node, retracing steps...');
                 let path = thisAStar.createPath(currentNode);
-                console.log(`found path: ${JSON.stringify(path)}`);
+                // console.log(`found path: ${JSON.stringify(path)}`);
                 resolve(path);
                 foundPath = true;
+                break;
+            }
+
+            if (closedNodes.length > 10000){
+                console.log('closedNodes limit reached');
                 break;
             }
 
@@ -48,9 +84,9 @@ AStar.prototype.findPath = function (startPosition, endPosition, map) {
             for (let nx = currentNode.position.x - 1; nx < currentNode.position.x + 2; nx++) {
                 for (let ny = currentNode.position.y - 1; ny < currentNode.position.y + 2; ny++) {
                     //continue if out of bounds
-                    // if (nx < 0 || ny < 0 || nx >= map.width || ny >= map.height) {
-                    //     continue;
-                    // }
+                    if (!thisAStar.currentTask.map.withinBorder(nx,ny)) {
+                        continue;
+                    }
 
                     let nNode;
                     let nPosition = { x: nx, y: ny };
@@ -60,11 +96,11 @@ AStar.prototype.findPath = function (startPosition, endPosition, map) {
                         nNode = nodeMap[`x:${nx},y:${ny}`];
                     } else {
                         //create new nNode
-                        nNode = new AStarNode(nx, ny, map,currentNode.gCost + distanceCost(currentNode.position, nPosition), distanceCost(nPosition, targetNode.position),currentNode);
+                        nNode = new AStarNode(nx, ny, thisAStar.currentTask.map,currentNode.gCost + distanceCost(currentNode.position, nPosition), distanceCost(nPosition, targetNode.position),currentNode);
                         nodeMap[`x:${nx},y:${ny}`] = nNode;
                     }
 
-                    //continure if nNode in closedNodes or water biome
+                    //continue if nNode in closedNodes or water biome
                     if (nNode.biome[0] == 'water' || closedNodes.includes(nNode)) {
                         continue;
                     }
@@ -83,7 +119,7 @@ AStar.prototype.findPath = function (startPosition, endPosition, map) {
             }
         }
         if(!foundPath){
-            console.log(`did not find path`);
+            // console.log(`did not find path`);
             reject('did not find path');
         }
     });

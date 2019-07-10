@@ -1,19 +1,36 @@
 {
     "name": "herbivore",
-    "type":"herbivore",
-    "energy": 1000,
-    "baseMaxEnergy": 1000,
+    "type": "moving-entity",
+    "energy": 50,
+    "baseMaxEnergy": 50,
     "baseEnergyLossRate": 1,
     "baseEnergyGainRate": 2,
+    "baseHealthLossRate": 1,
     "traits":[
         {
             "name":"speed",
             "base": 10,
-            "randomness": 0.1,
-            "cost": "energy",
+            "randomness": 3,
+            "cost": "energyLossRate",
+            "modifier":"add",
             "costRate": 0.1
+        },
+        {
+            "name":"duplicate",
+            "base": 120,
+            "randomness": 20,
+            "healthMult": 5
+        },
+        {
+            "name":"sight",
+            "base": 20,
+            "randomness": 5,
+            "cost": "energyLossRate",
+            "modifier":"add",
+            "costRate": 0.05
         }
     ],
+    "spawnBiomes":["land"],
     "baseSprites": [
         {
             "url": "/static/simulation/sprites/people/pixelman.png",
@@ -45,21 +62,5 @@
             "maxZoom": 8
         }
     ],
-    "goap": [
-        {
-            "name": "sleep on ground",
-            "preconditions": [],
-            "cost": 10,
-            "sleeping":true,
-            "effects": [
-                {
-                    "type": "self",
-                    "target": "base stats",
-                    "effect": "add",
-                    "name": "energy",
-                    "amount": 15
-                }
-            ]
-        }
-    ]
+    "goap": []
 }
