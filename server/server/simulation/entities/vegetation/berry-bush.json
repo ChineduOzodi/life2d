@@ -112,20 +112,29 @@
             "geneType": "item",
             "attachedTo": "branches",
             "type": "external",
-            "base": 1,
-            "count": 30,
-            "randomness": 0.1,
-            "cost": "energyLossRate",
-            "modifier": "add",
-            "costRate": 0.1,
+            "description": "berries good for eating",
+            "generateTimePerItem": 10,
             "speciationPercent": 0.5,
-            "mutationChance": 0.0001
-        },
-        {
-            "name": "duplicate",
-            "base": 100,
-            "randomness": 20,
-            "healthMult": 5
+            "mutationChance": 0.0001,
+            "count": 5,
+            "countMutate": true,
+            "countMutateChance": 0.1,
+            "countMutateMinAmount": 1,
+            "countMutateMaxAmount": 5,
+            "effectsRandomness": 0.1,
+            "effects": [{
+                "name": "maturityAge",
+                "base": 1,
+                "modifier": "add",
+                "costRate": 0.1
+            },
+            {
+                "name": "energyLossRate",
+                "base": 1,
+                "modifier": "add",
+                "costRate": 0.1
+            }
+        ]
         }
     ],
     "spawnBiomes": ["land"],

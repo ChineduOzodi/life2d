@@ -165,7 +165,6 @@
         },
         {
             "name": "gender",
-            "attachedTo":"body",
             "geneType": "allele",
             "type": "other",
             "defenition": ["XY", "XX"],
