@@ -2,6 +2,7 @@
     "name": "herbivore",
     "type": "moving-entity",
     "species": "bunny",
+    "maturityAge": 120,
     "energy": 50,
     "baseMaxEnergy": 50,
     "baseEnergyLossRate": 1,
@@ -14,40 +15,72 @@
             "type": "external",
             "base": 1,
             "count": 1,
-            "randomness": 0.1,
-            "cost": "energyLossRate",
-            "modifier": "add",
-            "costRate": 0.1,
             "speciationPercent": 0.5,
-            "mutationChance": 0.0001
+            "mutationChance": 0.0001,
+            "effectsRandomness": 0.1,
+            "effects": [{
+                    "name": "energyLossRate",
+                    "base": 2,
+                    "modifier": "add",
+                    "costRate": 0.1
+                },
+                {
+                    "name": "maturityAge",
+                    "base": 10,
+                    "modifier": "add",
+                    "costRate": 0.1
+                }
+            ]
         },
         {
             "name": "head",
             "attachedTo":"body",
             "geneType": "numerical",
             "type": "external",
-            "base": 0.5,
             "count": 1,
-            "randomness": 0.1,
-            "cost": "energyLossRate",
-            "modifier": "add",
-            "costRate": 0.1,
+            "countMutate": true,
+            "countMutateChance": 0.1,
+            "countMutateMinAmount": 1,
+            "countMutateMaxAmount": 2,
             "speciationPercent": 0.5,
-            "mutationChance": 0.0001
+            "mutationChance": 0.0001,
+            "effectsRandomness": 0.1,
+            "effects": [{
+                    "name": "energyLossRate",
+                    "base": 2,
+                    "modifier": "add",
+                    "costRate": 0.1
+                },
+                {
+                    "name": "maturityAge",
+                    "base": 5,
+                    "modifier": "add",
+                    "costRate": 0.1
+                }
+            ]
         },
         {
             "name": "brain",
             "attachedTo":"head",
             "geneType": "numerical",
             "type": "internal",
-            "base": 0.5,
             "count": 1,
-            "randomness": 0.1,
-            "cost": "energyLossRate",
-            "modifier": "add",
-            "costRate": 0.3,
             "speciationPercent": 0.5,
-            "mutationChance": 0.0001
+            "mutationChance": 0.0001,
+            "effectsRandomness": 0.1,
+            "effects": [{
+                    "name": "energyLossRate",
+                    "base": 2,
+                    "modifier": "add",
+                    "costRate": 0.1
+                },
+                {
+                    "name": "maturityAge",
+                    "base": 5,
+                    "modifier": "add",
+                    "costRate": 0.1
+                }
+            ]
         },
         {
             "name": "mouth",
@@ -60,108 +93,157 @@
         {
             "name": "herbivore teeth",
             "attachedTo":"mouth",
-            "geneType": "boolean",
+            "geneType": "numerical",
             "type": "internal",
-            "count": 1,
-            "amount": 0.1,
-            "cost": "energyLossRate",
-            "modifier": "add",
-            "costRate": 0.1,
-            "mutationChance": 0.0001
+            "count": 10,
+            "countMutate": true,
+            "countMutateChance": 0.1,
+            "countMutateMinAmount": 1,
+            "countMutateMaxAmount": 2,
+            "mutationChance": 0.0001,
+            "effectsRandomness": 0.1,
+            "effects": [{
+                    "name": "energyLossRate",
+                    "base": 1,
+                    "modifier": "add",
+                    "costRate": 0.1
+                },
+                {
+                    "name": "maturityAge",
+                    "base": 1,
+                    "modifier": "add",
+                    "costRate": 0.1
+                }
+            ]
         },
         {
             "name": "lungs",
             "attachedTo":"body",
-            "geneType": "boolean",
+            "geneType": "numerical",
             "type": "internal",
             "count": 2,
-            "amount": 1,
-            "cost": "energyLossRate",
-            "modifier": "add",
-            "costRate": 0.1,
-            "mutationChance": 0.0001
+            "countMutate": true,
+            "countMutateChance": 0.1,
+            "countMutateMinAmount": 1,
+            "countMutateMaxAmount": 2,
+            "mutationChance": 0.0001,
+            "effectsRandomness": 0.1,
+            "effects": [{
+                    "name": "energyLossRate",
+                    "base": 1,
+                    "modifier": "add",
+                    "costRate": 0.1
+                },
+                {
+                    "name": "maturityAge",
+                    "base": 1,
+                    "modifier": "add",
+                    "costRate": 0.1
+                }
+            ]
         },
         {
             "name": "stomach",
             "attachedTo":"body",
-            "geneType": "boolean",
+            "geneType": "numerical",
             "type": "internal",
             "count": 1,
-            "amount": 1,
-            "cost": "energyLossRate",
-            "modifier": "add",
-            "costRate": 0.1,
-            "mutationChance": 0.0001
-        },
-        {
-            "name": "fruit processing",
-            "attachedTo":"stomach",
-            "geneType": "numerical",
-            "type": "protien",
-            "base": 1,
-            "count": 1,
-            "randomness": 0.1,
-            "cost": "energyLossRate",
-            "modifier": "add",
-            "costRate": 0.1,
-            "speciationPercent": 0.5,
-            "mutationChance": 0.0001
+            "countMutate": true,
+            "countMutateChance": 0.1,
+            "countMutateMinAmount": 1,
+            "countMutateMaxAmount": 2,
+            "mutationChance": 0.0001,
+            "effectsRandomness": 0.1,
+            "effects": [{
+                    "name": "energyLossRate",
+                    "base": 1,
+                    "modifier": "add",
+                    "costRate": 0.1
+                },
+                {
+                    "name": "maturityAge",
+                    "base": 1,
+                    "modifier": "add",
+                    "costRate": 0.1
+                }
+            ]
         },
         {
             "name": "eyes",
             "attachedTo":"head",
             "type": "external",
             "geneType": "numerical",
-            "base": 10,
             "count": 2,
-            "randomness": 0.3,
-            "cost": "energyLossRate",
-            "modifier": "add",
-            "costRate": 0.1,
+            "countMutate": true,
+            "countMutateChance": 0.1,
+            "countMutateMinAmount": 1,
+            "countMutateMaxAmount": 2,
             "speciationPercent": 0.5,
-            "mutationChance": 0.0001
+            "mutationChance": 0.0001,
+            "effectsRandomness": 0.3,
+            "effects": [{
+                    "name": "energyLossRate",
+                    "base": 10,
+                    "modifier": "add",
+                    "costRate": 0.1
+                },
+                {
+                    "name": "maturityAge",
+                    "base": 1,
+                    "modifier": "add",
+                    "costRate": 0.1
+                }
+            ]
         },
         {
             "name": "legs",
             "attachedTo":"body",
             "type": "external",
             "geneType": "numerical",
-            "base": 10,
-            "count": 2,
-            "randomness": 0.3,
-            "cost": "energyLossRate",
-            "modifier": "add",
-            "costRate": 0.1,
+            "count": 4,
+            "countMutate": true,
+            "countMutateChance": 0.1,
+            "countMutateMinAmount": 2,
+            "countMutateMaxAmount": 2,
             "speciationPercent": 0.5,
-            "mutationChance": 0.0001
-        },
-        {
-            "name": "legs",
-            "attachedTo":"body",
-            "type": "external",
-            "geneType": "numerical",
-            "base": 7,
-            "count": 2,
-            "randomness": 0.3,
-            "cost": "energyLossRate",
-            "modifier": "add",
-            "costRate": 0.1,
-            "speciationPercent": 0.5,
-            "mutationChance": 0.0001
+            "mutationChance": 0.0001,
+            "effectsRandomness": 0.3,
+            "effects": [{
+                    "name": "energyLossRate",
+                    "base": 10,
+                    "modifier": "add",
+                    "costRate": 0.1
+                },
+                {
+                    "name": "maturityAge",
+                    "base": 1,
+                    "modifier": "add",
+                    "costRate": 0.1
+                }
+            ]
         },
         {
             "name": "tail",
             "attachedTo":"body",
             "type": "external",
             "geneType": "numerical",
-            "base": 2,
             "count": 1,
-            "randomness": 0.3,
-            "cost": "energyLossRate",
-            "modifier": "add",
-            "costRate": 0.1,
             "speciationPercent": 0.5,
-            "mutationChance": 0.0001
+            "mutationChance": 0.0001,
+            "effectsRandomness": 0.3,
+            "effects": [{
+                    "name": "energyLossRate",
+                    "base": 2,
+                    "modifier": "add",
+                    "costRate": 0.1
+                },
+                {
+                    "name": "maturityAge",
+                    "base": 1,
+                    "modifier": "add",
+                    "costRate": 0.1
+                }
+            ]
         },
         {
             "name": "gender",
@@ -173,28 +255,6 @@
                 "XX": "female"
             },
             "mutationChance": 0.0001
-        },
-        {
-            "name": "speed",
-            "base": 10,
-            "randomness": 3,
-            "cost": "energyLossRate",
-            "modifier": "add",
-            "costRate": 0.1
-        },
-        {
-            "name": "duplicate",
-            "base": 120,
-            "randomness": 20,
-            "healthMult": 5
-        },
-        {
-            "name": "sight",
-            "base": 20,
-            "randomness": 5,
-            "cost": "energyLossRate",
-            "modifier": "add",
-            "costRate": 0.05
         }
     ],
     "spawnBiomes": ["land"],

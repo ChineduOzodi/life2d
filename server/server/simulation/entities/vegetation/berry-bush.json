@@ -9,7 +9,6 @@
             "name": "trunk",
             "geneType": "numerical",
             "type": "external",
-
             "description": "main body of entity",
             "speciationPercent": 0.5,
             "mutationChance": 0.0001,

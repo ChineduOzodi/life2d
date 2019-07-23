@@ -16,6 +16,7 @@ function LivingEntity(name, id, x, y, settingsIndex, baseSpriteIndex) {
   this.modifiers = [];
   this.body - {};
   this.isSleeping = false;
+  this.tags = {};
 }
 
 LivingEntity.prototype = Object.create(Entity.prototype);
@@ -27,7 +28,7 @@ LivingEntity.prototype.birth = function (map, traits) {
   this.traits = [];
   for (let trait of traits) {
     let traitCopy = JSON.parse(JSON.stringify(trait));
-    if (!this.body[traitCopy.name]){
+    if (!this.body[traitCopy.name]) {
       this.body[traitCopy.name] = {};
       if (traitCopy.count) {
         this.body[traitCopy.name].count = traitCopy.count;
@@ -38,16 +39,21 @@ LivingEntity.prototype.birth = function (map, traits) {
     }
     switch (traitCopy.geneType) {
       case "numerical":
-        let random = (Math.random() - 0.5) * 2 * traitCopy.effectsRandomness;
-        for (let effect of traitCopy.effects) {
-          effect.amount = effect.base + random;
-          if (effect.amount < 0.1) {
-            effect.amount = 0.1;
-          }
-          this.addTraitAmount(effect.name, effect.amount * this.body[traitCopy.attachedTo].count);
+        this.calculateTraitEffects(traitCopy);
+        break;
+      case "item":
+        this.calculateTraitEffects(traitCopy);
+        this.tags.generatesItems = true;
+        break;
+      case "boolean":
+        if (traitCopy.effects) {
+          this.calculateTraitEffects(traitCopy);
         }
         break;
-
+        case "allele":
+            let definitionIndex = Math.floor(Math.random() * traitCopy.defenition.length);
+            this[traitCopy.name] = traitCopy.defenition[definitionIndex];
+            break;
       default:
         console.error(`genetype ${traitCopy.geneType} not recognized`);
         break;
@@ -66,16 +72,27 @@ LivingEntity.prototype.birth = function (map, traits) {
   // }
 }
 
-LivingEntity.prototype.addTraitAmount = function(name, amount) {
+LivingEntity.prototype.calculateTraitEffects = function (trait) {
+  let random = (Math.random() - 0.5) * 2 * trait.effectsRandomness;
+  for (let effect of trait.effects) {
+    effect.amount = effect.base + random;
+    if (effect.amount < 0.1) {
+      effect.amount = 0.1;
+    }
+    this.addTraitAmount(effect.name, effect.amount * this.body[trait.attachedTo].count);
+  }
+}
+
+LivingEntity.prototype.addTraitAmount = function (name, amount) {
   if (!this[name]) {
     this[name] = 0;
   }
   this[name] += amount;
 }
 
-LivingEntity.prototype.getTrait = function(name) {
+LivingEntity.prototype.getTrait = function (name) {
   // console.log(`finding name (${name}) in traits: ${JSON.stringify(this.traits)}`);
-  return this.traits.find( x => x.name === name);
+  return this.traits.find(x => x.name === name);
 }
 
 LivingEntity.prototype.death = function (map) {
