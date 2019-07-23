@@ -1,6 +1,6 @@
 {
     "name": "herbivore",
-    "type": "moving-entity",
+    "type": "living-entity",
     "species": "bunny",
     "maturityAge": 120,
     "energy": 50,
@@ -30,6 +30,18 @@
                     "base": 10,
                     "modifier": "add",
                     "costRate": 0.1
+                },
+                {
+                    "name": "health",
+                    "base": 100,
+                    "modifier": "add",
+                    "costRate": 0.1
+                },
+                {
+                    "name": "healthLossRate",
+                    "base": 1,
+                    "modifier": "add",
+                    "costRate": 0.1
                 }
             ]
         },
@@ -57,6 +69,12 @@
                     "base": 5,
                     "modifier": "add",
                     "costRate": 0.1
+                },
+                {
+                    "name": "health",
+                    "base": 50,
+                    "modifier": "add",
+                    "costRate": 0.1
                 }
             ]
         },
@@ -80,6 +98,12 @@
                     "base": 5,
                     "modifier": "add",
                     "costRate": 0.1
+                },
+                {
+                    "name": "health",
+                    "base": 100,
+                    "modifier": "add",
+                    "costRate": 0.1
                 }
             ]
         },
@@ -92,7 +116,7 @@
             "mutationChance": 0.0001
         },
         {
-            "name": "herbivore teeth",
+            "name": "herbivoreTeeth",
             "attachedTo":"mouth",
             "geneType": "numerical",
             "type": "internal",
@@ -111,6 +135,12 @@
                 },
                 {
                     "name": "maturityAge",
+                    "base": 1,
+                    "modifier": "add",
+                    "costRate": 0.1
+                },
+                {
+                    "name": "eatingSpeed",
                     "base": 1,
                     "modifier": "add",
                     "costRate": 0.1
@@ -166,6 +196,12 @@
                     "base": 1,
                     "modifier": "add",
                     "costRate": 0.1
+                },
+                {
+                    "name": "maxEnergy",
+                    "base": 100,
+                    "modifier": "add",
+                    "costRate": 0.1
                 }
             ]
         },
@@ -191,6 +227,12 @@
                 {
                     "name": "maturityAge",
                     "base": 1,
+                    "modifier": "add",
+                    "costRate": 0.1
+                },
+                {
+                    "name": "sight",
+                    "base": 10,
                     "modifier": "add",
                     "costRate": 0.1
                 }
@@ -220,6 +262,12 @@
                     "base": 1,
                     "modifier": "add",
                     "costRate": 0.1
+                },
+                {
+                    "name": "speed",
+                    "base": 5,
+                    "modifier": "add",
+                    "costRate": 0.1
                 }
             ]
         },
@@ -229,6 +277,10 @@
             "type": "external",
             "geneType": "numerical",
             "count": 1,
+            "countMutate": true,
+            "countMutateChance": 0.1,
+            "countMutateMinAmount": 1,
+            "countMutateMaxAmount": 2,
             "speciationPercent": 0.5,
             "mutationChance": 0.0001,
             "effectsRandomness": 0.3,
@@ -241,6 +293,12 @@
                 {
                     "name": "maturityAge",
                     "base": 1,
+                    "modifier": "add",
+                    "costRate": 0.1
+                },
+                {
+                    "name": "speed",
+                    "base": 2,
                     "modifier": "add",
                     "costRate": 0.1
                 }

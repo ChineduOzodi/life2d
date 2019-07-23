@@ -148,30 +148,6 @@ Vegetation.prototype.createChildTraits = function () {
   return childTraits;
 }
 
-Vegetation.prototype.calculateAttrition = function (map) {
-  // const nearestEntity = map.findNearestEntityName(this.name, this);
-  this.healthLossRate = this.baseHealthLossRate;
-  for (const entity of map.entities) {
-    if (entity.name === this.name && !entity.destroy) {
-      // console.log(`found nearest entity`);
-      // this.nearestEntityId = nearestEntity.id;
-      let distCost = distanceCost(this.position, entity.position) / 10.0;
-      if (distCost === 0) {
-        console.log('distance equals 0');
-        distCost = 0.1;
-      }
-      const attrition = this.attrition / distCost;
-      if (attrition > 1) {
-        this.healthLossRate += (attrition - 1) * this.attritionHealthEffect;
-        // nearestEntity.healthLossRate = this.healthLossRate;
-        // console.log(`attrition applied: ${this.healthLossRate}`);
-      }
-    }
-  }
-  
-  // console.log(`health loss rate: ${this.healthLossRate}`);
-}
-
 Vegetation.prototype.calculateHealth = function () {
   const trait = this.getTrait('duplicate');
   if (trait) {

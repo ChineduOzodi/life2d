@@ -28,10 +28,12 @@ LivingEntity.prototype.birth = function (map, traits) {
   // console.log(`set traits: ${JSON.stringify(this.traits)}`);
   this.setTraits();
   this.setTags();
-  this.createModifiers();
-
-  //set health
-  this.calculateHealth();
+  if (this.attrition) {
+    this.calculateAttrition(map);
+  }
+  if (this.speed) {
+    this.calculateSpeed();
+  }
   // let runtime = Date.now() - startTime;
   // if (runtime > 10) {
   //   console.log(`moving-entity birth ${this.id} runtime: ${runtime} ms`);
@@ -39,17 +41,19 @@ LivingEntity.prototype.birth = function (map, traits) {
 }
 
 LivingEntity.prototype.setTags = function() {
-  if (this.traitExpressed('mouth') && this.traitExpressed('herbivore teeth') && this.traitExpressed('stomach')) {
+  if (this.traitExpressed('mouth') && this.traitExpressed('herbivoreTeeth') && this.traitExpressed('stomach')) {
     this.addTag('herbivore');
-    //TODO: add calculate eating speed, and energy capacity
+  }
+  if ((this.traitExpressed('mouth') && this.traitExpressed('lungs')) || this.traitExpressed('leaves')) {
+    this.addTag('survies on land');
   }
   if (this.traitExpressed('eyes')) {
     this.addTag('sight');
-    //TODO: add calculate sight;
   }
-  if (this.traitExpressed('legs')) {
-    this.addTag('walk');
-    //TODO: add calculate walking speed, running speed;
+  if (this.traitExpressed('roots')) {
+    this.addTag('roots');
+  } else if (this.traitExpressed('legs')) {
+    this.addTag('can move');
   }
   //TODO: check for whether energyGainRate is higher than energyLossRate
   let gender = this.getTrait('gender');
@@ -90,8 +94,8 @@ LivingEntity.prototype.configureTrait = function(trait) {
       }
       break;
       case "allele":
-          let definitionIndex = Math.floor(Math.random() * trait.defenition.length);
-          this[trait.name] = trait.defenition[definitionIndex];
+          let definitionIndex = Math.floor(Math.random() * trait.definition.length);
+          this[trait.name] = trait.definition[definitionIndex];
           break;
     default:
       console.error(`genetype ${trait.geneType} not recognized`);
@@ -107,7 +111,7 @@ LivingEntity.prototype.calculateTraitEffects = function (trait) {
     if (effect.amount < 0.1) {
       effect.amount = 0.1;
     }
-    this.addTraitAmount(effect.name, effect.amount * this.body[trait.attachedTo].count);
+    this.addTraitAmount(effect.name, effect.amount * this.body[trait.attachedTo].count * this.size);
   }
 }
 
@@ -151,28 +155,31 @@ LivingEntity.prototype.run = function (map, goapPlanner, aStar) {
   // console.log(`energy: ${this.energy}`);
 }
 
-LivingEntity.prototype.createModifiers = function () {
-  for (let trait of this.traits) {
-    if (trait.cost) {
-      // console.log(`trait ${trait.name} has cost`);
-      this.modifiers.push({
-        name: trait.cost,
-        type: trait.modifier,
-        amount: trait.amount * trait.costRate
-      });
-    }
-  }
+LivingEntity.prototype.calculateSpeed = function () {
+  this.speed /= this.size;
 }
 
-LivingEntity.prototype.calculateHealth = function () {
-  const trait = this.getTrait('duplicate');
-  if (trait) {
-    this.health = trait.base * trait.healthMult;
-    this.healthLossRate = this.baseHealthLossRate;
-    // console.log('health calculated: ' + this.health);
-  } else {
-    console.log(`could not find trait duplicate`);
+LivingEntity.prototype.calculateAttrition = function (map) {
+  // const nearestEntity = map.findNearestEntityName(this.name, this);
+  for (const entity of map.entities) {
+    if (entity.name === this.name && !entity.destroy) {
+      // console.log(`found nearest entity`);
+      // this.nearestEntityId = nearestEntity.id;
+      let distCost = distanceCost(this.position, entity.position) / 10.0;
+      if (distCost === 0) {
+        console.log('distance equals 0');
+        distCost = 0.1;
+      }
+      const attrition = this.attrition / distCost;
+      if (attrition > 1) {
+        this.energyLossRate += (attrition - 1) * this.attritionEffect;
+        // nearestEntity.healthLossRate = this.healthLossRate;
+        // console.log(`attrition applied: ${this.healthLossRate}`);
+      }
+    }
   }
+  
+  // console.log(`health loss rate: ${this.healthLossRate}`);
 }
 
 LivingEntity.prototype.checkHealth = function () {

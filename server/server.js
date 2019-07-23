@@ -238,10 +238,10 @@ function run() {
 }
 
 setInterval(function () {
-  if (!map.data) {
-    createData(map);
-  }
-  updateData(map);
+  // if (!map.data) {
+  //   createData(map);
+  // }
+  // updateData(map);
   io.sockets.emit('data', map.data);
 }, 1000);
 
