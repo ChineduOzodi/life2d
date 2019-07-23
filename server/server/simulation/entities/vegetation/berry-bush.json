@@ -5,6 +5,7 @@
     "attrition": 10,
     "maturityAge": 60,
     "attritionHealthEffect": 10,
+    "size": 1,
     "traits": [{
             "name": "trunk",
             "geneType": "numerical",

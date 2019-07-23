@@ -11,6 +11,17 @@ function Entity(name, type, id, x, y, settingsIndex, baseSpriteIndex) {
     this.destroy = false;
     this.lastUpdateTime = 0;
     this.deltaTime = 1;
+    this.tags = [];
+}
+
+Entity.prototype.addTag = function (tag) {
+  if (!this.hasTag(tag)) {
+    this.tags.add(tag);
+  }
+}
+
+Entity.prototype.hasTag = function (tag) {
+  return this.tags.find(x => x === tag);
 }
 
 Entity.prototype.run = function (map, goapPlanner) {

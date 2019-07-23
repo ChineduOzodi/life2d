@@ -8,6 +8,7 @@
     "baseEnergyLossRate": 1,
     "baseEnergyGainRate": 2,
     "baseHealthLossRate": 1,
+    "size": 0.5,
     "traits": [
         {
             "name": "body",
@@ -249,7 +250,7 @@
             "name": "gender",
             "geneType": "allele",
             "type": "other",
-            "defenition": ["XY", "XX"],
+            "definition": ["XY", "XX"],
             "map": {
                 "XY": "male",
                 "XX": "female"

@@ -16,7 +16,6 @@ function LivingEntity(name, id, x, y, settingsIndex, baseSpriteIndex) {
   this.modifiers = [];
   this.body - {};
   this.isSleeping = false;
-  this.tags = {};
 }
 
 LivingEntity.prototype = Object.create(Entity.prototype);
@@ -25,43 +24,10 @@ LivingEntity.prototype.birth = function (map, traits) {
   // let startTime = Date.now();
   // console.log(`spawning enity: ${this.name}`);
   this.lastUpdateTime = map.time;
-  this.traits = [];
-  for (let trait of traits) {
-    let traitCopy = JSON.parse(JSON.stringify(trait));
-    if (!this.body[traitCopy.name]) {
-      this.body[traitCopy.name] = {};
-      if (traitCopy.count) {
-        this.body[traitCopy.name].count = traitCopy.count;
-      }
-      if (traitCopy.attachedTo) {
-        this.body[traitCopy.name].count = this.body[traitCopy.attachedTo].count * this.body[traitCopy.name].count
-      }
-    }
-    switch (traitCopy.geneType) {
-      case "numerical":
-        this.calculateTraitEffects(traitCopy);
-        break;
-      case "item":
-        this.calculateTraitEffects(traitCopy);
-        this.tags.generatesItems = true;
-        break;
-      case "boolean":
-        if (traitCopy.effects) {
-          this.calculateTraitEffects(traitCopy);
-        }
-        break;
-        case "allele":
-            let definitionIndex = Math.floor(Math.random() * traitCopy.defenition.length);
-            this[traitCopy.name] = traitCopy.defenition[definitionIndex];
-            break;
-      default:
-        console.error(`genetype ${traitCopy.geneType} not recognized`);
-        break;
-    }
-    this.traits.push(traitCopy);
-  }
+  
   // console.log(`set traits: ${JSON.stringify(this.traits)}`);
-
+  this.setTraits();
+  this.setTags();
   this.createModifiers();
 
   //set health
@@ -70,6 +36,68 @@ LivingEntity.prototype.birth = function (map, traits) {
   // if (runtime > 10) {
   //   console.log(`moving-entity birth ${this.id} runtime: ${runtime} ms`);
   // }
+}
+
+LivingEntity.prototype.setTags = function() {
+  if (this.traitExpressed('mouth') && this.traitExpressed('herbivore teeth') && this.traitExpressed('stomach')) {
+    this.addTag('herbivore');
+    //TODO: add calculate eating speed, and energy capacity
+  }
+  if (this.traitExpressed('eyes')) {
+    this.addTag('sight');
+    //TODO: add calculate sight;
+  }
+  if (this.traitExpressed('legs')) {
+    this.addTag('walk');
+    //TODO: add calculate walking speed, running speed;
+  }
+  //TODO: check for whether energyGainRate is higher than energyLossRate
+  let gender = this.getTrait('gender');
+  if (gender) {
+    this.addTag(gender.map[this.gender]);
+  }
+}
+
+LivingEntity.prototype.setTraits = function() {
+  this.traits = [];
+  for (let trait of traits) {
+    let traitCopy = JSON.parse(JSON.stringify(trait));
+    this.configureTrait(traitCopy);
+  }
+}
+
+LivingEntity.prototype.configureTrait = function(trait) {
+  if (!this.body[trait.name]) {
+    this.body[trait.name] = {};
+    if (trait.count) {
+      this.body[trait.name].count = trait.count;
+    }
+    if (trait.attachedTo) {
+      this.body[trait.name].count = this.body[trait.attachedTo].count * this.body[trait.name].count
+    }
+  }
+  switch (trait.geneType) {
+    case "numerical":
+      this.calculateTraitEffects(trait);
+      break;
+    case "item":
+      this.calculateTraitEffects(trait);
+      this.addTag(`Generates Items`);
+      break;
+    case "boolean":
+      if (trait.effects) {
+        this.calculateTraitEffects(trait);
+      }
+      break;
+      case "allele":
+          let definitionIndex = Math.floor(Math.random() * trait.defenition.length);
+          this[trait.name] = trait.defenition[definitionIndex];
+          break;
+    default:
+      console.error(`genetype ${trait.geneType} not recognized`);
+      break;
+  }
+  this.traits.push(trait);
 }
 
 LivingEntity.prototype.calculateTraitEffects = function (trait) {
@@ -89,7 +117,10 @@ LivingEntity.prototype.addTraitAmount = function (name, amount) {
   }
   this[name] += amount;
 }
-
+LivingEntity.prototype.traitExpressed = function (name) {
+  // console.log(`finding name (${name}) in traits: ${JSON.stringify(this.traits)}`);
+  return this.body[name].count > 0;
+}
 LivingEntity.prototype.getTrait = function (name) {
   // console.log(`finding name (${name}) in traits: ${JSON.stringify(this.traits)}`);
   return this.traits.find(x => x.name === name);
