@@ -7,9 +7,11 @@ function AStarPath(position, direction, distance) {
 
 AStarPath.prototype.moveAgent = function (agent, deltaTime) {
     let moveAmount = agent.speed * deltaTime;
+    console.log(`current position: ${printPos(agent.position)}`);
     agent.position.x += this.direction.x * moveAmount;
     agent.position.y += this.direction.y * moveAmount;
-
+    console.log(`new position: ${printPos(agent.position)}`);
+    
     //clamp
     if (this.direction.x < 0) {
         agent.position.x = Math.max(this.position.x, agent.position.x);
@@ -21,9 +23,14 @@ AStarPath.prototype.moveAgent = function (agent, deltaTime) {
     } else if (this.direction.y > 0) {
         agent.position.y = Math.min(this.position.y, agent.position.y);
     }
+    console.log(`clamped position: ${printPos(agent.position)}`);
 
     //return distance to target
     return distance(this.position,agent.position);
+}
+
+function printPos(pos) {
+    return `x: ${pos.x}, y: ${pos.y}`;
 }
 
 function distance(pos1, pos2) {
